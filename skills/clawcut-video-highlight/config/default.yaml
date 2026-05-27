@@ -8,6 +8,18 @@ preview:
   video_bitrate: 700k
   audio_bitrate: 64k
 
+llm:
+  backend: ark
+  model: doubao-seed-2-0-lite-260215
+  api_key_env: ARK_API_KEY
+  base_url: https://ark.cn-beijing.volces.com/api/v3
+  fallback_to_mock: false
+  temperature: 0.2
+  timeout_seconds: 120
+  video_input_mode: auto
+  video_url: ""
+  video_fps: 1
+
 validation:
   min_segment_duration: 1.0
   target_tolerance_seconds: 2.0

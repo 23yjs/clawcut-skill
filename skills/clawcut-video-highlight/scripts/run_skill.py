@@ -1,29 +1,42 @@
 from __future__ import annotations
 
 import argparse
+import re
 import traceback
 from pathlib import Path
 from typing import Any
 
 from ffmpeg_editor import render_highlight
+from llm_client import create_llm_client
 from make_preview import make_preview
-from mock_llm import generate_mock_plan
 from plan_validator import assert_valid_plan
 from utils import SkillError, ensure_dir, load_config, setup_logger, write_json, write_text
 from video_probe import probe_video
 
 
-def _output_paths(output_dir: Path) -> dict[str, Path]:
+def _mask_url(url: str) -> str:
+    return url.split("?", 1)[0] + "?..." if "?" in url else url
+
+
+def _safe_output_name(input_video: Path) -> str:
+    name = re.sub(r"[^\w.-]+", "_", input_video.stem, flags=re.UNICODE).strip("._")
+    return name or "video"
+
+
+def _output_paths(output_dir: Path, input_video: Path) -> dict[str, Path]:
+    run_dir = output_dir / _safe_output_name(input_video)
     return {
-        "videos": output_dir / "videos",
-        "reports": output_dir / "reports",
-        "logs": output_dir / "logs",
-        "work": output_dir / "work",
-        "highlight": output_dir / "videos" / "highlight.mp4",
-        "preview": output_dir / "videos" / "preview.mp4",
-        "segments": output_dir / "reports" / "segments.json",
-        "report": output_dir / "reports" / "report.md",
-        "log": output_dir / "logs" / "run.log",
+        "root": output_dir,
+        "run": run_dir,
+        "videos": run_dir / "videos",
+        "reports": run_dir / "reports",
+        "logs": run_dir / "logs",
+        "work": run_dir / "work",
+        "highlight": run_dir / "videos" / "highlight.mp4",
+        "preview": run_dir / "videos" / "preview.mp4",
+        "segments": run_dir / "reports" / "segments.json",
+        "report": run_dir / "reports" / "report.md",
+        "log": run_dir / "logs" / "run.log",
     }
 
 
@@ -43,6 +56,7 @@ def _write_report(
         "## 输入信息",
         "",
         f"- 原始视频：`{input_video}`",
+        f"- 输出目录：`{highlight_path.parents[1]}`",
         f"- 用户指令：{instruction}",
         f"- 目标时长：{validation['target_duration']:.3f} 秒",
         f"- 实际可实现目标时长：{validation['effective_target_duration']:.3f} 秒",
@@ -65,9 +79,15 @@ def _write_report(
         "",
     ]
     for index, segment in enumerate(plan["final_segments"], start=1):
+        title = segment.get("title", f"高光片段 {index}")
+        role = segment.get("role", "未标注作用")
+        reason = segment.get("reason", "")
         lines.append(
-            f"{index}. {float(segment['start']):.3f}s - {float(segment['end']):.3f}s: {segment['reason']}"
+            f"{index}. {float(segment['start']):.3f}s - {float(segment['end']):.3f}s "
+            f"[{role}] {title}：{reason}"
         )
+    if plan.get("overall_rationale"):
+        lines.extend(["", "## 整体剪辑思路", "", str(plan["overall_rationale"])])
     lines.extend(
         [
             "",
@@ -84,24 +104,37 @@ def _write_report(
     write_text(report_path, "\n".join(lines) + "\n")
 
 
-def run_skill(input_video: Path, instruction: str, target_duration: float, output_dir: Path) -> dict[str, Any]:
-    paths = _output_paths(output_dir)
+def run_skill(
+    input_video: Path,
+    instruction: str,
+    target_duration: float,
+    output_dir: Path,
+    llm_video_url: str | None = None,
+) -> dict[str, Any]:
+    paths = _output_paths(output_dir, input_video)
     for key in ("videos", "reports", "logs", "work"):
         ensure_dir(paths[key])
 
     logger = setup_logger(paths["log"])
     logger.info("开始运行 ClawCut 视频高光剪辑 Skill")
     logger.info("输入视频：%s", input_video)
+    logger.info("本次输出目录：%s", paths["run"])
     logger.info("目标时长：%.3f 秒", target_duration)
 
     config = load_config()
+    if llm_video_url:
+        config.setdefault("llm", {})
+        config["llm"]["video_url"] = llm_video_url
+        config["llm"]["video_input_mode"] = "url"
+        logger.info("LLM 将使用外部视频 URL 输入：%s", _mask_url(llm_video_url))
     video_info = probe_video(input_video, config.get("ffmpeg", {}).get("probe_command", "ffprobe"), logger)
     logger.info("视频探测完成：%s", video_info)
 
     make_preview(input_video, paths["preview"], config, logger)
     logger.info("预览视频已写入：%s", paths["preview"])
 
-    plan = generate_mock_plan(video_info, instruction, target_duration, config)
+    client = create_llm_client(config, logger=logger)
+    plan = client.generate_edit_plan(str(paths["preview"]), instruction, target_duration, video_info, config)
     validation = assert_valid_plan(plan, video_info["duration"], target_duration, config)
     logger.info("剪辑方案校验完成：%s", validation)
 
@@ -136,6 +169,7 @@ def run_skill(input_video: Path, instruction: str, target_duration: float, outpu
         "segments": str(paths["segments"]),
         "report": str(paths["report"]),
         "log": str(paths["log"]),
+        "output_dir": str(paths["run"]),
         "validation": validation,
     }
 
@@ -146,15 +180,26 @@ def main() -> int:
     parser.add_argument("--instruction", required=True)
     parser.add_argument("--target_duration", type=float, required=True)
     parser.add_argument("--output_dir", type=Path, required=True)
+    parser.add_argument(
+        "--llm_video_url",
+        default=None,
+        help="可选：提供给大模型的视频 URL，例如 TOS 公开或签名 URL。未提供时使用本地 preview 的 data URL。",
+    )
     args = parser.parse_args()
 
     output_dir = args.output_dir
-    paths = _output_paths(output_dir)
+    paths = _output_paths(output_dir, args.input_video)
     ensure_dir(paths["logs"])
     logger = setup_logger(paths["log"])
 
     try:
-        result = run_skill(args.input_video, args.instruction, args.target_duration, output_dir)
+        result = run_skill(
+            args.input_video,
+            args.instruction,
+            args.target_duration,
+            output_dir,
+            llm_video_url=args.llm_video_url,
+        )
     except SkillError as exc:
         logger.error("%s", exc)
         return 1
@@ -164,6 +209,7 @@ def main() -> int:
         return 1
 
     print("ClawCut 视频高光剪辑 Skill 运行完成。")
+    print(f"输出目录：{result['output_dir']}")
     print(f"高光视频：{result['highlight']}")
     print(f"片段方案：{result['segments']}")
     print(f"中文报告：{result['report']}")

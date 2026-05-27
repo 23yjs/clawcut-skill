@@ -63,6 +63,8 @@ def _make_segments(duration: float, target_duration: float, chunks: list[dict[st
             {
                 "start": round(start, 3),
                 "end": round(end, 3),
+                "title": f"高光片段 {index + 1}",
+                "role": "节奏铺排",
                 "reason": f"该片段靠近 {chunk['id']}，模拟判断为信息密度较高、画面变化较清晰，适合作为高光候选。",
                 "source_chunk_id": chunk["id"],
             }
@@ -100,8 +102,14 @@ def generate_mock_plan(
             ],
             "target_duration": float(target_duration),
         },
+        "chunking_strategy": {
+            "method": "mock_uniform_timeline",
+            "description": "本地测试模式下按原视频时间轴均匀切分候选片段，仅用于验证端到端流程。",
+            "chunk_count": len(chunks),
+        },
         "chunks": chunks,
         "final_segments": segments,
+        "overall_rationale": "当前方案由 mock backend 生成，用于在没有真实模型配置时验证探测、校验、裁剪、拼接和报告输出链路。",
         "mock_metadata": {
             "prompt": prompt,
             "planner": "mock_llm_v1",

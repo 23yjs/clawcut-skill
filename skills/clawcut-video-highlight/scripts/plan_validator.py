@@ -33,7 +33,14 @@ def validate_plan(
         schema_errors = sorted(Draft202012Validator(schema).iter_errors(plan), key=lambda error: error.path)
         errors.extend(f"schema: {error.message}" for error in schema_errors)
     else:
-        for required_field in ("video_type", "highlight_definition", "chunks", "final_segments"):
+        for required_field in (
+            "video_type",
+            "highlight_definition",
+            "chunking_strategy",
+            "chunks",
+            "final_segments",
+            "overall_rationale",
+        ):
             if required_field not in plan:
                 errors.append(f"schema: 缺少必填字段 '{required_field}'")
     warnings: list[str] = []
@@ -54,6 +61,9 @@ def validate_plan(
 
     normalized_segments = []
     for index, segment in enumerate(segments):
+        for required_field in ("title", "role", "reason"):
+            if not str(segment.get(required_field, "")).strip():
+                errors.append(f"片段 {index} 缺少必填字段 {required_field}")
         try:
             start = float(segment["start"])
             end = float(segment["end"])

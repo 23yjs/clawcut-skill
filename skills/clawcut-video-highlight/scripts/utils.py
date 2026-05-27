@@ -27,6 +27,10 @@ def ensure_dir(path: Path) -> Path:
 
 
 def _parse_scalar(value: str) -> Any:
+    if value in ('""', "''"):
+        return ""
+    if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+        return value[1:-1]
     lowered = value.lower()
     if lowered == "true":
         return True
