@@ -1,0 +1,25 @@
+ffmpeg:
+  command: ffmpeg
+  probe_command: ffprobe
+  overwrite: true
+
+preview:
+  width: 640
+  video_bitrate: 700k
+  audio_bitrate: 64k
+
+validation:
+  min_segment_duration: 1.0
+  target_tolerance_seconds: 2.0
+  target_tolerance_ratio: 0.2
+  max_overlap_seconds: 0.25
+
+mock_llm:
+  max_segments: 5
+  chunk_count: 6
+
+render:
+  video_codec: libx264
+  audio_codec: aac
+  preset: veryfast
+  crf: 23
