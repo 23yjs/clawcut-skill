@@ -5,10 +5,14 @@
   "additionalProperties": true,
   "required": [
     "video_type",
+    "type_confidence",
+    "user_intent",
     "highlight_definition",
     "chunking_strategy",
     "chunks",
+    "chunk_reviews",
     "final_segments",
+    "self_check",
     "overall_rationale"
   ],
   "properties": {
@@ -16,25 +20,114 @@
       "type": "string",
       "minLength": 1
     },
+    "type_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "user_intent": {
+      "type": "string",
+      "minLength": 1
+    },
     "highlight_definition": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "goal",
+        "must_include",
+        "avoid",
+        "selection_logic",
+        "definition_source",
+        "scoring_rubric"
+      ],
+      "properties": {
+        "goal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "must_include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "avoid": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "selection_logic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definition_source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scoring_rubric": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "query_relevance",
+            "highlight_value",
+            "completeness",
+            "visual_audio_evidence"
+          ],
+          "properties": {
+            "query_relevance": {
+              "type": "string"
+            },
+            "highlight_value": {
+              "type": "string"
+            },
+            "completeness": {
+              "type": "string"
+            },
+            "visual_audio_evidence": {
+              "type": "string"
+            }
+          }
+        }
+      }
     },
     "chunking_strategy": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "method",
+        "reason"
+      ],
+      "properties": {
+        "method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     },
     "chunks": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "object",
+        "additionalProperties": true,
         "required": [
           "id",
           "start",
           "end",
-          "summary"
+          "title",
+          "summary",
+          "semantic_role",
+          "expected_highlight_value"
         ],
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "start": {
             "type": "number",
@@ -44,14 +137,105 @@
             "type": "number",
             "minimum": 0
           },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "semantic_role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected_highlight_value": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          }
+        }
+      }
+    },
+    "chunk_reviews": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "chunk_id",
+          "scores",
+          "overall_score",
+          "should_select",
+          "refined_start",
+          "refined_end",
+          "reason"
+        ],
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "minLength": 1
+          },
           "summary": {
             "type": "string"
           },
-          "highlight_score": {
-            "type": "number"
+          "scores": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+              "query_relevance",
+              "highlight_value",
+              "completeness",
+              "visual_audio_evidence"
+            ],
+            "properties": {
+              "query_relevance": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5
+              },
+              "highlight_value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5
+              },
+              "completeness": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5
+              },
+              "visual_audio_evidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5
+              }
+            }
+          },
+          "overall_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "should_select": {
+            "type": "boolean"
+          },
+          "refined_start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "refined_end": {
+            "type": "number",
+            "minimum": 0
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
           }
-        },
-        "additionalProperties": true
+        }
       }
     },
     "final_segments": {
@@ -59,11 +243,13 @@
       "minItems": 1,
       "items": {
         "type": "object",
+        "additionalProperties": true,
         "required": [
           "start",
           "end",
           "title",
           "role",
+          "source_chunk_id",
           "reason"
         ],
         "properties": {
@@ -83,15 +269,34 @@
             "type": "string",
             "minLength": 1
           },
-          "reason": {
+          "source_chunk_id": {
             "type": "string",
             "minLength": 1
           },
-          "source_chunk_id": {
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "self_check": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "pass",
+        "issues"
+      ],
+      "properties": {
+        "pass": {
+          "type": "boolean"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
             "type": "string"
           }
-        },
-        "additionalProperties": true
+        }
       }
     },
     "overall_rationale": {

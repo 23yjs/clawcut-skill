@@ -38,7 +38,9 @@ def validate_plan(
             "highlight_definition",
             "chunking_strategy",
             "chunks",
+            "chunk_reviews",
             "final_segments",
+            "self_check",
             "overall_rationale",
         ):
             if required_field not in plan:
@@ -55,13 +57,24 @@ def validate_plan(
     effective_target_duration = min(float(target_duration), float(video_duration))
     target_tolerance = max(tolerance_seconds, effective_target_duration * tolerance_ratio)
 
+    chunks = plan.get("chunks", [])
+    chunk_ids = {str(chunk.get("id")) for chunk in chunks if chunk.get("id") is not None}
+    chunk_reviews = plan.get("chunk_reviews", [])
+    reviews_by_chunk_id = {
+        str(review.get("chunk_id")): review
+        for review in chunk_reviews
+        if review.get("chunk_id") is not None
+    }
+    if isinstance(plan.get("self_check"), dict) and plan["self_check"].get("pass") is False:
+        warnings.append("模型 self_check 未通过：" + "；".join(plan["self_check"].get("issues", [])))
+
     segments = plan.get("final_segments", [])
     if not segments:
         errors.append("final_segments 不能为空")
 
     normalized_segments = []
     for index, segment in enumerate(segments):
-        for required_field in ("title", "role", "reason"):
+        for required_field in ("title", "role", "source_chunk_id", "reason"):
             if not str(segment.get(required_field, "")).strip():
                 errors.append(f"片段 {index} 缺少必填字段 {required_field}")
         try:
@@ -79,6 +92,23 @@ def validate_plan(
             errors.append(
                 f"片段 {index} 过短：{end - start:.3f} 秒 < {min_segment_duration:.3f} 秒"
             )
+        source_chunk_id = str(segment.get("source_chunk_id", ""))
+        if source_chunk_id and source_chunk_id not in chunk_ids:
+            errors.append(f"片段 {index} 的 source_chunk_id 不存在于 chunks：{source_chunk_id}")
+        review = reviews_by_chunk_id.get(source_chunk_id)
+        if review:
+            try:
+                refined_start = float(review["refined_start"])
+                refined_end = float(review["refined_end"])
+                if abs(start - refined_start) > 1.0 or abs(end - refined_end) > 1.0:
+                    warnings.append(
+                        f"片段 {index} 的 start/end 与 chunk_review refined_start/refined_end 差异较大："
+                        f"segment=({start:.3f},{end:.3f}), refined=({refined_start:.3f},{refined_end:.3f})"
+                    )
+            except (KeyError, TypeError, ValueError):
+                warnings.append(f"片段 {index} 对应的 chunk_review refined_start/refined_end 无法解析")
+        elif source_chunk_id:
+            warnings.append(f"片段 {index} 找不到对应 chunk_review：{source_chunk_id}")
         normalized_segments.append({"index": index, "start": start, "end": end})
 
     normalized_segments.sort(key=lambda item: item["start"])

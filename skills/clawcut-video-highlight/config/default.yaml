@@ -4,6 +4,7 @@ ffmpeg:
   overwrite: true
 
 preview:
+  enabled: true
   width: 640
   video_bitrate: 700k
   audio_bitrate: 64k
@@ -13,12 +14,18 @@ llm:
   model: doubao-seed-2-0-lite-260215
   api_key_env: ARK_API_KEY
   base_url: https://ark.cn-beijing.volces.com/api/v3
-  fallback_to_mock: false
+  fallback_to_mock: true
   temperature: 0.2
-  timeout_seconds: 120
   video_input_mode: auto
-  video_url: ""
   video_fps: 1
+  timeout_seconds: 120
+
+video_input_policy:
+  prefer_original_url: true
+  preview_upload_enabled: false
+  preview_when_duration_gt_sec: 600
+  preview_when_size_gt_mb: 300
+  note: "Current version does not upload preview to TOS automatically. If llm_video_url is provided, the model will use that URL directly."
 
 validation:
   min_segment_duration: 1.0

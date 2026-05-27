@@ -32,8 +32,10 @@ def _make_chunks(duration: float, chunk_count: int) -> list[dict[str, Any]]:
                 "id": f"chunk_{index + 1:02d}",
                 "start": start,
                 "end": end,
+                "title": f"候选片段 {index + 1}",
                 "summary": f"候选片段 {index + 1}：用于模拟大模型识别到的动作变化、画面转折或信息密度较高的内容。",
-                "highlight_score": round(0.9 - index * 0.07, 3),
+                "semantic_role": "模拟语义阶段",
+                "expected_highlight_value": "high" if index < 2 else "medium",
             }
         )
     return chunks
@@ -73,6 +75,33 @@ def _make_segments(duration: float, target_duration: float, chunks: list[dict[st
     return sorted(segments, key=lambda item: item["start"])
 
 
+def _make_chunk_reviews(chunks: list[dict[str, Any]], segments: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    selected_by_id = {segment["source_chunk_id"]: segment for segment in segments}
+    reviews = []
+    for chunk in chunks:
+        selected_segment = selected_by_id.get(chunk["id"])
+        should_select = selected_segment is not None
+        score = 16 if should_select else 10
+        reviews.append(
+            {
+                "chunk_id": chunk["id"],
+                "summary": f"{chunk['title']} 的 mock 评分复盘。",
+                "scores": {
+                    "query_relevance": 4 if should_select else 2,
+                    "highlight_value": 4 if should_select else 2,
+                    "completeness": 4,
+                    "visual_audio_evidence": 4 if should_select else 2,
+                },
+                "overall_score": score,
+                "should_select": should_select,
+                "refined_start": float(selected_segment["start"]) if selected_segment else float(chunk["start"]),
+                "refined_end": float(selected_segment["end"]) if selected_segment else float(chunk["end"]),
+                "reason": "mock backend 根据均匀时间轴和目标时长生成，用于验证三阶段 JSON、校验、裁剪和报告链路。",
+            }
+        )
+    return reviews
+
+
 def generate_mock_plan(
     video_info: dict[str, Any],
     instruction: str,
@@ -93,22 +122,41 @@ def generate_mock_plan(
     prompt = build_highlight_prompt(video_info, instruction, target_duration)
     return {
         "video_type": _video_type_from_instruction(instruction),
+        "type_confidence": 0.6,
+        "user_intent": instruction,
         "highlight_definition": {
             "goal": instruction,
-            "selection_rules": [
-                "优先选择动作变化明显、画面状态变化清楚或语义转折较强的片段。",
-                "所有时间戳必须保持在原始视频时间轴上，方便 ffmpeg 精确裁剪。",
-                "模型输出必须是结构化 JSON，供后续校验和渲染模块直接消费。",
+            "must_include": [
+                "用户指令中强调的重点内容",
+                "画面变化或信息密度较高的片段",
             ],
-            "target_duration": float(target_duration),
+            "avoid": [
+                "无信息空镜",
+                "重复片段",
+                "语义不完整片段",
+            ],
+            "selection_logic": "mock backend 不做真实视频理解，仅模拟三阶段剪辑规划结构。",
+            "definition_source": "user_instruction + video_content + model_inference",
+            "scoring_rubric": {
+                "query_relevance": "0-5: 是否符合用户指令",
+                "highlight_value": "0-5: 是否具有高光价值",
+                "completeness": "0-5: 是否保留完整事件、完整话语或完整动作",
+                "visual_audio_evidence": "0-5: 画面、声音、字幕或屏幕文字是否支持该片段是高光",
+            },
         },
         "chunking_strategy": {
-            "method": "mock_uniform_timeline",
-            "description": "本地测试模式下按原视频时间轴均匀切分候选片段，仅用于验证端到端流程。",
-            "chunk_count": len(chunks),
+            "method": "llm_guided_semantic_chunking",
+            "reason": "本地测试模式下按原视频时间轴均匀切分候选片段，仅用于验证端到端流程。",
         },
         "chunks": chunks,
+        "chunk_reviews": _make_chunk_reviews(chunks, segments),
         "final_segments": segments,
+        "self_check": {
+            "pass": True,
+            "issues": [
+                "mock backend 未进行真实视频理解，片段仅用于本地流程验证。",
+            ],
+        },
         "overall_rationale": "当前方案由 mock backend 生成，用于在没有真实模型配置时验证探测、校验、裁剪、拼接和报告输出链路。",
         "mock_metadata": {
             "prompt": prompt,
