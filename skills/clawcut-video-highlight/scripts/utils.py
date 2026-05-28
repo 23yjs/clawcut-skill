@@ -111,6 +111,8 @@ def run_command(args: list[str], logger: logging.Logger | None = None) -> subpro
         stdout = (exc.stdout or "").strip()
         details = stderr or stdout or str(exc)
         raise SkillError(f"外部命令执行失败：{' '.join(args)}\n{details}") from exc
+    if logger:
+        logger.info("外部命令执行完成：returncode=%s", completed.returncode)
     return completed
 
 

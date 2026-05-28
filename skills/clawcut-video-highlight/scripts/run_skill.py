@@ -63,8 +63,85 @@ def _output_paths(output_dir: Path, input_video: Path) -> dict[str, Path]:
         "preview": run_dir / "videos" / "preview.mp4",
         "segments": run_dir / "reports" / "segments.json",
         "report": run_dir / "reports" / "report.md",
+        "result_summary": run_dir / "reports" / "result_summary.json",
         "log": run_dir / "logs" / "run.log",
     }
+
+
+def _summary_segments(plan: dict[str, Any] | None) -> list[dict[str, Any]]:
+    if not plan:
+        return []
+    segments = []
+    for segment in plan.get("final_segments", []):
+        segments.append(
+            {
+                "start": segment.get("start"),
+                "end": segment.get("end"),
+                "title": segment.get("title", ""),
+                "role": segment.get("role", ""),
+                "reason": segment.get("reason", ""),
+            }
+        )
+    return segments
+
+
+def _write_success_summary(
+    summary_path: Path,
+    paths: dict[str, Path],
+    input_video: Path,
+    instruction: str,
+    target_duration: float,
+    plan: dict[str, Any],
+    validation: dict[str, Any],
+    preview_path: Path | None,
+) -> None:
+    write_json(
+        summary_path,
+        {
+            "status": "success",
+            "input_video": str(input_video),
+            "instruction": instruction,
+            "target_duration": float(target_duration),
+            "highlight_video": str(paths["highlight"]),
+            "segments_json": str(paths["segments"]),
+            "report_md": str(paths["report"]),
+            "run_log": str(paths["log"]),
+            "preview_video": str(preview_path) if preview_path else "",
+            "model_video_input_source": plan.get("model_video_input_source", ""),
+            "model_video_input_path_or_url": plan.get("model_video_input_path_or_url", ""),
+            "final_edit_source": plan.get("final_edit_source", str(input_video)),
+            "final_segments": _summary_segments(plan),
+            "warnings": validation.get("warnings", []),
+        },
+    )
+
+
+def _write_failure_summary(
+    summary_path: Path,
+    paths: dict[str, Path],
+    input_video: Path,
+    instruction: str,
+    target_duration: float,
+    error_type: str,
+    error_message: str,
+) -> None:
+    write_json(
+        summary_path,
+        {
+            "status": "failed",
+            "input_video": str(input_video),
+            "instruction": instruction,
+            "target_duration": float(target_duration),
+            "error_type": error_type,
+            "error_message": error_message,
+            "run_log": str(paths["log"]),
+            "partial_outputs": {
+                "preview_video": str(paths["preview"]) if paths["preview"].exists() else "",
+                "segments_json": str(paths["segments"]) if paths["segments"].exists() else "",
+                "report_md": str(paths["report"]) if paths["report"].exists() else "",
+            },
+        },
+    )
 
 
 def _write_report(
@@ -76,6 +153,9 @@ def _write_report(
     validation: dict[str, Any],
     highlight_path: Path,
     preview_path: Path | None,
+    segments_path: Path,
+    result_summary_path: Path,
+    run_log_path: Path,
 ) -> None:
     highlight_definition = plan.get("highlight_definition", {})
     chunking_strategy = plan.get("chunking_strategy", {})
@@ -197,6 +277,9 @@ def _write_report(
             "",
             f"- 高光视频：`{highlight_path}`",
             f"- 预览视频：`{preview_path if preview_path else '未生成'}`",
+            f"- 结构化方案：`{segments_path}`",
+            f"- 结果摘要：`{result_summary_path}`",
+            f"- 运行日志：`{run_log_path}`",
             f"- 方案校验通过：{validation['ok']}",
         ]
     )
@@ -206,10 +289,11 @@ def _write_report(
 def run_skill(
     input_video: Path,
     instruction: str,
-    target_duration: float,
-    output_dir: Path,
+    target_duration: float = 30.0,
+    output_dir: Path = Path("outputs"),
     llm_video_url: str | None = None,
     llm_backend: str | None = None,
+    config_path: Path | None = None,
 ) -> dict[str, Any]:
     paths = _output_paths(output_dir, input_video)
     for key in ("videos", "reports", "logs", "work"):
@@ -217,11 +301,27 @@ def run_skill(
 
     logger = setup_logger(paths["log"])
     logger.info("开始运行 ClawCut 视频高光剪辑 Skill")
+    logger.info("启动参数：input_video=%s", input_video)
+    logger.info("启动参数：instruction=%s", instruction)
+    logger.info("启动参数：target_duration=%.3f", target_duration)
+    logger.info("启动参数：output_dir=%s", output_dir)
+    logger.info("启动参数：llm_backend=%s", llm_backend or "config/default.yaml")
+    logger.info("启动参数：llm_video_url_present=%s", bool(llm_video_url))
+    logger.info("启动参数：config=%s", config_path or "默认配置")
     logger.info("输入视频：%s", input_video)
     logger.info("本次输出目录：%s", paths["run"])
     logger.info("目标时长：%.3f 秒", target_duration)
 
-    config = load_config()
+    if not str(instruction or "").strip():
+        raise SkillError("instruction 不能为空，请提供明确的剪辑目标")
+    if not input_video.exists():
+        raise SkillError(f"input_video 不存在：{input_video}")
+    if not input_video.is_file():
+        raise SkillError(f"input_video 不是文件：{input_video}")
+    if float(target_duration) <= 0:
+        raise SkillError("target_duration 必须为正数")
+
+    config = load_config(config_path)
     if llm_backend:
         config.setdefault("llm", {})
         config["llm"]["backend"] = llm_backend
@@ -252,9 +352,14 @@ def run_skill(
             raise SkillError("未提供 --llm_video_url，且 preview.enabled=false，无法准备模型视频输入")
         model_video_input_source = "local_preview"
         model_video_input_path_or_url = str(preview_path)
+    logger.info("模型输入来源：%s", model_video_input_source)
+    logger.info("模型输入路径或 URL：%s", _mask_url(model_video_input_path_or_url))
+    logger.info("最终裁剪源：%s", input_video)
+    logger.info("使用的 LLM backend：%s", config.get("llm", {}).get("backend", "mock"))
 
     client = create_llm_client(config, logger=logger)
     plan = client.generate_edit_plan(str(preview_path or ""), instruction, target_duration, video_info, config)
+    logger.info("LLM 输出解析完成")
     plan = _attach_pipeline_metadata(
         plan,
         model_video_input_source,
@@ -281,6 +386,8 @@ def run_skill(
         else:
             raise
     logger.info("剪辑方案校验完成：%s", validation)
+    if validation.get("warnings"):
+        logger.warning("validator warnings：%s", validation["warnings"])
 
     write_json(paths["segments"], plan)
     logger.info("结构化片段方案已写入：%s", paths["segments"])
@@ -304,14 +411,29 @@ def run_skill(
         validation=validation,
         highlight_path=paths["highlight"],
         preview_path=preview_path,
+        segments_path=paths["segments"],
+        result_summary_path=paths["result_summary"],
+        run_log_path=paths["log"],
     )
     logger.info("中文报告已写入：%s", paths["report"])
+    _write_success_summary(
+        paths["result_summary"],
+        paths,
+        input_video,
+        instruction,
+        target_duration,
+        plan,
+        validation,
+        preview_path,
+    )
+    logger.info("结果摘要已写入：%s", paths["result_summary"])
     logger.info("Skill 运行完成")
 
     return {
         "highlight": str(paths["highlight"]),
         "segments": str(paths["segments"]),
         "report": str(paths["report"]),
+        "result_summary": str(paths["result_summary"]),
         "log": str(paths["log"]),
         "output_dir": str(paths["run"]),
         "validation": validation,
@@ -322,8 +444,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="运行 ClawCut 视频高光剪辑 Skill。")
     parser.add_argument("--input_video", type=Path, required=True)
     parser.add_argument("--instruction", required=True)
-    parser.add_argument("--target_duration", type=float, required=True)
-    parser.add_argument("--output_dir", type=Path, required=True)
+    parser.add_argument("--target_duration", type=float, default=30.0)
+    parser.add_argument("--output_dir", type=Path, default=Path("outputs"))
     parser.add_argument(
         "--llm_backend",
         choices=["ark", "mock"],
@@ -335,11 +457,18 @@ def main() -> int:
         default=None,
         help="可选：提供给大模型的视频 URL，例如 TOS 公开或签名 URL。未提供时使用本地 preview 的 data URL。",
     )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=None,
+        help="可选：指定配置文件路径。未提供时使用 Skill 内置 config/default.yaml。",
+    )
     args = parser.parse_args()
 
     output_dir = args.output_dir
     paths = _output_paths(output_dir, args.input_video)
-    ensure_dir(paths["logs"])
+    for key in ("reports", "logs"):
+        ensure_dir(paths[key])
     logger = setup_logger(paths["log"])
 
     try:
@@ -350,13 +479,39 @@ def main() -> int:
             output_dir,
             llm_video_url=args.llm_video_url,
             llm_backend=args.llm_backend,
+            config_path=args.config,
         )
     except SkillError as exc:
         logger.error("%s", exc)
+        logger.error(traceback.format_exc())
+        _write_failure_summary(
+            paths["result_summary"],
+            paths,
+            args.input_video,
+            args.instruction,
+            args.target_duration,
+            exc.__class__.__name__,
+            str(exc),
+        )
+        print(f"ClawCut 视频高光剪辑 Skill 运行失败：{exc}")
+        print(f"结果摘要：{paths['result_summary']}")
+        print(f"运行日志：{paths['log']}")
         return 1
     except Exception as exc:
         logger.error("发生未预期异常：%s", exc)
         logger.error(traceback.format_exc())
+        _write_failure_summary(
+            paths["result_summary"],
+            paths,
+            args.input_video,
+            args.instruction,
+            args.target_duration,
+            exc.__class__.__name__,
+            str(exc),
+        )
+        print(f"ClawCut 视频高光剪辑 Skill 运行失败：{exc}")
+        print(f"结果摘要：{paths['result_summary']}")
+        print(f"运行日志：{paths['log']}")
         return 1
 
     print("ClawCut 视频高光剪辑 Skill 运行完成。")
@@ -364,6 +519,7 @@ def main() -> int:
     print(f"高光视频：{result['highlight']}")
     print(f"片段方案：{result['segments']}")
     print(f"中文报告：{result['report']}")
+    print(f"结果摘要：{result['result_summary']}")
     print(f"运行日志：{result['log']}")
     return 0
 

@@ -1,102 +1,158 @@
 ---
 name: clawcut-video-highlight
-description: 面向 OpenClaw Skill 的 LLM-centric 视频高光剪辑流程；支持 Ark 真实视频多模态模型和 mock fallback，由大模型完成三阶段剪辑规划，ffmpeg 基于原始 input_video 裁剪拼接。
+description: 用于从输入视频中生成指令引导的视频高光剪辑。Skill 由大模型规划高光片段，并由 ffmpeg 基于原始视频完成裁剪和拼接。
 ---
 
-# ClawCut 视频高光剪辑
+# ClawCut 视频高光剪辑 Skill
 
-当用户希望从原始视频中剪出短视频高光，并采用“大模型负责理解与规划，ffmpeg 负责精确裁剪与拼接”的流程时，使用这个 Skill。
+这份文档是给 OpenClaw/Agent 使用的调用协议。Agent 只负责理解用户需求、抽取参数、调用 `scripts/run_skill.py`，不要自己生成剪辑时间戳，也不要绕过主入口直接调用 `ffmpeg`。
 
-## 工作流程
+## 什么时候使用
 
-1. 使用 `scripts/video_probe.py` 探测原始视频的时长、分辨率、帧率和音频信息。
-2. 按配置使用 `scripts/make_preview.py` 生成低码率连续 preview，保持原始时间轴不变。
-3. 使用 `scripts/llm_client.py` 根据配置或命令行选择 `ark` 或 `mock` backend。
-4. 如果传入 `--llm_video_url`，优先把该 URL 作为模型输入；当前版本不自动上传 preview 到 TOS。
-5. 模型单次调用内完成三阶段判断：视频理解与任务化高光定义、语义分块与片段评分、全局剪辑规划与自检。
-6. 使用 `scripts/plan_validator.py` 校验 `final_segments` 的字段、时间戳、时长和重叠情况。
-7. 使用 `scripts/ffmpeg_editor.py` 始终从原始 `input_video` 裁剪并拼接 `highlight.mp4`。
-8. 输出 `segments.json`、`report.md` 和 `run.log`。
+当用户有以下需求时，使用本 Skill：
 
-## LLM Backend
+- 想从视频中剪出高光片段。
+- 想根据自然语言指令生成短视频剪辑。
+- 想提取商品卖点、发布会重点、课程精华、体育精彩瞬间、游戏高光、Vlog 精彩片段等。
+- 提供了本地视频路径或可访问的视频 URL，并希望生成 `highlight.mp4`。
 
-当前支持：
+## 什么时候不要使用
 
-- `ark`：真实视频多模态模型。
-- `mock`：本地测试和 fallback。
+以下任务不应使用本 Skill：
 
-开发阶段建议保留：
+- 仅压缩视频。
+- 仅转换视频格式。
+- 仅提取音频。
+- 仅添加字幕。
+- 仅做图片编辑。
+- 不需要大模型判断高光的普通 `ffmpeg` 操作。
 
-```yaml
-llm:
-  backend: ark
-  fallback_to_mock: true
-```
+## 必需输入
 
-这样没有 API Key 或 Ark 调用失败时仍可本地跑通。若要强制验证真实模型路径，可临时设置 `fallback_to_mock: false`。
+Agent 必须从用户请求中提取：
 
-## 视频输入策略
+- `input_video`：原始视频的本地路径。
+- `instruction`：用户的剪辑目标，保留用户原始意图。
+- `target_duration`：目标输出时长，单位秒；如果用户没有指定，默认 `30` 秒。
+- `output_dir`：输出目录；如果用户没有指定，默认 `outputs`。
 
-- 默认优先使用用户提供的 `--llm_video_url` 作为模型输入。
-- 该 URL 可以是原视频 URL，也可以是用户自己上传的 preview URL；当前版本不自动判断 URL 指向哪种视频。
-- 如果没有提供 URL，则使用本地 `preview.mp4` 的 data URL 方式，前提是模型接口支持。
-- `preview.mp4` 是低码率连续视频，与原视频保持相同时间轴。
-- 最终 `highlight.mp4` 始终基于 `input_video` 原视频裁剪生成。
-- `video_fps` 当前默认 1，后续可针对体育、游戏、动作视频做更高 fps 或局部二次理解。
+## 可选输入
 
-## 三阶段模型判断
+- `llm_backend`：`ark` 或 `mock`。如果不传，则读取 `config/default.yaml`。
+- `llm_video_url`：提供给大模型理解视频的公开 URL 或签名 URL。如果用户提供，应直接传给 `run_skill.py`。
+- `config`：配置文件路径。如果不传，则使用 Skill 内置的 `config/default.yaml`。
+- `target_duration`：如果用户没有明确说明时长，使用默认 `30` 秒。
 
-阶段 1：视频理解与任务化高光定义
-- 如果用户指令具体，优先服从用户指令。
-- 如果用户指令泛化，根据视频类型和视频内容自动定义高光。
-- 如果类型未知，自行总结高光标准，不硬套模板。
+## 参数抽取规则
 
-阶段 2：语义分块与片段评分
-- 大模型根据高光定义对视频进行语义分块。
-- 对每个 chunk 进行评分、解释和边界微调。
+用户说：
 
-阶段 3：全局剪辑规划与自检
-- 选择 `final_segments`。
-- 控制总时长。
-- 避免重复、无关、不完整片段。
-- 生成 `self_check`。
+> 把 data/input/demo.mp4 剪成 15 秒高光，突出商品外观和核心卖点
 
-## 运行示例
+应抽取为：
 
-mock 模式：
+- `input_video = data/input/demo.mp4`
+- `instruction = 突出商品外观和核心卖点`
+- `target_duration = 15`
+- `output_dir = outputs`
+
+如果用户只说“剪出高光”，但没有说明目标时长：
+
+- 使用 `target_duration = 30`。
+
+如果用户没有提供 `input_video`：
+
+- 不要执行 Skill。
+- 提示用户补充本地视频路径，或补充可访问的视频 URL。
+
+## 命令模板
+
+基础调用：
 
 ```bash
 python skills/clawcut-video-highlight/scripts/run_skill.py \
-  --input_video data/input/demo.mp4 \
-  --instruction "剪出 15 秒视频高光，突出商品外观和核心卖点" \
-  --target_duration 15 \
-  --output_dir outputs \
-  --llm_backend mock
+  --input_video "<input_video>" \
+  --instruction "<instruction>" \
+  --target_duration <target_duration> \
+  --output_dir "<output_dir>"
 ```
 
-ark + 原视频 URL 模式：
+指定 backend：
 
 ```bash
-export ARK_API_KEY=xxx
 python skills/clawcut-video-highlight/scripts/run_skill.py \
-  --input_video data/input/demo.mp4 \
-  --instruction "剪出 30 秒高光，突出商品外观、核心卖点和使用效果" \
-  --target_duration 30 \
-  --output_dir outputs \
+  --input_video "<input_video>" \
+  --instruction "<instruction>" \
+  --target_duration <target_duration> \
+  --output_dir "<output_dir>" \
+  --llm_backend "<ark_or_mock>"
+```
+
+使用大模型视频 URL：
+
+```bash
+python skills/clawcut-video-highlight/scripts/run_skill.py \
+  --input_video "<input_video>" \
+  --instruction "<instruction>" \
+  --target_duration <target_duration> \
+  --output_dir "<output_dir>" \
   --llm_backend ark \
-  --llm_video_url "https://your-public-video-url/demo.mp4"
+  --llm_video_url "<public_video_url>"
 ```
 
-预期输出会按输入视频名自动创建子目录：
+使用自定义配置：
 
-- `outputs/<video_name>/videos/highlight.mp4`
-- `outputs/<video_name>/videos/preview.mp4`
-- `outputs/<video_name>/reports/segments.json`
-- `outputs/<video_name>/reports/report.md`
-- `outputs/<video_name>/logs/run.log`
+```bash
+python skills/clawcut-video-highlight/scripts/run_skill.py \
+  --input_video "<input_video>" \
+  --instruction "<instruction>" \
+  --target_duration <target_duration> \
+  --output_dir "<output_dir>" \
+  --config "<config_path>"
+```
 
-## 注意事项
+## 重要执行原则
 
-- 模型输出必须是合法 JSON。
-- 外部命令必须使用 `subprocess` 的 list 参数调用，不能拼接 shell 字符串。
-- 当前版本不引入 ASR、抽帧、PySceneDetect、TOS SDK，也不实现 preview 自动上传 TOS。
+- OpenClaw/Agent 不应自行生成 `final_segments`。
+- OpenClaw/Agent 不应绕过 `run_skill.py` 直接调用 `ffmpeg` 做高光剪辑。
+- OpenClaw/Agent 只负责抽取参数并调用 `run_skill.py`。
+- 高光判断由 `run_skill.py` 内部通过 `llm_prompts.py` 和 `llm_client.py` 完成。
+- 最终出片始终基于原始 `input_video` 裁剪。
+- `preview.mp4` 只用于模型理解或本地调试，不作为最终出片源。
+- 如果传入 `--llm_video_url`，模型会直接使用该 URL；当前版本不会自动上传 preview 到 TOS。
+
+## 输出文件
+
+执行成功后应查看：
+
+- `outputs/<video_name>/videos/highlight.mp4`：最终高光视频。
+- `outputs/<video_name>/reports/segments.json`：完整结构化剪辑方案。
+- `outputs/<video_name>/reports/report.md`：面向用户和答辩展示的中文剪辑报告。
+- `outputs/<video_name>/logs/run.log`：运行日志。
+- `outputs/<video_name>/reports/result_summary.json`：供 OpenClaw/Agent 快速读取状态的机器可读摘要。
+
+## 如何回复用户
+
+执行完成后，Agent 应向用户返回：
+
+- `highlight.mp4` 路径。
+- `report.md` 路径。
+- `final_segments` 的时间戳摘要。
+- 如果失败，返回失败原因和 `run.log` 路径。优先读取 `result_summary.json` 判断状态。
+
+## 失败处理
+
+- `input_video` 不存在：提示用户提供正确的视频路径。
+- `ffmpeg` 或 `ffprobe` 不存在：提示用户安装系统依赖。
+- `ARK_API_KEY` 缺失：如果 `fallback_to_mock=true`，Skill 会回退到 mock；否则提示用户配置 API Key。
+- 模型返回非法 JSON：保留 `run.log` 和错误细节，提示模型输出格式错误。
+- `final_segments` 校验失败：提示模型计划中的时间戳非法或不可执行。
+- `ffmpeg` 裁剪失败：提示用户查看 `run.log`。
+
+## 安全约束
+
+- 不要拼接 shell 字符串。
+- 不要执行用户提供的任意命令。
+- 只处理明确给出的本地视频路径或视频 URL。
+- 输出只能写入 `output_dir`。
+- API Key 通过环境变量读取，不写入仓库。
