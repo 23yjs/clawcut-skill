@@ -33,7 +33,6 @@ Agent 必须从用户请求中提取：
 
 - `input_video`：原始视频的本地路径。
 - `instruction`：用户的剪辑目标，保留用户原始意图。
-- `target_duration`：目标输出时长，单位秒；如果用户没有指定，默认 `30` 秒。
 - `output_dir`：输出目录；如果用户没有指定，默认 `outputs`。
 
 ## 可选输入
@@ -41,7 +40,21 @@ Agent 必须从用户请求中提取：
 - `llm_backend`：`ark` 或 `mock`。如果不传，则读取 `config/default.yaml`。
 - `llm_video_url`：提供给大模型理解视频的公开 URL 或签名 URL。如果用户提供，应直接传给 `run_skill.py`。
 - `config`：配置文件路径。如果不传，则使用 Skill 内置的 `config/default.yaml`。
-- `target_duration`：如果用户没有明确说明时长，使用默认 `30` 秒。
+- `target_duration`：目标输出时长，单位秒。如果用户明确指定时长，Agent 应传入 `--target_duration`；如果用户没有明确时长，不要替用户猜固定 30 秒，直接省略该参数。
+
+## 目标时长策略
+
+- 如果用户明确指定目标时长，Skill 会严格使用用户指定时长。
+- 如果用户未指定目标时长，Skill 会在 `ffprobe` 得到原视频时长后自动推荐默认时长：
+
+```text
+recommended_duration = min(video_duration, min(max(video_duration × 0.15, 15), 60))
+```
+
+- 大模型可以在合理范围内选择 `selected_target_duration`。
+- 如果用户指定时长较短但视频中候选高光较多，Skill 会优先选择最高价值片段，并在报告中列出 `excluded_highlights` 说明未选原因。
+- OpenClaw/Agent 如果能从用户指令中抽取明确时长，就传 `--target_duration`。
+- OpenClaw/Agent 如果无法抽取明确时长，就不要传 `--target_duration`，让 `run_skill.py` 自动处理。
 
 ## 参数抽取规则
 
@@ -58,7 +71,8 @@ Agent 必须从用户请求中提取：
 
 如果用户只说“剪出高光”，但没有说明目标时长：
 
-- 使用 `target_duration = 30`。
+- 不传 `--target_duration`。
+- 由 `run_skill.py` 根据原视频时长计算 `recommended_duration`，再让模型选择 `selected_target_duration`。
 
 如果用户没有提供 `input_video`：
 
@@ -73,8 +87,13 @@ Agent 必须从用户请求中提取：
 python skills/clawcut-video-highlight/scripts/run_skill.py \
   --input_video "<input_video>" \
   --instruction "<instruction>" \
-  --target_duration <target_duration> \
   --output_dir "<output_dir>"
+```
+
+如果用户明确指定时长，再加入：
+
+```bash
+  --target_duration <target_duration>
 ```
 
 指定 backend：
@@ -83,7 +102,6 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
 python skills/clawcut-video-highlight/scripts/run_skill.py \
   --input_video "<input_video>" \
   --instruction "<instruction>" \
-  --target_duration <target_duration> \
   --output_dir "<output_dir>" \
   --llm_backend "<ark_or_mock>"
 ```
@@ -94,7 +112,6 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
 python skills/clawcut-video-highlight/scripts/run_skill.py \
   --input_video "<input_video>" \
   --instruction "<instruction>" \
-  --target_duration <target_duration> \
   --output_dir "<output_dir>" \
   --llm_backend ark \
   --llm_video_url "<public_video_url>"
@@ -106,7 +123,6 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
 python skills/clawcut-video-highlight/scripts/run_skill.py \
   --input_video "<input_video>" \
   --instruction "<instruction>" \
-  --target_duration <target_duration> \
   --output_dir "<output_dir>" \
   --config "<config_path>"
 ```
@@ -117,6 +133,7 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
 - OpenClaw/Agent 不应绕过 `run_skill.py` 直接调用 `ffmpeg` 做高光剪辑。
 - OpenClaw/Agent 只负责抽取参数并调用 `run_skill.py`。
 - 高光判断由 `run_skill.py` 内部通过 `llm_prompts.py` 和 `llm_client.py` 完成。
+- OpenClaw/Agent 不要在用户未指定时长时自行猜一个固定 30 秒。
 - 最终出片始终基于原始 `input_video` 裁剪。
 - `preview.mp4` 只用于模型理解或本地调试，不作为最终出片源。
 - 如果传入 `--llm_video_url`，模型会直接使用该 URL；当前版本不会自动上传 preview 到 TOS。
@@ -130,6 +147,11 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
 - `outputs/<video_name>/reports/report.md`：面向用户和答辩展示的中文剪辑报告。
 - `outputs/<video_name>/logs/run.log`：运行日志。
 - `outputs/<video_name>/reports/result_summary.json`：供 OpenClaw/Agent 快速读取状态的机器可读摘要。
+
+`segments.json` 和 `result_summary.json` 中会包含：
+
+- `duration_policy`：用户是否指定时长、系统推荐时长、模型选择时长和允许范围。
+- `excluded_highlights`：被识别为候选高光但因时长限制、重复或优先级较低而未进入最终剪辑的片段。
 
 ## 如何回复用户
 

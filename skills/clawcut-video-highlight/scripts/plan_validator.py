@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 from pathlib import Path
 from typing import Any
@@ -20,26 +21,96 @@ def _segment_duration(segment: dict[str, Any]) -> float:
     return float(segment["end"]) - float(segment["start"])
 
 
+def _resolve_selected_target_duration(
+    plan: dict[str, Any],
+    target_duration: float | None,
+    video_duration: float,
+    config: dict,
+    errors: list[str],
+) -> tuple[float, dict[str, Any]]:
+    duration_policy = plan.get("duration_policy")
+    if isinstance(duration_policy, dict):
+        try:
+            selected_target_duration = float(duration_policy["selected_target_duration"])
+        except (KeyError, TypeError, ValueError):
+            selected_target_duration = float(target_duration or video_duration)
+            errors.append("duration_policy.selected_target_duration 无效")
+        try:
+            allowed_min = float(duration_policy["allowed_min_duration"])
+            allowed_max = float(duration_policy["allowed_max_duration"])
+            if allowed_min > allowed_max:
+                errors.append("duration_policy.allowed_min_duration 不能大于 allowed_max_duration")
+            if selected_target_duration < allowed_min or selected_target_duration > allowed_max:
+                errors.append(
+                    "duration_policy.selected_target_duration 超出 allowed_min_duration/allowed_max_duration 范围"
+                )
+        except (KeyError, TypeError, ValueError):
+            errors.append("duration_policy.allowed_min_duration 或 allowed_max_duration 无效")
+        return selected_target_duration, duration_policy
+
+    configured_policy = config.get("duration_policy")
+    if isinstance(configured_policy, dict) and configured_policy.get("selected_target_duration") is not None:
+        return float(configured_policy["selected_target_duration"]), configured_policy
+    if target_duration is not None:
+        return float(target_duration), {}
+    return min(float(video_duration), 30.0), {}
+
+
+def _compat_schema_plan(
+    plan: dict[str, Any],
+    target_duration: float | None,
+    video_duration: float,
+    config: dict,
+) -> dict[str, Any]:
+    schema_plan = copy.deepcopy(plan)
+    if "duration_policy" not in schema_plan:
+        configured_policy = config.get("duration_policy")
+        if isinstance(configured_policy, dict):
+            schema_plan["duration_policy"] = configured_policy
+        else:
+            fallback_target = float(target_duration if target_duration is not None else min(video_duration, 30.0))
+            schema_plan["duration_policy"] = {
+                "user_specified_duration": target_duration is not None,
+                "user_target_duration": float(target_duration) if target_duration is not None else None,
+                "recommended_duration": None,
+                "selected_target_duration": fallback_target,
+                "allowed_min_duration": fallback_target,
+                "allowed_max_duration": fallback_target,
+                "duration_policy_reason": "兼容旧版 plan：原始 JSON 缺少 duration_policy。",
+            }
+    schema_plan.setdefault("excluded_highlights", [])
+    return schema_plan
+
+
+def _target_tolerance(selected_target_duration: float) -> float:
+    if selected_target_duration <= 30:
+        return 3.0
+    return selected_target_duration * 0.1
+
+
 def validate_plan(
     plan: dict[str, Any],
     video_duration: float,
-    target_duration: float,
+    target_duration: float | None,
     config: dict,
     schema_path: Path = SCHEMA_PATH,
 ) -> dict[str, Any]:
     errors: list[str] = []
     if Draft202012Validator is not None:
         schema = read_json(schema_path)
-        schema_errors = sorted(Draft202012Validator(schema).iter_errors(plan), key=lambda error: error.path)
+        schema_plan = _compat_schema_plan(plan, target_duration, video_duration, config)
+        schema_errors = sorted(Draft202012Validator(schema).iter_errors(schema_plan), key=lambda error: error.path)
         errors.extend(f"schema: {error.message}" for error in schema_errors)
     else:
         for required_field in (
             "video_type",
+            "duration_policy",
             "highlight_definition",
             "chunking_strategy",
             "chunks",
             "chunk_reviews",
             "final_segments",
+            "excluded_highlights",
             "self_check",
             "overall_rationale",
         ):
@@ -49,13 +120,18 @@ def validate_plan(
 
     validation_config = config.get("validation", {})
     min_segment_duration = float(validation_config.get("min_segment_duration", 1.0))
-    tolerance_seconds = float(validation_config.get("target_tolerance_seconds", 2.0))
-    tolerance_ratio = float(validation_config.get("target_tolerance_ratio", 0.2))
     max_overlap = float(validation_config.get("max_overlap_seconds", 0.25))
-    if float(target_duration) <= 0:
+    if target_duration is not None and float(target_duration) <= 0:
         errors.append("target_duration 必须为正数")
-    effective_target_duration = min(float(target_duration), float(video_duration))
-    target_tolerance = max(tolerance_seconds, effective_target_duration * tolerance_ratio)
+    selected_target_duration, duration_policy = _resolve_selected_target_duration(
+        plan,
+        target_duration,
+        video_duration,
+        config,
+        errors,
+    )
+    effective_target_duration = selected_target_duration
+    target_tolerance = _target_tolerance(effective_target_duration)
 
     chunks = plan.get("chunks", [])
     chunk_ids = {str(chunk.get("id")) for chunk in chunks if chunk.get("id") is not None}
@@ -119,6 +195,33 @@ def validate_plan(
                 f"片段 {previous['index']} 和片段 {current['index']} 重叠过多：{overlap:.3f} 秒"
             )
 
+    excluded_highlights = plan.get("excluded_highlights", [])
+    if not isinstance(excluded_highlights, list):
+        errors.append("excluded_highlights 必须是数组")
+        excluded_highlights = []
+    for index, highlight in enumerate(excluded_highlights):
+        if not isinstance(highlight, dict):
+            errors.append(f"excluded_highlights {index} 必须是 object")
+            continue
+        try:
+            start = float(highlight["start"])
+            end = float(highlight["end"])
+        except (KeyError, TypeError, ValueError):
+            errors.append(f"excluded_highlights {index} 的 start/end 无效")
+            continue
+        if start >= end:
+            warnings.append(f"excluded_highlights {index} 未满足 start < end，已仅作为解释信息保留")
+        if start < 0 or end > video_duration:
+            warnings.append(f"excluded_highlights {index} 超出视频时长范围，已仅作为解释信息保留")
+        for segment in normalized_segments:
+            overlap = min(end, segment["end"]) - max(start, segment["start"])
+            if overlap > max_overlap:
+                warnings.append(
+                    f"excluded_highlights {index} 与 final_segments 片段 {segment['index']} 有重叠，"
+                    "请确认它不是实际裁剪片段"
+                )
+                break
+
     total_duration = sum(max(0.0, _segment_duration(segment)) for segment in segments)
     duration_delta = abs(total_duration - effective_target_duration)
     if duration_delta > target_tolerance:
@@ -127,21 +230,22 @@ def validate_plan(
             f"{effective_target_duration:.3f} 秒；容忍误差为 {target_tolerance:.3f} 秒"
         )
 
-    if float(target_duration) > video_duration:
-        warnings.append("target_duration 大于原视频时长；mock 规划器已自动按原视频时长降级处理")
+    if effective_target_duration > video_duration:
+        warnings.append("selected_target_duration 大于原视频时长，最终剪辑可能无法达到该目标")
 
     return {
         "ok": not errors,
         "errors": errors,
         "warnings": warnings,
         "total_duration": round(total_duration, 3),
-        "target_duration": float(target_duration),
+        "target_duration": float(target_duration) if target_duration is not None else None,
+        "selected_target_duration": round(selected_target_duration, 3),
         "effective_target_duration": round(effective_target_duration, 3),
         "duration_delta": round(duration_delta, 3),
     }
 
 
-def assert_valid_plan(plan: dict[str, Any], video_duration: float, target_duration: float, config: dict) -> dict[str, Any]:
+def assert_valid_plan(plan: dict[str, Any], video_duration: float, target_duration: float | None, config: dict) -> dict[str, Any]:
     result = validate_plan(plan, video_duration, target_duration, config)
     if not result["ok"]:
         raise SkillError("剪辑方案校验失败：\n" + "\n".join(result["errors"]))
@@ -152,7 +256,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="校验结构化剪辑方案。")
     parser.add_argument("plan_json", type=Path)
     parser.add_argument("--video_duration", type=float, required=True)
-    parser.add_argument("--target_duration", type=float, required=True)
+    parser.add_argument("--target_duration", type=float, default=None)
     parser.add_argument("--config", type=Path, default=None)
     args = parser.parse_args()
 

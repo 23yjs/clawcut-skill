@@ -7,14 +7,21 @@ from typing import Any
 SYSTEM_PROMPT = """你是一名视频高光剪辑策划助手。你只能返回合法 JSON，不能输出 Markdown、解释文字或代码块。"""
 
 
-def build_highlight_prompt(video_info: dict[str, Any], instruction: str, target_duration: float) -> dict[str, Any]:
+def build_highlight_prompt(
+    video_info: dict[str, Any],
+    instruction: str,
+    target_duration: float,
+    duration_policy: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     return {
         "system": SYSTEM_PROMPT,
         "task": "按三阶段逻辑生成短视频高光剪辑方案。",
         "instruction": instruction,
         "target_duration": target_duration,
+        "duration_policy": duration_policy or {},
         "video_info": video_info,
         "required_json_fields": [
+            "duration_policy",
             "video_type",
             "type_confidence",
             "user_intent",
@@ -23,6 +30,7 @@ def build_highlight_prompt(video_info: dict[str, Any], instruction: str, target_
             "chunks",
             "chunk_reviews",
             "final_segments",
+            "excluded_highlights",
             "self_check",
             "overall_rationale",
         ],
@@ -33,8 +41,36 @@ def build_strict_json_edit_prompt(
     video_info: dict[str, Any],
     instruction: str,
     target_duration: float,
+    duration_policy: dict[str, Any] | None = None,
 ) -> str:
     video_info_json = json.dumps(video_info, ensure_ascii=False, indent=2)
+    duration_policy = duration_policy or {
+        "user_specified_duration": True,
+        "user_target_duration": target_duration,
+        "recommended_duration": None,
+        "selected_target_duration": target_duration,
+        "allowed_min_duration": target_duration,
+        "allowed_max_duration": target_duration,
+        "duration_policy_reason": "兼容旧调用：未提供 duration_policy，按 target_duration 处理。",
+    }
+    duration_policy_json = json.dumps(duration_policy, ensure_ascii=False, indent=2)
+    if duration_policy.get("user_specified_duration"):
+        duration_instructions = f"""
+用户已经明确指定目标时长为 {float(duration_policy["selected_target_duration"]):.3f} 秒。
+你必须严格围绕该时长生成 final_segments。
+不要为了覆盖更多高光而明显超过目标时长。
+如果候选高光很多，请优先选择最高价值、最符合用户指令、最不重复的片段。
+未被选入的高光请放入 excluded_highlights，并说明 excluded_reason。
+""".strip()
+    else:
+        duration_instructions = f"""
+用户没有明确指定目标时长。
+系统根据视频总时长给出的推荐时长为 {float(duration_policy["recommended_duration"]):.3f} 秒。
+你可以根据视频内容密度和高光数量选择 selected_target_duration。
+selected_target_duration 必须在 {float(duration_policy["allowed_min_duration"]):.3f} 到 {float(duration_policy["allowed_max_duration"]):.3f} 秒之间。
+不要为了覆盖所有内容而生成过长视频。
+如果你认为推荐时长合适，直接使用 recommended_duration。
+""".strip()
     return f"""
 你将看到一个用于视频理解的输入视频。该输入可能是：
 - 用户提供的原始视频 URL；
@@ -48,6 +84,12 @@ def build_strict_json_edit_prompt(
 
 目标总时长：
 {target_duration:.3f} 秒
+
+目标时长策略：
+{duration_policy_json}
+
+时长规则：
+{duration_instructions}
 
 原始视频信息：
 {video_info_json}
@@ -71,10 +113,11 @@ def build_strict_json_edit_prompt(
 
 阶段 3：全局剪辑规划与自检
 - 选择 final_segments。
-- 控制总时长尽量接近 target_duration。
+- 控制总时长尽量接近 selected_target_duration。
 - 检查是否覆盖用户要求的重点。
 - 避免重复、无关、过长铺垫、空镜、语义不完整片段。
 - 避免切在半句话、半个动作或关键结果之前。
+- 如果候选高光很多，输出 excluded_highlights，解释未选原因。
 - 生成 self_check。
 
 内置视频类型高光参考，仅供参考，不要硬套：
@@ -94,8 +137,9 @@ def build_strict_json_edit_prompt(
   如果视频无法归类，请根据视频实际内容自行总结高光标准，选择最能代表视频主题、信息密度最高、画面/声音证据最强、最适合作为短视频的片段。
 
 选择 final_segments 时必须遵守：
-- final_segments 总时长尽量接近 target_duration；
+- final_segments 总时长尽量接近 selected_target_duration；
 - 宁可略短，也不要加入低质量无关片段；
+- 不要因为高光很多就超过用户明确指定的时长；
 - 优先选择信息密度高、与用户指令相关、画面/声音证据充分的片段；
 - 避免重复片段；
 - 避免过长铺垫；
@@ -105,6 +149,9 @@ def build_strict_json_edit_prompt(
 - 所有 start/end 必须在原始视频时长范围内；
 - start 必须小于 end；
 - 每个 final segment 必须有 title、role、source_chunk_id、reason。
+- 如果高光候选很多，请输出 excluded_highlights，解释未选原因；
+- excluded_highlights 不参与最终剪辑，只用于报告解释；
+- final_segments 才是 ffmpeg 实际裁剪的片段。
 
 只允许输出合法 JSON。
 不要输出 Markdown。
@@ -114,6 +161,15 @@ def build_strict_json_edit_prompt(
 
 必须严格返回以下 JSON 结构：
 {{
+  "duration_policy": {{
+    "user_specified_duration": true,
+    "user_target_duration": 30.0,
+    "recommended_duration": null,
+    "selected_target_duration": 30.0,
+    "allowed_min_duration": 30.0,
+    "allowed_max_duration": 30.0,
+    "duration_policy_reason": "为什么选择这个目标时长"
+  }},
   "video_type": "ecommerce_product / product_showcase / product_launch / course / talk / sports / game / action / vlog / travel / lifestyle / other",
   "type_confidence": 0.0,
   "user_intent": "对用户指令的任务化理解",
@@ -170,6 +226,17 @@ def build_strict_json_edit_prompt(
       "role": "该片段在最终高光中的作用",
       "source_chunk_id": "chunk_01",
       "reason": "选择该片段的原因"
+    }}
+  ],
+  "excluded_highlights": [
+    {{
+      "start": 94.0,
+      "end": 110.0,
+      "title": "未选候选高光标题",
+      "source_chunk_id": "chunk_02",
+      "score": 4.5,
+      "reason": "该片段也是高质量高光，但优先级低于已选片段。",
+      "excluded_reason": "duration_limit"
     }}
   ],
   "self_check": {{

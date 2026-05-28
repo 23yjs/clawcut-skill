@@ -110,7 +110,12 @@ class ArkLLMClient(BaseLLMClient):
             raise SkillError("Ark LLM 配置缺失：" + ", ".join(missing))
 
         video_url, video_source, preview_size_mb = _resolve_video_input(preview_video_path, llm_config)
-        prompt = build_strict_json_edit_prompt(video_info, instruction, target_duration)
+        prompt = build_strict_json_edit_prompt(
+            video_info,
+            instruction,
+            target_duration,
+            duration_policy=config.get("duration_policy"),
+        )
         request_url = _resolve_chat_completions_url(base_url)
         video_payload = {
             "url": video_url,

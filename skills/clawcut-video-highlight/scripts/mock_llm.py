@@ -102,6 +102,59 @@ def _make_chunk_reviews(chunks: list[dict[str, Any]], segments: list[dict[str, A
     return reviews
 
 
+def _default_duration_policy(duration: float, target_duration: float) -> dict[str, Any]:
+    target = min(float(target_duration), duration)
+    return {
+        "user_specified_duration": True,
+        "user_target_duration": float(target_duration),
+        "recommended_duration": None,
+        "selected_target_duration": target,
+        "allowed_min_duration": target,
+        "allowed_max_duration": target,
+        "duration_policy_reason": "mock 独立调用未提供 duration_policy，按传入 target_duration 兼容处理。",
+    }
+
+
+def _make_excluded_highlights(
+    chunks: list[dict[str, Any]],
+    segments: list[dict[str, Any]],
+    duration: float,
+    selected_target_duration: float,
+) -> list[dict[str, Any]]:
+    selected_ids = {segment["source_chunk_id"] for segment in segments}
+    if duration < selected_target_duration * 4 and len(chunks) <= len(segments):
+        return []
+
+    excluded = []
+    for chunk in chunks:
+        if chunk["id"] in selected_ids:
+            continue
+        start = float(chunk["start"])
+        chunk_end = float(chunk["end"])
+        for segment in segments:
+            segment_start = float(segment["start"])
+            segment_end = float(segment["end"])
+            if min(chunk_end, segment_end) - max(start, segment_start) > 0.25:
+                start = min(chunk_end, segment_end + 0.5)
+        end = min(chunk_end, start + min(6.0, max(1.0, chunk_end - start)))
+        if start >= end or end > duration:
+            continue
+        excluded.append(
+            {
+                "start": round(start, 3),
+                "end": round(end, 3),
+                "title": f"未选候选：{chunk['title']}",
+                "source_chunk_id": chunk["id"],
+                "score": 3.6,
+                "reason": "该片段在 mock 评分中也具备一定高光价值，但最终时长容量有限，优先保留了更分散且更具代表性的片段。",
+                "excluded_reason": "duration_limit",
+            }
+        )
+        if len(excluded) >= 2:
+            break
+    return excluded
+
+
 def generate_mock_plan(
     video_info: dict[str, Any],
     instruction: str,
@@ -111,16 +164,20 @@ def generate_mock_plan(
     config = config or {}
     mock_config = config.get("mock_llm", {})
     duration = float(video_info["duration"])
+    duration_policy = dict(config.get("duration_policy") or _default_duration_policy(duration, target_duration))
+    selected_target_duration = float(duration_policy.get("selected_target_duration", target_duration))
     chunks = _make_chunks(duration, int(mock_config.get("chunk_count", 6)))
     segments = _make_segments(
         duration,
-        float(target_duration),
+        selected_target_duration,
         chunks,
         int(mock_config.get("max_segments", 5)),
     )
+    excluded_highlights = _make_excluded_highlights(chunks, segments, duration, selected_target_duration)
 
-    prompt = build_highlight_prompt(video_info, instruction, target_duration)
+    prompt = build_highlight_prompt(video_info, instruction, selected_target_duration, duration_policy)
     return {
+        "duration_policy": duration_policy,
         "video_type": _video_type_from_instruction(instruction),
         "type_confidence": 0.6,
         "user_intent": instruction,
@@ -151,6 +208,7 @@ def generate_mock_plan(
         "chunks": chunks,
         "chunk_reviews": _make_chunk_reviews(chunks, segments),
         "final_segments": segments,
+        "excluded_highlights": excluded_highlights,
         "self_check": {
             "pass": True,
             "issues": [

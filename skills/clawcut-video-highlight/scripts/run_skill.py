@@ -36,6 +36,79 @@ def _format_list(values: Any) -> str:
     return str(values)
 
 
+def _recommended_duration(video_duration: float) -> float:
+    return round(min(video_duration, min(max(video_duration * 0.15, 15.0), 60.0)), 3)
+
+
+def _build_duration_policy(video_duration: float, user_target_duration: float | None) -> dict[str, Any]:
+    if user_target_duration is not None:
+        target = float(user_target_duration)
+        return {
+            "user_specified_duration": True,
+            "user_target_duration": target,
+            "recommended_duration": None,
+            "selected_target_duration": target,
+            "allowed_min_duration": target,
+            "allowed_max_duration": target,
+            "duration_policy_reason": "用户明确指定目标时长，系统严格按照该时长规划剪辑。",
+        }
+
+    recommended = _recommended_duration(video_duration)
+    allowed_min = round(min(video_duration, 15.0), 3)
+    allowed_max = round(min(video_duration, 60.0), 3)
+    if allowed_max < allowed_min:
+        allowed_min = allowed_max
+    return {
+        "user_specified_duration": False,
+        "user_target_duration": None,
+        "recommended_duration": recommended,
+        "selected_target_duration": recommended,
+        "allowed_min_duration": allowed_min,
+        "allowed_max_duration": allowed_max,
+        "duration_policy_reason": "用户未指定目标时长，系统根据视频总时长、内容密度和高光数量选择合理时长。",
+    }
+
+
+def _normalize_plan_duration_policy(
+    plan: dict[str, Any],
+    base_policy: dict[str, Any],
+) -> list[str]:
+    if not isinstance(plan.get("duration_policy"), dict):
+        plan["duration_policy"] = dict(base_policy)
+        return ["模型未输出 duration_policy，已使用系统计算的目标时长策略补齐。"]
+
+    warnings: list[str] = []
+    model_policy = dict(plan["duration_policy"])
+    normalized = dict(base_policy)
+    if str(model_policy.get("duration_policy_reason", "")).strip():
+        normalized["duration_policy_reason"] = str(model_policy["duration_policy_reason"])
+
+    if bool(base_policy["user_specified_duration"]):
+        model_selected = model_policy.get("selected_target_duration")
+        if model_selected is not None and abs(float(model_selected) - float(base_policy["selected_target_duration"])) > 0.001:
+            warnings.append(
+                "模型 selected_target_duration 与用户指定时长不一致，已修正为用户指定时长。"
+            )
+    else:
+        allowed_min = float(base_policy["allowed_min_duration"])
+        allowed_max = float(base_policy["allowed_max_duration"])
+        recommended = float(base_policy["recommended_duration"])
+        try:
+            model_selected = float(model_policy.get("selected_target_duration", recommended))
+        except (TypeError, ValueError):
+            model_selected = recommended
+            warnings.append("模型 selected_target_duration 无法解析，已修正为 recommended_duration。")
+        if model_selected < allowed_min or model_selected > allowed_max:
+            warnings.append(
+                "模型 selected_target_duration 超出允许范围，已修正为 recommended_duration。"
+            )
+            model_selected = recommended
+        normalized["selected_target_duration"] = round(model_selected, 3)
+
+    plan["duration_policy"] = normalized
+    return warnings
+
+
 def _attach_pipeline_metadata(
     plan: dict[str, Any],
     model_video_input_source: str,
@@ -85,12 +158,30 @@ def _summary_segments(plan: dict[str, Any] | None) -> list[dict[str, Any]]:
     return segments
 
 
+def _summary_excluded_highlights(plan: dict[str, Any] | None) -> list[dict[str, Any]]:
+    if not plan:
+        return []
+    highlights = []
+    for item in plan.get("excluded_highlights", []):
+        highlights.append(
+            {
+                "start": item.get("start"),
+                "end": item.get("end"),
+                "title": item.get("title", ""),
+                "source_chunk_id": item.get("source_chunk_id", ""),
+                "score": item.get("score"),
+                "reason": item.get("reason", ""),
+                "excluded_reason": item.get("excluded_reason", ""),
+            }
+        )
+    return highlights
+
+
 def _write_success_summary(
     summary_path: Path,
     paths: dict[str, Path],
     input_video: Path,
     instruction: str,
-    target_duration: float,
     plan: dict[str, Any],
     validation: dict[str, Any],
     preview_path: Path | None,
@@ -101,7 +192,11 @@ def _write_success_summary(
             "status": "success",
             "input_video": str(input_video),
             "instruction": instruction,
-            "target_duration": float(target_duration),
+            "target_duration": plan.get("duration_policy", {}).get("user_target_duration"),
+            "duration_policy": plan.get("duration_policy", {}),
+            "selected_target_duration": validation.get("selected_target_duration"),
+            "final_total_duration": validation.get("total_duration"),
+            "duration_delta": validation.get("duration_delta"),
             "highlight_video": str(paths["highlight"]),
             "segments_json": str(paths["segments"]),
             "report_md": str(paths["report"]),
@@ -111,6 +206,7 @@ def _write_success_summary(
             "model_video_input_path_or_url": plan.get("model_video_input_path_or_url", ""),
             "final_edit_source": plan.get("final_edit_source", str(input_video)),
             "final_segments": _summary_segments(plan),
+            "excluded_highlights": _summary_excluded_highlights(plan),
             "warnings": validation.get("warnings", []),
         },
     )
@@ -121,9 +217,10 @@ def _write_failure_summary(
     paths: dict[str, Path],
     input_video: Path,
     instruction: str,
-    target_duration: float,
+    target_duration: float | None,
     error_type: str,
     error_message: str,
+    duration_policy: dict[str, Any] | None = None,
 ) -> None:
     write_json(
         summary_path,
@@ -131,7 +228,9 @@ def _write_failure_summary(
             "status": "failed",
             "input_video": str(input_video),
             "instruction": instruction,
-            "target_duration": float(target_duration),
+            "target_duration": float(target_duration) if target_duration is not None else None,
+            "duration_policy": duration_policy or {},
+            "selected_target_duration": (duration_policy or {}).get("selected_target_duration"),
             "error_type": error_type,
             "error_message": error_message,
             "run_log": str(paths["log"]),
@@ -160,6 +259,8 @@ def _write_report(
     highlight_definition = plan.get("highlight_definition", {})
     chunking_strategy = plan.get("chunking_strategy", {})
     self_check = plan.get("self_check", {})
+    duration_policy = plan.get("duration_policy", {})
+    excluded_highlights = plan.get("excluded_highlights", [])
     lines = [
         "# ClawCut 视频高光剪辑报告",
         "",
@@ -171,7 +272,7 @@ def _write_report(
         f"- 帧率：{video_info.get('fps')}",
         f"- 是否包含音频：{video_info['has_audio']}",
         f"- 用户指令：{instruction}",
-        f"- 目标时长：{validation['target_duration']:.3f} 秒",
+        f"- 用户指定目标时长：{duration_policy.get('user_target_duration') if duration_policy.get('user_specified_duration') else '未指定'}",
         "",
         "## 模型输入信息",
         "",
@@ -180,6 +281,17 @@ def _write_report(
         f"- preview_path：`{plan.get('preview_path') or '未生成'}`",
         f"- final_edit_source：`{plan.get('final_edit_source', input_video)}`",
         "- 说明：模型看到的是用户提供的视频 URL 或本地 preview；最终出片始终基于原始 input_video。",
+        "",
+        "## 目标时长策略",
+        "",
+        f"- 用户是否指定时长：{duration_policy.get('user_specified_duration')}",
+        f"- 用户指定时长：{duration_policy.get('user_target_duration')}",
+        f"- 系统推荐时长：{duration_policy.get('recommended_duration')}",
+        f"- 模型选择时长 selected_target_duration：{duration_policy.get('selected_target_duration')}",
+        f"- 允许范围：{duration_policy.get('allowed_min_duration')} - {duration_policy.get('allowed_max_duration')} 秒",
+        f"- 策略原因：{duration_policy.get('duration_policy_reason', '')}",
+        f"- final_segments 总时长：{validation['total_duration']:.3f} 秒",
+        f"- duration_delta：{validation['duration_delta']:.3f} 秒",
         "",
         "## 阶段 1：视频理解与任务化高光定义",
         "",
@@ -264,6 +376,35 @@ def _write_report(
     lines.extend(
         [
             "",
+            "## 未选高光候选",
+            "",
+        ]
+    )
+    if excluded_highlights:
+        lines.extend(
+            [
+                "以下片段被模型识别为候选高光，但由于目标时长限制、重复内容或优先级较低，未进入最终剪辑。",
+                "",
+                "| start | end | title | score | excluded_reason | reason |",
+                "| ---: | ---: | --- | ---: | --- | --- |",
+            ]
+        )
+        for highlight in excluded_highlights:
+            lines.append(
+                "| {start:.3f} | {end:.3f} | {title} | {score} | {excluded_reason} | {reason} |".format(
+                    start=float(highlight.get("start", 0)),
+                    end=float(highlight.get("end", 0)),
+                    title=_md(highlight.get("title")),
+                    score=float(highlight.get("score", 0)),
+                    excluded_reason=_md(highlight.get("excluded_reason")),
+                    reason=_md(highlight.get("reason")),
+                )
+            )
+    else:
+        lines.append("未发现需要额外说明的未选高光候选。")
+    lines.extend(
+        [
+            "",
             f"- self_check.pass：{self_check.get('pass')}",
             f"- self_check.issues：{_format_list(self_check.get('issues'))}",
             f"- overall_rationale：{plan.get('overall_rationale', '')}",
@@ -289,12 +430,14 @@ def _write_report(
 def run_skill(
     input_video: Path,
     instruction: str,
-    target_duration: float = 30.0,
+    target_duration: float | None = None,
     output_dir: Path = Path("outputs"),
     llm_video_url: str | None = None,
     llm_backend: str | None = None,
     config_path: Path | None = None,
+    runtime_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    runtime_context = runtime_context if runtime_context is not None else {}
     paths = _output_paths(output_dir, input_video)
     for key in ("videos", "reports", "logs", "work"):
         ensure_dir(paths[key])
@@ -303,14 +446,14 @@ def run_skill(
     logger.info("开始运行 ClawCut 视频高光剪辑 Skill")
     logger.info("启动参数：input_video=%s", input_video)
     logger.info("启动参数：instruction=%s", instruction)
-    logger.info("启动参数：target_duration=%.3f", target_duration)
+    logger.info("启动参数：target_duration=%s", target_duration if target_duration is not None else "未指定")
     logger.info("启动参数：output_dir=%s", output_dir)
     logger.info("启动参数：llm_backend=%s", llm_backend or "config/default.yaml")
     logger.info("启动参数：llm_video_url_present=%s", bool(llm_video_url))
     logger.info("启动参数：config=%s", config_path or "默认配置")
     logger.info("输入视频：%s", input_video)
     logger.info("本次输出目录：%s", paths["run"])
-    logger.info("目标时长：%.3f 秒", target_duration)
+    logger.info("用户指定目标时长：%s", target_duration if target_duration is not None else "未指定")
 
     if not str(instruction or "").strip():
         raise SkillError("instruction 不能为空，请提供明确的剪辑目标")
@@ -318,7 +461,7 @@ def run_skill(
         raise SkillError(f"input_video 不存在：{input_video}")
     if not input_video.is_file():
         raise SkillError(f"input_video 不是文件：{input_video}")
-    if float(target_duration) <= 0:
+    if target_duration is not None and float(target_duration) <= 0:
         raise SkillError("target_duration 必须为正数")
 
     config = load_config(config_path)
@@ -333,6 +476,11 @@ def run_skill(
         logger.info("LLM 将使用外部视频 URL 输入：%s", _mask_url(llm_video_url))
     video_info = probe_video(input_video, config.get("ffmpeg", {}).get("probe_command", "ffprobe"), logger)
     logger.info("视频探测完成：%s", video_info)
+    duration_policy = _build_duration_policy(float(video_info["duration"]), target_duration)
+    selected_target_duration = float(duration_policy["selected_target_duration"])
+    config["duration_policy"] = duration_policy
+    runtime_context["duration_policy"] = duration_policy
+    logger.info("目标时长策略：%s", duration_policy)
 
     preview_path: Path | None = None
     if bool(config.get("preview", {}).get("enabled", True)):
@@ -358,7 +506,7 @@ def run_skill(
     logger.info("使用的 LLM backend：%s", config.get("llm", {}).get("backend", "mock"))
 
     client = create_llm_client(config, logger=logger)
-    plan = client.generate_edit_plan(str(preview_path or ""), instruction, target_duration, video_info, config)
+    plan = client.generate_edit_plan(str(preview_path or ""), instruction, selected_target_duration, video_info, config)
     logger.info("LLM 输出解析完成")
     plan = _attach_pipeline_metadata(
         plan,
@@ -367,14 +515,17 @@ def run_skill(
         input_video,
         preview_path,
     )
+    normalization_warnings = _normalize_plan_duration_policy(plan, duration_policy)
+    if normalization_warnings:
+        logger.warning("duration_policy 修正：%s", normalization_warnings)
     try:
-        validation = assert_valid_plan(plan, video_info["duration"], target_duration, config)
+        validation = assert_valid_plan(plan, video_info["duration"], selected_target_duration, config)
     except SkillError as exc:
         llm_config = config.get("llm", {})
         used_backend = str(plan.get("llm_metadata", {}).get("backend", llm_config.get("backend", ""))).lower()
         if used_backend == "ark" and bool(llm_config.get("fallback_to_mock", True)):
             logger.warning("Ark LLM 输出校验失败，已回退到 mock：%s", exc)
-            plan = MockLLMClient().generate_edit_plan(str(preview_path or ""), instruction, target_duration, video_info, config)
+            plan = MockLLMClient().generate_edit_plan(str(preview_path or ""), instruction, selected_target_duration, video_info, config)
             plan = _attach_pipeline_metadata(
                 plan,
                 model_video_input_source,
@@ -382,9 +533,11 @@ def run_skill(
                 input_video,
                 preview_path,
             )
-            validation = assert_valid_plan(plan, video_info["duration"], target_duration, config)
+            normalization_warnings = _normalize_plan_duration_policy(plan, duration_policy)
+            validation = assert_valid_plan(plan, video_info["duration"], selected_target_duration, config)
         else:
             raise
+    validation["warnings"].extend(normalization_warnings)
     logger.info("剪辑方案校验完成：%s", validation)
     if validation.get("warnings"):
         logger.warning("validator warnings：%s", validation["warnings"])
@@ -421,7 +574,6 @@ def run_skill(
         paths,
         input_video,
         instruction,
-        target_duration,
         plan,
         validation,
         preview_path,
@@ -444,7 +596,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="运行 ClawCut 视频高光剪辑 Skill。")
     parser.add_argument("--input_video", type=Path, required=True)
     parser.add_argument("--instruction", required=True)
-    parser.add_argument("--target_duration", type=float, default=30.0)
+    parser.add_argument("--target_duration", type=float, default=None)
     parser.add_argument("--output_dir", type=Path, default=Path("outputs"))
     parser.add_argument(
         "--llm_backend",
@@ -470,6 +622,7 @@ def main() -> int:
     for key in ("reports", "logs"):
         ensure_dir(paths[key])
     logger = setup_logger(paths["log"])
+    runtime_context: dict[str, Any] = {}
 
     try:
         result = run_skill(
@@ -480,6 +633,7 @@ def main() -> int:
             llm_video_url=args.llm_video_url,
             llm_backend=args.llm_backend,
             config_path=args.config,
+            runtime_context=runtime_context,
         )
     except SkillError as exc:
         logger.error("%s", exc)
@@ -492,6 +646,7 @@ def main() -> int:
             args.target_duration,
             exc.__class__.__name__,
             str(exc),
+            duration_policy=runtime_context.get("duration_policy"),
         )
         print(f"ClawCut 视频高光剪辑 Skill 运行失败：{exc}")
         print(f"结果摘要：{paths['result_summary']}")
@@ -508,6 +663,7 @@ def main() -> int:
             args.target_duration,
             exc.__class__.__name__,
             str(exc),
+            duration_policy=runtime_context.get("duration_policy"),
         )
         print(f"ClawCut 视频高光剪辑 Skill 运行失败：{exc}")
         print(f"结果摘要：{paths['result_summary']}")

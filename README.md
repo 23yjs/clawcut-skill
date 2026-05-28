@@ -47,13 +47,36 @@ export ARK_API_KEY=xxx
 
 请先自行把测试视频放到 `data/input/`，例如 `data/input/demo.mp4`。系统依赖需要本机已安装 `ffmpeg` 和 `ffprobe`。
 
-mock 模式：
+### 目标时长策略
+
+`--target_duration` 是可选参数：
+
+- 用户明确指定时长时，传入 `--target_duration`，Skill 会严格围绕该时长生成 `final_segments`。
+- 用户没有指定时长时，不传 `--target_duration`，程序会在 `ffprobe` 后根据原视频时长自动推荐：
+
+```text
+recommended_duration = min(video_duration, min(max(video_duration × 0.15, 15), 60))
+```
+
+例如 30 秒视频推荐 15 秒，120 秒视频推荐 18 秒，300 秒视频推荐 45 秒，600 秒以上视频推荐 60 秒。若原视频短于 15 秒，推荐时长不会超过视频本身。
+
+用户指定时长：
 
 ```bash
 python skills/clawcut-video-highlight/scripts/run_skill.py \
   --input_video data/input/demo.mp4 \
-  --instruction "剪出 15 秒视频高光，突出商品外观和核心卖点" \
-  --target_duration 15 \
+  --instruction "剪出商品外观和核心卖点高光" \
+  --target_duration 30 \
+  --output_dir outputs \
+  --llm_backend mock
+```
+
+用户不指定时长：
+
+```bash
+python skills/clawcut-video-highlight/scripts/run_skill.py \
+  --input_video data/input/demo.mp4 \
+  --instruction "剪出这个视频的高光时刻" \
   --output_dir outputs \
   --llm_backend mock
 ```
@@ -72,13 +95,13 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
   --llm_video_url "https://your-public-video-url/demo.mp4"
 ```
 
-如果不传 `--target_duration`，默认使用 `30` 秒；如果不传 `--output_dir`，默认写入 `outputs`。
+如果不传 `--output_dir`，默认写入 `outputs`。
 
 ## OpenClaw 调用
 
 OpenClaw/Agent 应根据 `skills/clawcut-video-highlight/SKILL.md` 做三件事：
 
-1. 从用户自然语言中抽取 `input_video`、`instruction`、`target_duration`、`output_dir`。
+1. 从用户自然语言中抽取 `input_video`、`instruction`、`output_dir`，如果用户明确说明时长，再抽取 `target_duration`。
 2. 调用 `skills/clawcut-video-highlight/scripts/run_skill.py`。
 3. 读取 `outputs/<video_name>/reports/result_summary.json` 判断成功或失败，并向用户返回结果。
 
@@ -100,6 +123,10 @@ outputs/ecom_cup_demo/
 - `reports/report.md`：面向用户和答辩展示的中文剪辑报告。
 - `reports/result_summary.json`：供 OpenClaw/Agent 快速读取的机器可读状态摘要。
 - `logs/run.log`：完整运行日志。
+
+`segments.json`、`report.md` 和 `result_summary.json` 会包含 `duration_policy`，记录用户是否指定时长、系统推荐时长、模型选择的 `selected_target_duration` 和允许范围。
+
+当候选高光多于目标时长容量时，Skill 会输出 `excluded_highlights`，说明哪些候选高光因为时长限制、重复内容或优先级较低没有进入最终剪辑。这些片段不会被 `ffmpeg` 裁剪，只用于解释。
 
 失败时也会尽量写入 `reports/result_summary.json`，其中包含 `status: failed`、错误类型、错误信息、日志路径和已生成的部分输出。
 

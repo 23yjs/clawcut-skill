@@ -4,6 +4,7 @@
   "type": "object",
   "additionalProperties": true,
   "required": [
+    "duration_policy",
     "video_type",
     "type_confidence",
     "user_intent",
@@ -12,10 +13,55 @@
     "chunks",
     "chunk_reviews",
     "final_segments",
+    "excluded_highlights",
     "self_check",
     "overall_rationale"
   ],
   "properties": {
+    "duration_policy": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "user_specified_duration",
+        "selected_target_duration",
+        "allowed_min_duration",
+        "allowed_max_duration",
+        "duration_policy_reason"
+      ],
+      "properties": {
+        "user_specified_duration": {
+          "type": "boolean"
+        },
+        "user_target_duration": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "recommended_duration": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "selected_target_duration": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "allowed_min_duration": {
+          "type": "number",
+          "minimum": 0
+        },
+        "allowed_max_duration": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "duration_policy_reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
     "video_type": {
       "type": "string",
       "minLength": 1
@@ -276,6 +322,56 @@
           "reason": {
             "type": "string",
             "minLength": 1
+          }
+        }
+      }
+    },
+    "excluded_highlights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "start",
+          "end",
+          "title",
+          "reason",
+          "excluded_reason"
+        ],
+        "properties": {
+          "start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "type": "number",
+            "minimum": 0
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_chunk_id": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "excluded_reason": {
+            "type": "string",
+            "enum": [
+              "duration_limit",
+              "duplicate_content",
+              "lower_relevance",
+              "weak_visual_audio_evidence",
+              "incomplete_context",
+              "user_constraint"
+            ]
           }
         }
       }
