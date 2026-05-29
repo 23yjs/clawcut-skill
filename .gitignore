@@ -4,5 +4,7 @@ __pycache__/
 .vscode/
 outputs/*
 !outputs/.gitkeep
+eval_outputs/*
+!eval_outputs/.gitkeep
 data/input/*
 !data/input/.gitkeep
