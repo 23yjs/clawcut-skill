@@ -93,9 +93,10 @@ class ArkLLMClient(BaseLLMClient):
         video_info: dict,
         config: dict,
     ) -> dict:
+        _load_env_from_workspace(logger=self.logger)
         llm_config = config.get("llm", {})
-        model = str(llm_config.get("model", "") or "").strip()
-        base_url = str(llm_config.get("base_url", "") or "").strip()
+        model = str(llm_config.get("model", "") or os.environ.get("ARK_MODEL", "")).strip()
+        base_url = str(llm_config.get("base_url", "") or os.environ.get("ARK_BASE_URL", "")).strip()
         api_key_env = str(llm_config.get("api_key_env", "ARK_API_KEY") or "ARK_API_KEY")
         api_key = os.environ.get(api_key_env, "").strip()
 
@@ -177,6 +178,54 @@ def create_llm_client(config: dict, logger: logging.Logger | None = None) -> Bas
     if backend == "ark":
         return ArkLLMClient(logger=logger)
     raise SkillError(f"不支持的 LLM backend：{backend}")
+
+
+def _candidate_env_paths() -> list[Path]:
+    candidates: list[Path] = []
+    for base in (Path.cwd(), Path(__file__).resolve()):
+        current = base if base.is_dir() else base.parent
+        for directory in (current, *current.parents):
+            env_path = directory / ".env"
+            if env_path not in candidates:
+                candidates.append(env_path)
+    return candidates
+
+
+def _parse_env_value(value: str) -> str:
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        return value[1:-1]
+    return value
+
+
+def _load_env_file(path: Path) -> list[str]:
+    loaded_keys: list[str] = []
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export ") :].strip()
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        if not key or key.startswith("#") or key in os.environ:
+            continue
+        os.environ[key] = _parse_env_value(value)
+        loaded_keys.append(key)
+    return loaded_keys
+
+
+def _load_env_from_workspace(logger: logging.Logger | None = None) -> None:
+    for env_path in _candidate_env_paths():
+        if not env_path.is_file():
+            continue
+        loaded_keys = _load_env_file(env_path)
+        if loaded_keys and logger:
+            safe_keys = ", ".join(sorted(loaded_keys))
+            logger.info("已从 %s 加载环境变量：%s", env_path, safe_keys)
+        return
 
 
 def _encode_video_as_data_url(path: Path) -> str:

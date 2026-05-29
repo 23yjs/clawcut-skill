@@ -11,7 +11,7 @@ preview:
 
 llm:
   backend: ark
-  model: doubao-seed-2-0-lite-260215
+  model: ep-20260526173832-2vrr2
   api_key_env: ARK_API_KEY
   base_url: https://ark.cn-beijing.volces.com/api/v3
   fallback_to_mock: true
