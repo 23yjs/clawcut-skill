@@ -313,6 +313,84 @@ def compute_default_highlight_metrics(
     }
 
 
+def compute_segment_reference_metrics(
+    pred_segments: list[dict[str, Any]],
+    semantic_segments: list[dict[str, Any]],
+    relevant_segment_ids: list[str],
+    forbidden_segment_ids: list[str],
+    boundary_tolerance_seconds: float = DEFAULT_BOUNDARY_TOLERANCE_SECONDS,
+) -> dict[str, Any]:
+    warnings: list[str] = []
+    semantic_by_id = {str(segment.get("segment_id")): segment for segment in semantic_segments}
+    relevant_ids = [segment_id for segment_id in relevant_segment_ids if segment_id in semantic_by_id]
+    forbidden_ids = [segment_id for segment_id in forbidden_segment_ids if segment_id in semantic_by_id]
+
+    matched_relevant: list[str] = []
+    matched_forbidden: list[str] = []
+    relevant_prediction_count = 0
+    forbidden_prediction_count = 0
+
+    for pred in pred_segments:
+        pred_hit_relevant = False
+        pred_hit_forbidden = False
+        for segment_id in relevant_ids:
+            matched, _iou, _overlap, _ratio = _is_temporal_match(
+                pred,
+                semantic_by_id[segment_id],
+                0.1,
+                0.3,
+                boundary_tolerance_seconds,
+            )
+            if matched:
+                pred_hit_relevant = True
+                matched_relevant.append(segment_id)
+        for segment_id in forbidden_ids:
+            matched, _iou, _overlap, _ratio = _is_temporal_match(
+                pred,
+                semantic_by_id[segment_id],
+                0.1,
+                0.3,
+                boundary_tolerance_seconds,
+            )
+            if matched:
+                pred_hit_forbidden = True
+                matched_forbidden.append(segment_id)
+        if pred_hit_relevant:
+            relevant_prediction_count += 1
+        if pred_hit_forbidden:
+            forbidden_prediction_count += 1
+
+    matched_relevant_ids = _unique(matched_relevant)
+    matched_forbidden_ids = _unique(matched_forbidden)
+    missed_relevant_ids = [segment_id for segment_id in relevant_ids if segment_id not in matched_relevant_ids]
+
+    if not pred_segments:
+        warnings.append("pred_segments 为空，precision 和 violation_rate 的分母为 0")
+    if not relevant_ids:
+        warnings.append("relevant_segment_ids 为空，relevant recall 的分母为 0")
+
+    relevant_precision = relevant_prediction_count / len(pred_segments) if pred_segments else 0.0
+    relevant_recall = len(matched_relevant_ids) / len(relevant_ids) if relevant_ids else 0.0
+    forbidden_violation_rate = forbidden_prediction_count / len(pred_segments) if pred_segments else 0.0
+
+    return {
+        "relevant_segment_ids": relevant_ids,
+        "matched_relevant_segment_ids": matched_relevant_ids,
+        "missed_relevant_segment_ids": missed_relevant_ids,
+        "relevant_prediction_count": relevant_prediction_count,
+        "relevant_segment_precision": _round(relevant_precision),
+        "relevant_segment_recall": _round(relevant_recall),
+        "relevant_segment_f1": _round(_compute_f1(relevant_precision, relevant_recall)),
+        "forbidden_segment_ids": forbidden_ids,
+        "matched_forbidden_segment_ids": matched_forbidden_ids,
+        "forbidden_segment_hit_count": len(matched_forbidden_ids),
+        "forbidden_prediction_count": forbidden_prediction_count,
+        "forbidden_segment_violation_rate": _round(forbidden_violation_rate),
+        "boundary_tolerance_seconds": boundary_tolerance_seconds,
+        "warnings": warnings,
+    }
+
+
 def compute_must_cover_tag_coverage(matched_tags: list[str], must_cover_tags: list[str]) -> dict[str, Any]:
     matched_set = set(_as_tags(matched_tags))
     must_cover = _as_tags(must_cover_tags)

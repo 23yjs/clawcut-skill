@@ -17,6 +17,8 @@ SCRIPTS_DIR = ROOT_DIR / "skills" / "clawcut-video-highlight" / "scripts"
 RUN_SKILL = SCRIPTS_DIR / "run_skill.py"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
+from ark_resolver_client import ArkResolverConfig  # noqa: E402
+from auto_eval import AutoEvalConfig, run_auto_eval  # noqa: E402
 from gt_loader import load_gt_dir  # noqa: E402
 from metrics import (  # noqa: E402
     compute_case_score,
@@ -683,11 +685,58 @@ def _run_legacy_eval(args: argparse.Namespace) -> int:
     return 0 if validation["ok"] else 1
 
 
+def _run_auto_eval(args: argparse.Namespace) -> int:
+    if not args.gt_dir:
+        raise SystemExit("自动单条评测模式需要传入 --gt_dir")
+    if not args.skill_output_dir:
+        raise SystemExit("自动单条评测模式需要传入 --skill_output_dir")
+    if not args.output_dir:
+        raise SystemExit("自动单条评测模式需要传入 --output_dir")
+    skill_config = load_config()
+    llm_config = skill_config.get("llm", {}) if isinstance(skill_config, dict) else {}
+    resolver_model = args.resolver_model or llm_config.get("model") or ArkResolverConfig().model
+    resolver_base_url = args.resolver_base_url or llm_config.get("base_url") or ArkResolverConfig().base_url
+    resolver_api_key_env = args.resolver_api_key_env or llm_config.get("api_key_env") or ArkResolverConfig().api_key_env
+    resolver_timeout_seconds = (
+        args.resolver_timeout_seconds
+        or llm_config.get("timeout_seconds")
+        or ArkResolverConfig().timeout_seconds
+    )
+    result = run_auto_eval(
+        AutoEvalConfig(
+            input_video=args.input_video,
+            instruction=args.instruction,
+            target_duration=args.target_duration,
+            skill_output_dir=args.skill_output_dir,
+            gt_dir=args.gt_dir,
+            output_dir=args.output_dir,
+            resolver_config=ArkResolverConfig(
+                model=str(resolver_model),
+                base_url=str(resolver_base_url),
+                api_key_env=str(resolver_api_key_env),
+                timeout_seconds=int(resolver_timeout_seconds),
+            ),
+        )
+    )
+    print(f"自动评测完成：{args.output_dir}")
+    print(f"evaluation_result.json: {args.output_dir / 'evaluation_result.json'}")
+    print(f"eval_report.md: {args.output_dir / 'eval_report.md'}")
+    return 0 if result.get("evaluation_status") != "resolver_failed" else 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="评估 ClawCut 结构化剪辑方案或运行 V4 mock 评测。")
     parser.add_argument("--plan_json", type=Path)
     parser.add_argument("--video_duration", type=float)
     parser.add_argument("--target_duration", type=float, default=None)
+
+    parser.add_argument("--input_video", type=Path)
+    parser.add_argument("--instruction")
+    parser.add_argument("--skill_output_dir", type=Path)
+    parser.add_argument("--resolver_model", default=None)
+    parser.add_argument("--resolver_base_url", default=None)
+    parser.add_argument("--resolver_api_key_env", default=None)
+    parser.add_argument("--resolver_timeout_seconds", type=int, default=None)
 
     parser.add_argument("--cases", type=Path)
     parser.add_argument("--annotations", type=Path)
@@ -707,6 +756,10 @@ def main() -> int:
 
     if args.plan_json:
         return _run_legacy_eval(args)
+    if args.input_video or args.instruction:
+        if not args.input_video or not args.instruction:
+            raise SystemExit("自动单条评测模式需要同时传入 --input_video 和 --instruction")
+        return _run_auto_eval(args)
     if not args.cases:
         raise SystemExit("V4 模式需要传入 --cases，或使用旧模式 --plan_json")
     if not args.gt_dir and not args.annotations:

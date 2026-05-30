@@ -80,7 +80,82 @@ avg_default_highlight_iou
 
 其中 `Precision / Recall / F1` 是面向用户展示的主要语义指标；`avg_default_highlight_iou` 保留为底层重叠质量参考。
 
-## 5. dry run
+## 5. Ark Instruction Resolver 自动单条评测
+
+新的自动单条评测模式不再要求人工先维护一条 `cases.jsonl` case。人工只需要维护：
+
+```text
+data/eval/<video_stem>.json
+```
+
+评测前先运行 ClawCut Skill，生成：
+
+```text
+outputs/<video_stem>/reports/segments.json
+```
+
+然后运行：
+
+```bash
+python evaluation/run_eval.py \
+  --input_video data/input/ecom_cup_demo1.MP4 \
+  --instruction "只剪紫色大杯的外观和装饰细节，不要片尾账号信息" \
+  --target_duration 20 \
+  --skill_output_dir outputs/ecom_cup_demo1 \
+  --gt_dir data/eval \
+  --output_dir eval_outputs/auto_ark_specific
+```
+
+该模式固定使用真实 Ark Instruction Resolver。请先设置：
+
+```bash
+export ARK_API_KEY="你的真实 API Key"
+```
+
+默认情况下，Resolver 会复用 `skills/clawcut-video-highlight/config/default.yaml` 中的 Ark 配置：
+
+```yaml
+llm:
+  model: ep-20260526173832-2vrr2
+  api_key_env: ARK_API_KEY
+  base_url: https://ark.cn-beijing.volces.com/api/v3
+```
+
+如果临时需要覆盖，也可以使用 `--resolver_model`、`--resolver_base_url`、`--resolver_api_key_env` 和 `--resolver_timeout_seconds`。
+
+Resolver 的职责是把用户自然语言指令解析为 GT 片段 ID：
+
+```text
+instruction + GT.video_summary + GT.semantic_segments
+→ relevant_segment_ids / forbidden_segment_ids
+```
+
+重要边界：
+
+- Resolver 只读取用户指令和 GT 文本。
+- Resolver 不读取原始视频、视频 URL 或 preview。
+- Resolver 不读取 `final_segments`、`segments.json` 中的片段标题和 reason。
+- Resolver 不读取 `highlight.mp4`。
+- Resolver 失败、JSON 非法或返回不存在的 `segment_id` 时，不回退 mock，评测状态为 `resolver_failed`。
+- `generated_case.json` 会冻结本次评分标准，后续重复实验可以复用这个标准。
+
+自动单条模式会输出：
+
+- `resolver_request.json`：发给 Resolver 的请求内容，不包含 Skill 答案。
+- `resolver_response.json`：Resolver 返回的结构化结果。
+- `resolver_metadata.json`：模型、prompt 版本、耗时和 token 用量。
+- `generated_case.json`：由 Resolver 生成的单条评测 case。
+- `evaluation_result.json`：确定性评分结果。
+- `eval_report.md`：中文评测报告。
+
+当前评分路径：
+
+- `generic`：使用默认高光 `Precision / Recall / F1`。
+- `specific`：使用 `relevant_segment_ids` 的 Precision / Recall / F1。
+- `conflict`：同时检查 `relevant_segment_ids` 和 `forbidden_segment_ids`。
+- `partial / unresolved`：不强行打分，进入人工复核。
+
+## 6. dry run
 
 只打印将要执行的 `run_skill.py` 命令，不实际剪辑视频。
 
@@ -94,7 +169,7 @@ python evaluation/run_eval.py \
   --dry_run
 ```
 
-## 6. 只评分已有输出
+## 7. 只评分已有输出
 
 如果已经有 `eval_outputs/mock_v1/runs/<case_id>/...` 产物，可以只重新评分：
 
@@ -107,7 +182,7 @@ python evaluation/run_eval.py \
   --score_only
 ```
 
-## 7. 评测路径说明
+## 8. 评测路径说明
 
 - `generic`：主要使用 `default_highlight_score`，同时检查默认应避免内容。
 - `specific`：主要使用 `must_cover_tags` / `must_avoid_tags`。
