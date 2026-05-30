@@ -1,0 +1,250 @@
+{
+  "video_id": "ecom_cup_demo1",
+  "video_path": "data/input/ecom_cup_demo1.MP4",
+  "video_type": "ecommerce_product",
+  "duration_seconds": 234,
+  "video_summary": "视频为电商种草类杯子合集展示。出镜人物依次介绍多款杯子，包括带星星杯盖和挂件装饰的小杯、蓝灰色简约保温杯，以及带吸管、手柄和珍珠链装饰的大容量杯。内容重点包括外观配色、杯盖设计、内胆材质、容量、便携性、装饰性和使用场景。",
+  "semantic_segments": [
+    {
+      "segment_id": "seg_001",
+      "start": 0,
+      "end": 9,
+      "description": "开头以静物和手持镜头快速展示多款杯子，包括浅蓝色保温杯、米紫拼色杯和紫色带手柄杯，画面带有抖音账号信息和装饰性特效。",
+      "tags": [
+        "intro",
+        "multi_product_showcase",
+        "product_appearance",
+        "text_overlay"
+      ],
+      "default_highlight_score": 3,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_002",
+      "start": 8,
+      "end": 20,
+      "description": "出镜人物正面拿起两只小杯进行介绍，展示灰白色和米紫拼色杯的整体外观，说明这是近期使用或推荐的杯子。",
+      "tags": [
+        "product_appearance",
+        "multi_product_showcase",
+        "core_selling_point"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_003",
+      "start": 20,
+      "end": 29,
+      "description": "镜头切到小杯近景，展示杯身点点纹理、杯柄、杯盖和星星造型装饰，并从不同角度展示杯子的可爱外观。",
+      "tags": [
+        "product_appearance",
+        "product_detail",
+        "visual_attractive"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_004",
+      "start": 28,
+      "end": 39,
+      "description": "出镜人物展示杯盖细节，包括星星装饰、提手或挂绳位置，以及杯盖上的小镜片或装饰片设计。",
+      "tags": [
+        "product_detail",
+        "accessory_demo",
+        "function_demo"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_005",
+      "start": 38,
+      "end": 46,
+      "description": "镜头展示杯子内部，不锈钢内胆近景清晰可见，字幕提到内部材质疑似为 316 不锈钢，并展示杯口和内壁。",
+      "tags": [
+        "product_detail",
+        "core_selling_point",
+        "function_demo"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_006",
+      "start": 46,
+      "end": 59,
+      "description": "出镜人物继续介绍灰白色小杯，画面展示杯身和杯盖，疑似讲到倒入热水后的使用感受或杯身防烫表现。",
+      "tags": [
+        "usage_effect",
+        "function_demo",
+        "product_detail"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_007",
+      "start": 58,
+      "end": 70,
+      "description": "画面切换到米紫拼色小杯，展示杯身上下拼色、星星杯盖和杯柄，出镜人物强调颜色搭配和可爱外观。",
+      "tags": [
+        "product_appearance",
+        "visual_attractive",
+        "product_detail"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_008",
+      "start": 69,
+      "end": 84,
+      "description": "出镜人物手持两只小杯进行对比，说明两个杯子的颜色、尺寸或适用人群差异，并展示杯子拿在手中的效果。",
+      "tags": [
+        "multi_product_showcase",
+        "product_detail",
+        "core_selling_point"
+      ],
+      "default_highlight_score": 3,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_009",
+      "start": 83,
+      "end": 93,
+      "description": "出镜人物展示黄色海绵或贴纸类小物件，并穿插自拍式展示，强调杯子适合搭配装饰、拍照或少女感使用场景。",
+      "tags": [
+        "personalization",
+        "accessory_demo",
+        "visual_attractive",
+        "reaction"
+      ],
+      "default_highlight_score": 3,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_010",
+      "start": 92,
+      "end": 112,
+      "description": "视频切换到两只简约保温杯，出镜人物分别展示浅蓝色和深灰棕色杯身，说明两款颜色和整体简洁外观。",
+      "tags": [
+        "product_appearance",
+        "multi_product_showcase",
+        "core_selling_point"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_011",
+      "start": 112,
+      "end": 133,
+      "description": "出镜人物继续介绍两只保温杯的细节，展示杯身、杯盖、底部或尺寸比例，强调简约设计、颜色耐看和携带使用。",
+      "tags": [
+        "product_detail",
+        "function_demo",
+        "core_selling_point"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_012",
+      "start": 132,
+      "end": 148,
+      "description": "镜头展示保温杯内胆和杯口，出镜人物打开杯盖后给出内部近景，突出杯子内部材质和清洁、保温相关卖点。",
+      "tags": [
+        "product_detail",
+        "function_demo",
+        "core_selling_point"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_013",
+      "start": 148,
+      "end": 166,
+      "description": "出镜人物手持两只保温杯继续讲解使用场景，疑似提到容量、日常喝水、带出门或情侣杯等卖点，并展示杯子开合和拿握效果。",
+      "tags": [
+        "usage_effect",
+        "function_demo",
+        "core_selling_point",
+        "multi_product_showcase"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_014",
+      "start": 166,
+      "end": 178,
+      "description": "出镜人物用自拍式镜头展示浅蓝保温杯，并短暂切回杯子静物图，随后拿起手机，形成从第二组保温杯过渡到下一款杯子的段落。",
+      "tags": [
+        "transition",
+        "product_appearance",
+        "low_information"
+      ],
+      "default_highlight_score": 2,
+      "avoid_by_default": true
+    },
+    {
+      "segment_id": "seg_015",
+      "start": 178,
+      "end": 191,
+      "description": "视频切换到紫色大容量吸管杯，杯身带有闪钻图案、珍珠链挂件、透明杯盖和星星吸管塞，出镜人物重点展示外观装饰。",
+      "tags": [
+        "product_appearance",
+        "product_detail",
+        "accessory_demo",
+        "visual_attractive"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_016",
+      "start": 190,
+      "end": 205,
+      "description": "镜头展示紫色吸管杯的杯盖和内部结构，包括吸管口、杯盖孔位、内部防水或密封部件，以及杯身整体近景。",
+      "tags": [
+        "product_detail",
+        "function_demo",
+        "core_selling_point"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_017",
+      "start": 204,
+      "end": 227,
+      "description": "出镜人物继续展示紫色大杯的手柄、容量、外观搭配和使用场景，强调杯子适合日常喝水、出门携带或放在桌面使用。",
+      "tags": [
+        "usage_effect",
+        "core_selling_point",
+        "function_demo",
+        "product_detail"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false
+    },
+    {
+      "segment_id": "seg_018",
+      "start": 226,
+      "end": 234,
+      "description": "视频结尾展示紫色杯静物近景后切到抖音搜索引导页面，出现账号头像、搜索框和“来抖音 发现更多创作者”等平台引导信息。",
+      "tags": [
+        "outro",
+        "account_info",
+        "purchase_call_to_action",
+        "low_information",
+        "text_overlay"
+      ],
+      "default_highlight_score": 1,
+      "avoid_by_default": true
+    }
+  ]
+}

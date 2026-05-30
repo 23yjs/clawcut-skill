@@ -1,0 +1,659 @@
+{
+  "annotation_schema_version": "1.0",
+  "video_id": "ecom_multiple_demo3",
+  "video_path": "data/input/ecom_multiple_demo3.MP4",
+  "video_type": "ecommerce_product",
+  "duration_seconds": 129,
+  "annotation_source": "llm_draft",
+  "review_status": "pending_human_review",
+  "video_summary": "视频为多商品购物分享类电商种草视频。出镜人物依次展示并介绍猫粮、毛绒 AI 陪伴挂件、无火香薰和洗衣护理产品。内容包含商品外观、包装细节、使用场景、功能卖点、实际体验和片尾账号搜索引导。",
+  "semantic_segments": [
+    {
+      "segment_id": "seg_001",
+      "start": 0,
+      "end": 7,
+      "description": "视频开头以快速蒙太奇方式依次展示猫粮包装、白色毛绒挂件、粉色无火香薰和两款洗衣护理产品，画面顶部出现“购物分享”文字。",
+      "tags": [
+        "intro",
+        "multi_product_showcase",
+        "product_appearance",
+        "text_overlay"
+      ],
+      "default_highlight_score": 3,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "猫粮包装",
+          "白色毛绒挂件",
+          "粉色无火香薰",
+          "洗衣护理产品",
+          "出镜人物"
+        ],
+        "audio": [
+          "开场口播和背景音，具体内容需人工复核"
+        ],
+        "emotion": [
+          "轻快",
+          "种草分享"
+        ],
+        "text_on_screen": [
+          "购物分享",
+          "抖音号水印"
+        ]
+      },
+      "annotation_confidence": 0.92,
+      "review_notes": [
+        "该段为快速开场预览。正式标注时可根据默认高光时长要求决定是否整体保留或缩短。"
+      ]
+    },
+    {
+      "segment_id": "seg_002",
+      "start": 6,
+      "end": 15,
+      "description": "出镜人物面对镜头进行开场说明，提到近期购买或使用了一些商品，并表示接下来会逐一分享。",
+      "tags": [
+        "intro",
+        "low_information",
+        "transition"
+      ],
+      "default_highlight_score": 2,
+      "avoid_by_default": true,
+      "attribute_notes": {
+        "objects": [
+          "出镜人物"
+        ],
+        "audio": [
+          "开场口播，介绍本期购物分享主题"
+        ],
+        "emotion": [
+          "自然",
+          "轻松"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "抖音号水印"
+        ]
+      },
+      "annotation_confidence": 0.86,
+      "review_notes": [
+        "该段主要承担开场衔接作用。默认高光剪辑通常可以缩短或跳过。"
+      ]
+    },
+    {
+      "segment_id": "seg_003",
+      "start": 14,
+      "end": 21,
+      "description": "出镜人物拿起大袋猫粮，正面展示包装，并通过口播强调这款猫粮值得囤货和价格划算。",
+      "tags": [
+        "product_appearance",
+        "core_selling_point",
+        "price_or_discount"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "猫粮包装",
+          "出镜人物"
+        ],
+        "audio": [
+          "口播强调猫粮囤货性价比"
+        ],
+        "emotion": [
+          "推荐",
+          "强调"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "猫粮包装文字",
+          "抖音号水印"
+        ]
+      },
+      "annotation_confidence": 0.93,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_004",
+      "start": 21,
+      "end": 30,
+      "description": "镜头在猫粮包装正面和背面之间切换。出镜人物继续说明购买优惠，字幕提到赠送鱼油，并展示包装背面的配料、营养或产品说明区域。",
+      "tags": [
+        "product_detail",
+        "price_or_discount",
+        "core_selling_point",
+        "text_overlay"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "猫粮包装正面",
+          "猫粮包装背面",
+          "产品说明区域"
+        ],
+        "audio": [
+          "口播介绍优惠和赠品信息"
+        ],
+        "emotion": [
+          "划算",
+          "推荐"
+        ],
+        "text_on_screen": [
+          "诚实一口烘焙猫粮",
+          "字幕提到赠送鱼油",
+          "猫粮包装说明文字"
+        ]
+      },
+      "annotation_confidence": 0.87,
+      "review_notes": [
+        "赠品价值和具体优惠额度需要人工结合完整口播确认，避免在正式标注中写入不准确的金额。"
+      ]
+    },
+    {
+      "segment_id": "seg_005",
+      "start": 30,
+      "end": 36,
+      "description": "镜头切换为猫咪使用场景。画面依次展示猫咪趴在窗边、被抚摸毛发和穿着牵引装备在户外活动，口播强调毛发状态和掉毛改善体验。",
+      "tags": [
+        "usage_effect",
+        "visual_attractive",
+        "example_demo"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "猫咪",
+          "猫咪毛发",
+          "窗边猫窝",
+          "牵引装备"
+        ],
+        "audio": [
+          "口播介绍猫咪食用后的毛发状态和掉毛体验"
+        ],
+        "emotion": [
+          "治愈",
+          "满意"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "抖音号水印"
+        ]
+      },
+      "annotation_confidence": 0.91,
+      "review_notes": [
+        "口播中的效果属于个人体验描述。正式标注应保留谨慎措辞，不应扩展为确定性功效结论。"
+      ]
+    },
+    {
+      "segment_id": "seg_006",
+      "start": 36,
+      "end": 45,
+      "description": "出镜人物手持猫粮包装说明使用便利性，随后切换到猫咪闻包装并在食盆中进食的画面，形成商品讲解与实际喂食展示。",
+      "tags": [
+        "function_demo",
+        "usage_effect",
+        "example_demo",
+        "visual_attractive"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "猫粮包装",
+          "猫咪",
+          "食盆",
+          "猫粮颗粒"
+        ],
+        "audio": [
+          "口播说明无需额外追着喂鱼油，使用更省事"
+        ],
+        "emotion": [
+          "实用",
+          "治愈"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "看小猫吃饭真的好治愈"
+        ]
+      },
+      "annotation_confidence": 0.94,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_007",
+      "start": 44,
+      "end": 50,
+      "description": "镜头切换到下一款商品。出镜人物展示红色外包装盒，并从盒中引出一只白色毛绒挂件。",
+      "tags": [
+        "transition",
+        "unboxing",
+        "product_appearance"
+      ],
+      "default_highlight_score": 3,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "红色包装盒",
+          "白色毛绒挂件",
+          "出镜人物"
+        ],
+        "audio": [
+          "口播介绍近期发现的新商品"
+        ],
+        "emotion": [
+          "期待",
+          "种草"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "包装盒文字"
+        ]
+      },
+      "annotation_confidence": 0.88,
+      "review_notes": [
+        "包装盒上的具体商品名称需要人工查看高清画面确认。"
+      ]
+    },
+    {
+      "segment_id": "seg_008",
+      "start": 49,
+      "end": 59,
+      "description": "出镜人物近距离展示白色毛绒挂件。挂件带有粉色面部造型、黄色装饰、尾部和金色铃铛，背面绣有金色文字。画面重点突出其柔软、圆润和可爱外观。",
+      "tags": [
+        "product_appearance",
+        "product_detail",
+        "accessory_demo",
+        "visual_attractive"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "白色毛绒挂件",
+          "金色铃铛",
+          "黄色装饰",
+          "背面刺绣"
+        ],
+        "audio": [
+          "口播介绍毛绒挂件造型和细节"
+        ],
+        "emotion": [
+          "可爱",
+          "喜爱"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "背面金色刺绣文字"
+        ]
+      },
+      "annotation_confidence": 0.93,
+      "review_notes": [
+        "背面刺绣文字疑似与招财寓意有关，正式标注前建议人工确认具体文字。"
+      ]
+    },
+    {
+      "segment_id": "seg_009",
+      "start": 58,
+      "end": 68,
+      "description": "出镜人物说明该毛绒挂件不仅是装饰品，还具有 AI 陪伴功能。画面插入手机小程序界面，并通过字幕和口播提到联网以及随时互动聊天。",
+      "tags": [
+        "function_demo",
+        "core_selling_point",
+        "personalization",
+        "text_overlay"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "毛绒 AI 挂件",
+          "手机小程序界面",
+          "出镜人物"
+        ],
+        "audio": [
+          "口播介绍 AI 对话、联网和互动聊天功能"
+        ],
+        "emotion": [
+          "新奇",
+          "推荐"
+        ],
+        "text_on_screen": [
+          "会说话的 AI 搭子",
+          "支持 4G 联网",
+          "小程序界面"
+        ]
+      },
+      "annotation_confidence": 0.91,
+      "review_notes": [
+        "具体联网方式和功能范围需人工结合完整口播核对。"
+      ]
+    },
+    {
+      "segment_id": "seg_010",
+      "start": 67,
+      "end": 83,
+      "description": "画面展示毛绒 AI 挂件的多种使用场景：出门时拿在手中互动、挂在包上作为配饰，以及在日常情绪压力较大时进行对话。口播还提到角色具有自己的性格和交流方式。",
+      "tags": [
+        "usage_effect",
+        "personalization",
+        "accessory_demo",
+        "core_selling_point",
+        "visual_attractive"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "毛绒 AI 挂件",
+          "手提包",
+          "出镜人物",
+          "手机"
+        ],
+        "audio": [
+          "口播介绍角色性格、互动方式和陪伴使用场景"
+        ],
+        "emotion": [
+          "陪伴感",
+          "治愈",
+          "轻松"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "包挂展示文字"
+        ]
+      },
+      "annotation_confidence": 0.89,
+      "review_notes": [
+        "该段包含多个使用场景。若需要更细粒度评测，可拆分为“随身聊天”“包挂配饰”和“压力缓解”三个子片段。"
+      ]
+    },
+    {
+      "segment_id": "seg_011",
+      "start": 82,
+      "end": 90,
+      "description": "出镜人物切换到家居香氛商品，拿起粉色无火香薰瓶并说明购买原因。香薰瓶上插有多根粉色扩香棒。",
+      "tags": [
+        "transition",
+        "product_appearance",
+        "core_selling_point"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "粉色无火香薰",
+          "扩香棒",
+          "出镜人物"
+        ],
+        "audio": [
+          "口播介绍无火香薰和购买原因"
+        ],
+        "emotion": [
+          "推荐",
+          "生活化"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "香薰瓶文字"
+        ]
+      },
+      "annotation_confidence": 0.9,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_012",
+      "start": 89,
+      "end": 99,
+      "description": "画面先展示香薰瓶静物近景，再切换到人物靠近扩香棒闻香的镜头，随后展示香薰摆放在家中桌面上的效果。口播强调气味清新、温柔且不刺鼻。",
+      "tags": [
+        "product_detail",
+        "usage_effect",
+        "visual_attractive",
+        "example_demo"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "粉色无火香薰",
+          "粉色扩香棒",
+          "桌面摆件",
+          "装饰画"
+        ],
+        "audio": [
+          "口播描述香味体验，强调不刺鼻"
+        ],
+        "emotion": [
+          "舒适",
+          "放松"
+        ],
+        "text_on_screen": [
+          "很干净温柔的感觉",
+          "不会冲鼻",
+          "中文字幕"
+        ]
+      },
+      "annotation_confidence": 0.94,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_013",
+      "start": 98,
+      "end": 104,
+      "description": "出镜人物将香薰拿到镜头前，指向瓶身中的剩余液体，说明已经使用一段时间，并评价其持久表现和性价比。",
+      "tags": [
+        "usage_effect",
+        "product_detail",
+        "core_selling_point",
+        "price_or_discount"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "粉色无火香薰",
+          "瓶内液体",
+          "扩香棒"
+        ],
+        "audio": [
+          "口播说明已使用一段时间，液体消耗不多，评价持续时间和性价比"
+        ],
+        "emotion": [
+          "满意",
+          "实用"
+        ],
+        "text_on_screen": [
+          "中文字幕"
+        ]
+      },
+      "annotation_confidence": 0.82,
+      "review_notes": [
+        "使用时长和剩余液体比例需人工依据完整口播确认，不建议直接写入未经核对的精确数值。"
+      ]
+    },
+    {
+      "segment_id": "seg_014",
+      "start": 103,
+      "end": 109,
+      "description": "视频切换到洗衣护理产品。出镜人物同时拿起两种不同包装的商品，随后插入桌面静物画面，展示两款产品的包装外观。",
+      "tags": [
+        "transition",
+        "multi_product_showcase",
+        "product_appearance"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "白色袋装洗衣护理产品",
+          "绿色罐装或袋装洗衣护理产品",
+          "出镜人物"
+        ],
+        "audio": [
+          "口播介绍近期使用的两款洗衣护理产品"
+        ],
+        "emotion": [
+          "实用分享"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "产品包装英文文字"
+        ]
+      },
+      "annotation_confidence": 0.86,
+      "review_notes": [
+        "两款商品的准确品类需人工查看包装和口播确认，可能涉及洗衣液、柔顺剂或洗衣凝珠。"
+      ]
+    },
+    {
+      "segment_id": "seg_015",
+      "start": 108,
+      "end": 114,
+      "description": "出镜人物手持两款洗衣护理产品，介绍香味特点。字幕提到不同香调组合，画面使用爱心特效强化清新和舒适的体验表达。",
+      "tags": [
+        "core_selling_point",
+        "usage_effect",
+        "multi_product_showcase",
+        "text_overlay"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "两款洗衣护理产品",
+          "出镜人物"
+        ],
+        "audio": [
+          "口播描述两款产品的香味特点"
+        ],
+        "emotion": [
+          "舒适",
+          "喜爱"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "爱心特效"
+        ]
+      },
+      "annotation_confidence": 0.79,
+      "review_notes": [
+        "具体香调名称需要人工核对字幕和口播。"
+      ]
+    },
+    {
+      "segment_id": "seg_016",
+      "start": 113,
+      "end": 122,
+      "description": "出镜人物继续展示两款洗衣护理产品，并说明衣物洗完晾晒后仍能保留香味。随后切换到产品静物画面，口播评价包装容量和价格表现。",
+      "tags": [
+        "usage_effect",
+        "core_selling_point",
+        "price_or_discount",
+        "multi_product_showcase"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "两款洗衣护理产品",
+          "出镜人物",
+          "产品静物"
+        ],
+        "audio": [
+          "口播介绍洗衣后的留香体验、容量和价格表现"
+        ],
+        "emotion": [
+          "满意",
+          "推荐"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "产品包装文字"
+        ]
+      },
+      "annotation_confidence": 0.85,
+      "review_notes": [
+        "留香持续时间、容量和价格如需写入正式标签，必须由人工根据完整口播确认。"
+      ]
+    },
+    {
+      "segment_id": "seg_017",
+      "start": 121,
+      "end": 126,
+      "description": "出镜人物面对镜头进行简短收尾，表示本期分享结束，并提示观众理性消费。",
+      "tags": [
+        "outro",
+        "summary",
+        "low_information"
+      ],
+      "default_highlight_score": 2,
+      "avoid_by_default": true,
+      "attribute_notes": {
+        "objects": [
+          "出镜人物"
+        ],
+        "audio": [
+          "结束口播",
+          "提示理性消费"
+        ],
+        "emotion": [
+          "友好",
+          "收尾"
+        ],
+        "text_on_screen": [
+          "中文字幕",
+          "抖音号水印"
+        ]
+      },
+      "annotation_confidence": 0.94,
+      "review_notes": [
+        "该段适合完整视频收尾，但默认高光剪辑一般无需保留。"
+      ]
+    },
+    {
+      "segment_id": "seg_018",
+      "start": 125,
+      "end": 129,
+      "description": "片尾切换为抖音账号搜索引导页面，出现头像、账号信息、搜索框和平台引导文案。",
+      "tags": [
+        "outro",
+        "account_info",
+        "low_information",
+        "text_overlay"
+      ],
+      "default_highlight_score": 1,
+      "avoid_by_default": true,
+      "attribute_notes": {
+        "objects": [
+          "账号头像",
+          "抖音搜索框",
+          "平台片尾页面"
+        ],
+        "audio": [
+          "片尾平台提示音或背景音"
+        ],
+        "emotion": [
+          "收尾"
+        ],
+        "text_on_screen": [
+          "抖音号",
+          "抖音搜索",
+          "来抖音 发现更多创作者"
+        ]
+      },
+      "annotation_confidence": 0.98,
+      "review_notes": [
+        "该段包含明显账号信息和平台引导，默认高光剪辑应避开。"
+      ]
+    }
+  ],
+  "review_notes": [
+    "视频总时长由本地文件读取为约 128.36 秒。正式写入 annotations.jsonl 前建议人工再次确认帧级时间戳。",
+    "视频内容可分为四组商品：猫粮、毛绒 AI 陪伴挂件、无火香薰和洗衣护理产品。分组边界较明确，适合用于 instruction-guided 剪辑评测。",
+    "seg_005 和 seg_006 包含猫咪使用场景，视觉吸引力较强；seg_009 和 seg_010 集中展示 AI 挂件的差异化功能；seg_012 展示香薰使用体验；seg_016 总结洗衣护理产品的核心体验。这些片段适合作为默认高光候选。",
+    "涉及优惠金额、赠品价值、猫粮效果、联网方式、香薰使用时长、洗衣护理产品准确品类、香调、留香时间、容量和价格的信息，需要人工根据原始音频与高清字幕逐项复核。",
+    "seg_002、seg_017 和 seg_018 默认应避免剪入高光；seg_018 明确包含账号搜索引导。",
+    "未新增超出推荐集合的自定义标签。"
+  ]
+}

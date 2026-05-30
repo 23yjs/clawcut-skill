@@ -22,34 +22,60 @@ python evaluation/run_eval.py \
   --run_skill
 ```
 
-## 3. dry run
+## 3. 独立 GT 文件模式
+
+新的推荐模式是每个视频对应一个独立 JSON 文件：
+
+```text
+data/input/ecom_cup_demo1.MP4
+→ data/eval/ecom_cup_demo1.json
+```
+
+运行：
+
+```bash
+python evaluation/run_eval.py \
+  --cases data/eval/cases.example.jsonl \
+  --gt_dir data/eval \
+  --output_dir eval_outputs/mock_gt_dir_v1 \
+  --backend mock \
+  --run_skill
+```
+
+说明：
+
+- `--gt_dir` 是新的推荐模式，会按 `video_id` 读取 `data/eval/<video_id>.json`。
+- `--annotations` 是旧版兼容模式，继续支持 JSONL。
+- 后续会逐步减少人工维护 `cases.jsonl` 的负担，但本次不处理。
+
+## 4. dry run
 
 只打印将要执行的 `run_skill.py` 命令，不实际剪辑视频。
 
 ```bash
 python evaluation/run_eval.py \
   --cases data/eval/cases.example.jsonl \
-  --annotations data/eval/annotations.example.jsonl \
+  --gt_dir data/eval \
   --output_dir eval_outputs/mock_v1 \
   --backend mock \
   --run_skill \
   --dry_run
 ```
 
-## 4. 只评分已有输出
+## 5. 只评分已有输出
 
 如果已经有 `eval_outputs/mock_v1/runs/<case_id>/...` 产物，可以只重新评分：
 
 ```bash
 python evaluation/run_eval.py \
   --cases data/eval/cases.example.jsonl \
-  --annotations data/eval/annotations.example.jsonl \
+  --gt_dir data/eval \
   --output_dir eval_outputs/mock_v1_score_only \
   --skill_output_root eval_outputs/mock_v1/runs \
   --score_only
 ```
 
-## 5. 评测路径说明
+## 6. 评测路径说明
 
 - `generic`：主要使用 `default_highlight_score`，同时检查默认应避免内容。
 - `specific`：主要使用 `must_cover_tags` / `must_avoid_tags`。

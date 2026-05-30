@@ -17,6 +17,7 @@ SCRIPTS_DIR = ROOT_DIR / "skills" / "clawcut-video-highlight" / "scripts"
 RUN_SKILL = SCRIPTS_DIR / "run_skill.py"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
+from gt_loader import load_gt_dir  # noqa: E402
 from metrics import (  # noqa: E402
     compute_case_score,
     compute_default_highlight_metrics,
@@ -342,7 +343,7 @@ def _write_eval_report(
     *,
     backend: str,
     cases_path: Path,
-    annotations_path: Path,
+    annotations_path: str,
     output_dir: Path,
     results: list[dict[str, Any]],
     dry_run: bool,
@@ -388,7 +389,7 @@ def _write_eval_report(
         "## 1. 评测设置",
         f"- 模型后端：`{backend}`",
         f"- 测试用例文件：`{cases_path}`",
-        f"- 语义标注文件：`{annotations_path}`",
+        f"- GT 来源：`{annotations_path}`",
         f"- 输出目录：`{output_dir}`",
         f"- 运行时间：`{datetime.now().isoformat(timespec='seconds')}`",
         f"- 是否为 dry run：`{dry_run}`",
@@ -566,7 +567,14 @@ def _evaluate_case(
 def _run_v4_eval(args: argparse.Namespace) -> int:
     if not args.run_skill and not args.score_only and not args.dry_run:
         raise SystemExit("V4 模式需要指定 --run_skill、--score_only 或 --dry_run")
-    annotations = {item["video_id"]: item for item in _read_jsonl(args.annotations)}
+    if args.gt_dir:
+        if args.annotations:
+            print("WARNING: 同时传入 --gt_dir 和 --annotations，已优先使用 --gt_dir。", file=sys.stderr)
+        annotations = load_gt_dir(args.gt_dir)
+        annotation_source = str(args.gt_dir)
+    else:
+        annotations = {item["video_id"]: item for item in _read_jsonl(args.annotations)}
+        annotation_source = str(args.annotations)
     cases = _read_jsonl(args.cases)
     if args.limit is not None:
         cases = cases[: args.limit]
@@ -610,7 +618,7 @@ def _run_v4_eval(args: argparse.Namespace) -> int:
         args.output_dir / "eval_report.md",
         backend=args.backend,
         cases_path=args.cases,
-        annotations_path=args.annotations,
+        annotations_path=annotation_source,
         output_dir=args.output_dir,
         results=results,
         dry_run=args.dry_run,
@@ -651,6 +659,11 @@ def main() -> int:
 
     parser.add_argument("--cases", type=Path)
     parser.add_argument("--annotations", type=Path)
+    parser.add_argument(
+        "--gt_dir",
+        type=Path,
+        help="按视频名称读取独立 GT JSON 文件的目录，例如 data/eval",
+    )
     parser.add_argument("--output_dir", type=Path, default=Path("eval_outputs/mock_v1"))
     parser.add_argument("--backend", choices=["mock", "ark"], default="mock")
     parser.add_argument("--run_skill", action="store_true")
@@ -662,8 +675,10 @@ def main() -> int:
 
     if args.plan_json:
         return _run_legacy_eval(args)
-    if not args.cases or not args.annotations:
-        raise SystemExit("V4 模式需要传入 --cases 和 --annotations，或使用旧模式 --plan_json")
+    if not args.cases:
+        raise SystemExit("V4 模式需要传入 --cases，或使用旧模式 --plan_json")
+    if not args.gt_dir and not args.annotations:
+        raise SystemExit("V4 模式需要传入 --gt_dir 或旧版 --annotations，或使用旧模式 --plan_json")
     return _run_v4_eval(args)
 
 

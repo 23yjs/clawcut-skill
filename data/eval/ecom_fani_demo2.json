@@ -1,0 +1,364 @@
+{
+  "video_id": "ecom_fani_demo2",
+  "video_path": "data/input/ecom_fani_demo2.MP4",
+  "video_type": "ecommerce_product",
+  "duration_seconds": 35,
+  "video_summary": "视频为电商种草类发泥产品推荐，出镜人物围绕发型蓬松、定型效果、质地展示和使用体验介绍产品卖点。",
+  "annotation_source": "llm_draft",
+  "review_status": "pending_human_review",
+  "semantic_segments": [
+    {
+      "segment_id": "seg_001",
+      "start": 0,
+      "end": 3,
+      "description": "出镜人物正对镜头举起一盒圆形发泥并指向产品，开场表示要推荐发泥，快速引入商品主题。",
+      "tags": [
+        "intro",
+        "product_appearance",
+        "text_overlay"
+      ],
+      "default_highlight_score": 3,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "出镜人物",
+          "圆形发泥盒"
+        ],
+        "audio": [
+          "口播开场介绍发泥产品"
+        ],
+        "emotion": [
+          "自然推荐语气"
+        ],
+        "text_on_screen": [
+          "发泥推个车",
+          "来了兄弟们"
+        ]
+      },
+      "annotation_confidence": 0.95,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_002",
+      "start": 2,
+      "end": 6,
+      "description": "出镜人物不再遮挡商品，面对镜头说明想要打造蓬松、有型的头发，选对发泥非常重要。",
+      "tags": [
+        "core_selling_point",
+        "text_overlay"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "出镜人物",
+          "蓬松发型"
+        ],
+        "audio": [
+          "口播强调选择合适发泥对头发造型的重要性"
+        ],
+        "emotion": [
+          "认真讲解"
+        ],
+        "text_on_screen": [
+          "头发想要蓬松有型",
+          "选对发泥真的很重要"
+        ]
+      },
+      "annotation_confidence": 0.95,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_003",
+      "start": 5,
+      "end": 9,
+      "description": "出镜人物再次举起发泥盒，强调产品好用、便宜，并表示效果不输市面上五六十元价位的发泥。",
+      "tags": [
+        "product_appearance",
+        "core_selling_point",
+        "price_or_discount",
+        "text_overlay"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "出镜人物",
+          "圆形发泥盒"
+        ],
+        "audio": [
+          "口播介绍产品性价比"
+        ],
+        "emotion": [
+          "肯定推荐"
+        ],
+        "text_on_screen": [
+          "好用",
+          "便宜",
+          "绝对不输市面上五六十的发泥"
+        ]
+      },
+      "annotation_confidence": 0.94,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_004",
+      "start": 8,
+      "end": 11,
+      "description": "镜头切换为手部近景。出镜人物将少量白色发泥涂在手背上并用手指划开，展示产品偏哑光、清爽的外观效果。",
+      "tags": [
+        "product_detail",
+        "function_demo",
+        "usage_effect",
+        "text_overlay"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "手背",
+          "手指",
+          "白色发泥"
+        ],
+        "audio": [
+          "口播说明产品质地偏哑光、清爽"
+        ],
+        "emotion": [],
+        "text_on_screen": [
+          "它的质地",
+          "是这种偏哑光清爽"
+        ]
+      },
+      "annotation_confidence": 0.96,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_005",
+      "start": 10,
+      "end": 15,
+      "description": "镜头切换为打开后的发泥盒特写。手指按压并拨动白色膏体，展示柔软、绵密的质感，并用老北京酸奶作类比。",
+      "tags": [
+        "product_detail",
+        "function_demo",
+        "core_selling_point",
+        "text_overlay"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "打开的发泥盒",
+          "白色膏体",
+          "手指"
+        ],
+        "audio": [
+          "口播描述发泥质地柔软，并类比老北京酸奶"
+        ],
+        "emotion": [],
+        "text_on_screen": [
+          "它的质感很软糯",
+          "给人的感觉有点像",
+          "老北京酸奶"
+        ]
+      },
+      "annotation_confidence": 0.97,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_006",
+      "start": 14,
+      "end": 17,
+      "description": "镜头回到出镜人物。人物用手指展示取出的少量发泥，说明产品非常容易推开，为后续手掌揉搓演示做准备。",
+      "tags": [
+        "core_selling_point",
+        "function_demo",
+        "product_detail",
+        "text_overlay"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "出镜人物",
+          "手指上的发泥",
+          "发泥盒"
+        ],
+        "audio": [
+          "口播说明发泥容易推开"
+        ],
+        "emotion": [
+          "自然讲解"
+        ],
+        "text_on_screen": [
+          "而且非常容易推开"
+        ]
+      },
+      "annotation_confidence": 0.95,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_007",
+      "start": 16,
+      "end": 24,
+      "description": "出镜人物在镜头前以正常速度反复揉搓双手，将发泥推开，随后摊开手掌展示发泥已经呈透明状。画面顶部持续提示没有加速。",
+      "tags": [
+        "function_demo",
+        "usage_effect",
+        "text_overlay"
+      ],
+      "default_highlight_score": 5,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "出镜人物",
+          "双手",
+          "手掌上的发泥"
+        ],
+        "audio": [
+          "口播提示观众注意观察推开过程，并说明推开后呈透明状"
+        ],
+        "emotion": [
+          "专注演示"
+        ],
+        "text_on_screen": [
+          "无加速...",
+          "看好 无加速",
+          "推开之后",
+          "它是这种呈透明状"
+        ]
+      },
+      "annotation_confidence": 0.98,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_008",
+      "start": 23,
+      "end": 28,
+      "description": "镜头回到出镜人物讲解。人物说明这种发泥质地较轻薄，用在头发上不容易造成油腻感。",
+      "tags": [
+        "core_selling_point",
+        "usage_effect",
+        "text_overlay"
+      ],
+      "default_highlight_score": 4,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "出镜人物",
+          "蓬松发型"
+        ],
+        "audio": [
+          "口播说明发泥轻薄、不容易让头发显得油腻"
+        ],
+        "emotion": [
+          "肯定推荐"
+        ],
+        "text_on_screen": [
+          "这种发泥呢它就很轻薄",
+          "打在头发上呢也不容易油"
+        ]
+      },
+      "annotation_confidence": 0.96,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_009",
+      "start": 27,
+      "end": 30,
+      "description": "插入一段竖屏辅助画面：另一名短发人物面对镜头抬起手掌，画面叠加与发泥长期自用相关的文字，用作补充展示或引用示例。",
+      "tags": [
+        "example_demo",
+        "text_overlay",
+        "transition"
+      ],
+      "default_highlight_score": 2,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "短发人物",
+          "抬起的手掌",
+          "竖屏短视频界面"
+        ],
+        "audio": [],
+        "emotion": [
+          "中性展示"
+        ],
+        "text_on_screen": [
+          "手",
+          "发泥",
+          "一直在自用的产品"
+        ]
+      },
+      "annotation_confidence": 0.78,
+      "review_notes": [
+        "该片段为短暂插入画面，能够确认与发泥使用相关，但无法仅根据画面完全判断其来源及完整语境，建议人工复核。"
+      ]
+    },
+    {
+      "segment_id": "seg_010",
+      "start": 29,
+      "end": 32,
+      "description": "镜头回到原出镜人物。人物面向镜头收尾，建议还没有发泥的观众可以尝试该产品。",
+      "tags": [
+        "purchase_call_to_action",
+        "summary",
+        "text_overlay"
+      ],
+      "default_highlight_score": 3,
+      "avoid_by_default": false,
+      "attribute_notes": {
+        "objects": [
+          "出镜人物"
+        ],
+        "audio": [
+          "口播建议没有发泥的观众尝试产品"
+        ],
+        "emotion": [
+          "直接推荐"
+        ],
+        "text_on_screen": [
+          "还没有发泥的兄弟们",
+          "真的可以试一试"
+        ]
+      },
+      "annotation_confidence": 0.97,
+      "review_notes": []
+    },
+    {
+      "segment_id": "seg_011",
+      "start": 31,
+      "end": 35,
+      "description": "视频进入抖音平台片尾页，显示搜索框、搜索词和二维码，不再包含商品讲解或功能演示。",
+      "tags": [
+        "outro",
+        "account_info",
+        "low_information"
+      ],
+      "default_highlight_score": 1,
+      "avoid_by_default": true,
+      "attribute_notes": {
+        "objects": [
+          "抖音片尾页",
+          "搜索框",
+          "二维码"
+        ],
+        "audio": [],
+        "emotion": [],
+        "text_on_screen": [
+          "大家都在抖音",
+          "发泥有什么用",
+          "截图保存到相册",
+          "抖音搜索页扫一扫"
+        ]
+      },
+      "annotation_confidence": 0.99,
+      "review_notes": []
+    }
+  ],
+  "review_notes": [
+    "视频主体为短视频电商推荐内容，核心信息集中在产品性价比、膏体质感、推开过程和轻薄不油腻等卖点。",
+    "片段边界主要依据镜头切换、字幕变化和动作完整性划分。",
+    "seg_009 为短暂插入的辅助画面，语义来源需要人工复核。",
+    "最终结果必须经人工审核后才能写入正式 annotations.jsonl。"
+  ]
+}
