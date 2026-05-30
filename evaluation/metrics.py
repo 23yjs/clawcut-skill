@@ -7,6 +7,9 @@ from pathlib import Path
 from typing import Any
 
 
+DEFAULT_BOUNDARY_TOLERANCE_SECONDS = 1.0
+
+
 def _to_float(value: Any, default: float = 0.0) -> float:
     try:
         if value is None:
@@ -60,6 +63,18 @@ def temporal_iou(a: dict[str, Any], b: dict[str, Any]) -> float:
     return overlap_duration(a, b) / union
 
 
+def _expand_segment_for_tolerance(
+    segment: dict[str, Any],
+    boundary_tolerance_seconds: float,
+) -> dict[str, Any]:
+    if boundary_tolerance_seconds < 0:
+        raise ValueError("boundary_tolerance_seconds 不能小于 0")
+    expanded = dict(segment)
+    expanded["start"] = max(0.0, float(segment["start"]) - boundary_tolerance_seconds)
+    expanded["end"] = float(segment["end"]) + boundary_tolerance_seconds
+    return expanded
+
+
 def resolve_target_duration(plan: dict[str, Any], target_duration: float | None = None) -> float:
     duration_policy = plan.get("duration_policy")
     if isinstance(duration_policy, dict) and duration_policy.get("selected_target_duration") is not None:
@@ -89,12 +104,61 @@ def _is_temporal_match(
     semantic: dict[str, Any],
     iou_threshold: float,
     overlap_ratio_threshold: float,
+    boundary_tolerance_seconds: float = DEFAULT_BOUNDARY_TOLERANCE_SECONDS,
 ) -> tuple[bool, float, float, float]:
-    overlap = overlap_duration(pred, semantic)
-    iou = temporal_iou(pred, semantic)
-    min_duration = min(segment_duration(pred), segment_duration(semantic))
-    overlap_ratio = overlap / min_duration if min_duration > 0 else 0.0
-    return iou >= iou_threshold or overlap_ratio >= overlap_ratio_threshold, iou, overlap, overlap_ratio
+    details = _temporal_match_details(
+        pred,
+        semantic,
+        iou_threshold,
+        overlap_ratio_threshold,
+        boundary_tolerance_seconds,
+    )
+    return (
+        bool(details["matched"]),
+        float(details["raw_iou"]),
+        float(details["raw_overlap_duration"]),
+        float(details["raw_overlap_ratio"]),
+    )
+
+
+def _temporal_match_details(
+    pred: dict[str, Any],
+    semantic: dict[str, Any],
+    iou_threshold: float,
+    overlap_ratio_threshold: float,
+    boundary_tolerance_seconds: float = DEFAULT_BOUNDARY_TOLERANCE_SECONDS,
+) -> dict[str, Any]:
+    raw_overlap = overlap_duration(pred, semantic)
+    raw_iou = temporal_iou(pred, semantic)
+    raw_min_duration = min(segment_duration(pred), segment_duration(semantic))
+    raw_overlap_ratio = raw_overlap / raw_min_duration if raw_min_duration > 0 else 0.0
+
+    tolerant_semantic = _expand_segment_for_tolerance(semantic, boundary_tolerance_seconds)
+    tolerant_overlap = overlap_duration(pred, tolerant_semantic)
+    tolerant_iou = temporal_iou(pred, tolerant_semantic)
+    tolerant_min_duration = min(segment_duration(pred), segment_duration(tolerant_semantic))
+    tolerant_overlap_ratio = tolerant_overlap / tolerant_min_duration if tolerant_min_duration > 0 else 0.0
+
+    raw_matched = raw_iou >= iou_threshold or raw_overlap_ratio >= overlap_ratio_threshold
+    matched = tolerant_iou >= iou_threshold or tolerant_overlap_ratio >= overlap_ratio_threshold
+    if raw_matched:
+        matched_by = "raw"
+    elif matched:
+        matched_by = "boundary_tolerance"
+    else:
+        matched_by = "none"
+
+    return {
+        "matched": matched,
+        "matched_by": matched_by,
+        "boundary_tolerance_seconds": boundary_tolerance_seconds,
+        "raw_iou": raw_iou,
+        "raw_overlap_duration": raw_overlap,
+        "raw_overlap_ratio": raw_overlap_ratio,
+        "tolerant_iou": tolerant_iou,
+        "tolerant_overlap_duration": tolerant_overlap,
+        "tolerant_overlap_ratio": tolerant_overlap_ratio,
+    }
 
 
 def match_pred_to_semantic_segments(
@@ -102,6 +166,7 @@ def match_pred_to_semantic_segments(
     semantic_segments: list[dict[str, Any]],
     iou_threshold: float = 0.1,
     overlap_ratio_threshold: float = 0.3,
+    boundary_tolerance_seconds: float = DEFAULT_BOUNDARY_TOLERANCE_SECONDS,
 ) -> dict[str, Any]:
     matched_segment_ids: list[str] = []
     matched_tags: list[str] = []
@@ -111,13 +176,14 @@ def match_pred_to_semantic_segments(
     for pred_index, pred in enumerate(pred_segments):
         pred_matches: list[dict[str, Any]] = []
         for semantic in semantic_segments:
-            matched, iou, overlap, overlap_ratio = _is_temporal_match(
+            details = _temporal_match_details(
                 pred,
                 semantic,
                 iou_threshold,
                 overlap_ratio_threshold,
+                boundary_tolerance_seconds,
             )
-            if not matched:
+            if not details["matched"]:
                 continue
             segment_id = str(semantic.get("segment_id", ""))
             tags = _as_tags(semantic.get("tags"))
@@ -135,9 +201,14 @@ def match_pred_to_semantic_segments(
                     "tags": tags,
                     "default_highlight_score": semantic.get("default_highlight_score"),
                     "avoid_by_default": bool(semantic.get("avoid_by_default")),
-                    "iou": _round(iou),
-                    "overlap_duration": _round(overlap),
-                    "overlap_ratio": _round(overlap_ratio),
+                    "iou": _round(details["raw_iou"]),
+                    "overlap_duration": _round(details["raw_overlap_duration"]),
+                    "overlap_ratio": _round(details["raw_overlap_ratio"]),
+                    "tolerant_iou": _round(details["tolerant_iou"]),
+                    "tolerant_overlap_duration": _round(details["tolerant_overlap_duration"]),
+                    "tolerant_overlap_ratio": _round(details["tolerant_overlap_ratio"]),
+                    "matched_by": details["matched_by"],
+                    "boundary_tolerance_seconds": boundary_tolerance_seconds,
                 }
             )
 
@@ -156,13 +227,21 @@ def match_pred_to_semantic_segments(
         "matched_tags": _unique(matched_tags),
         "matched_descriptions": _unique(matched_descriptions),
         "per_pred_matches": per_pred_matches,
+        "boundary_tolerance_seconds": boundary_tolerance_seconds,
     }
+
+
+def _compute_f1(precision: float, recall: float) -> float:
+    if precision + recall <= 0:
+        return 0.0
+    return 2 * precision * recall / (precision + recall)
 
 
 def compute_default_highlight_metrics(
     pred_segments: list[dict[str, Any]],
     semantic_segments: list[dict[str, Any]],
     score_threshold: int = 4,
+    boundary_tolerance_seconds: float = DEFAULT_BOUNDARY_TOLERANCE_SECONDS,
 ) -> dict[str, Any]:
     targets = [
         segment
@@ -180,7 +259,13 @@ def compute_default_highlight_metrics(
         matched_positive = False
         matched_low_value = False
         for semantic in semantic_segments:
-            matched, iou, _overlap, _ratio = _is_temporal_match(pred, semantic, 0.1, 0.3)
+            matched, _iou, _overlap, _ratio = _is_temporal_match(
+                pred,
+                semantic,
+                0.1,
+                0.3,
+                boundary_tolerance_seconds,
+            )
             if not matched:
                 continue
             segment_id = str(semantic.get("segment_id", ""))
@@ -199,7 +284,13 @@ def compute_default_highlight_metrics(
     for target in targets:
         max_iou = 0.0
         for pred in pred_segments:
-            matched, iou, _overlap, _ratio = _is_temporal_match(pred, target, 0.1, 0.3)
+            matched, iou, _overlap, _ratio = _is_temporal_match(
+                pred,
+                target,
+                0.1,
+                0.3,
+                boundary_tolerance_seconds,
+            )
             if matched:
                 max_iou = max(max_iou, iou)
         if max_iou > 0:
@@ -207,14 +298,18 @@ def compute_default_highlight_metrics(
 
     unique_hit_target_ids = _unique([item for item in hit_target_ids if item])
     missed = [segment_id for segment_id in target_ids if segment_id not in unique_hit_target_ids]
+    default_highlight_recall = len(unique_hit_target_ids) / len(targets) if targets else 1.0
+    default_highlight_precision = pred_positive_hits / len(pred_segments) if pred_segments else 0.0
     return {
         "default_highlight_target_count": len(targets),
         "default_highlight_hit_count": len(unique_hit_target_ids),
-        "default_highlight_recall": _round(len(unique_hit_target_ids) / len(targets) if targets else 1.0),
-        "default_highlight_precision": _round(pred_positive_hits / len(pred_segments) if pred_segments else 0.0),
+        "default_highlight_recall": _round(default_highlight_recall),
+        "default_highlight_precision": _round(default_highlight_precision),
+        "default_highlight_f1": _round(_compute_f1(default_highlight_precision, default_highlight_recall)),
         "avg_default_highlight_iou": _round(sum(best_ious) / len(best_ious) if best_ious else 0.0),
         "missed_default_highlights": missed,
         "selected_low_value_segments": _unique([item for item in selected_low_value_segments if item]),
+        "boundary_tolerance_seconds": boundary_tolerance_seconds,
     }
 
 

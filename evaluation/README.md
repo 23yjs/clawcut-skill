@@ -48,7 +48,39 @@ python evaluation/run_eval.py \
 - `--annotations` 是旧版兼容模式，继续支持 JSONL。
 - 后续会逐步减少人工维护 `cases.jsonl` 的负担，但本次不处理。
 
-## 4. dry run
+## 4. 整数 GT 时间戳与边界容忍
+
+人工 GT 使用整数秒标注：
+
+```json
+{
+  "segment_id": "seg_001",
+  "start": 9,
+  "end": 15
+}
+```
+
+Skill 输出允许使用浮点秒。评测匹配时，GT 左右边界默认各放宽 1 秒：
+
+```text
+原始 GT：9-15 秒
+容忍区间：8-16 秒
+```
+
+容忍区间只用于判断预测片段是否命中 GT，不用于替代原始 IoU。
+
+generic 默认高光评测输出：
+
+```text
+default_highlight_precision
+default_highlight_recall
+default_highlight_f1
+avg_default_highlight_iou
+```
+
+其中 `Precision / Recall / F1` 是面向用户展示的主要语义指标；`avg_default_highlight_iou` 保留为底层重叠质量参考。
+
+## 5. dry run
 
 只打印将要执行的 `run_skill.py` 命令，不实际剪辑视频。
 
@@ -62,7 +94,7 @@ python evaluation/run_eval.py \
   --dry_run
 ```
 
-## 5. 只评分已有输出
+## 6. 只评分已有输出
 
 如果已经有 `eval_outputs/mock_v1/runs/<case_id>/...` 产物，可以只重新评分：
 
@@ -75,7 +107,7 @@ python evaluation/run_eval.py \
   --score_only
 ```
 
-## 6. 评测路径说明
+## 7. 评测路径说明
 
 - `generic`：主要使用 `default_highlight_score`，同时检查默认应避免内容。
 - `specific`：主要使用 `must_cover_tags` / `must_avoid_tags`。

@@ -57,6 +57,7 @@ CSV_FIELDS = [
     "must_avoid_violation_rate",
     "default_highlight_recall",
     "default_highlight_precision",
+    "default_highlight_f1",
     "avg_default_highlight_iou",
     "selected_low_value_segments",
     "semantic_match_score",
@@ -285,6 +286,7 @@ def _csv_row_from_result(result: dict[str, Any]) -> dict[str, Any]:
         "must_avoid_violation_rate": must_avoid.get("violation_rate"),
         "default_highlight_recall": default_highlight.get("default_highlight_recall"),
         "default_highlight_precision": default_highlight.get("default_highlight_precision"),
+        "default_highlight_f1": default_highlight.get("default_highlight_f1"),
         "avg_default_highlight_iou": default_highlight.get("avg_default_highlight_iou"),
         "selected_low_value_segments": default_highlight.get("selected_low_value_segments", []),
         "semantic_match_score": description.get("semantic_match_score"),
@@ -382,6 +384,24 @@ def _write_eval_report(
             for result in scored
         ]
     )
+    average_default_precision = _average(
+        [
+            _safe_float(result.get("metrics", {}).get("default_highlight", {}).get("default_highlight_precision"))
+            for result in scored
+        ]
+    )
+    average_default_recall = _average(
+        [
+            _safe_float(result.get("metrics", {}).get("default_highlight", {}).get("default_highlight_recall"))
+            for result in scored
+        ]
+    )
+    average_default_f1 = _average(
+        [
+            _safe_float(result.get("metrics", {}).get("default_highlight", {}).get("default_highlight_f1"))
+            for result in scored
+        ]
+    )
 
     lines = [
         "# ClawCut Mock 自动评测报告",
@@ -405,6 +425,9 @@ def _write_eval_report(
         f"- 平均总分：{average_final_score}",
         f"- 平均必选标签覆盖率：{average_must_cover}",
         f"- 平均禁选标签违规率：{average_must_avoid}",
+        f"- 平均默认高光 Precision：{average_default_precision}",
+        f"- 平均默认高光 Recall：{average_default_recall}",
+        f"- 平均默认高光 F1：{average_default_f1}",
         f"- 平均时长误差：{average_duration_delta}",
         f"- 平均工程完整性分数：{average_functional}",
         "",
@@ -429,15 +452,16 @@ def _write_eval_report(
             "",
             "## 5. 用例结果表",
             "",
-            "| 用例 ID | 指令类型 | 评测模式 | 运行状态 | 总分 | 必选标签覆盖率 | 禁选标签违规率 | 时长误差 | 评测状态 |",
-            "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- |",
+            "| 用例 ID | 指令类型 | 评测模式 | 运行状态 | 总分 | 必选标签覆盖率 | 禁选标签违规率 | 默认高光 Precision | 默认高光 Recall | 默认高光 F1 | 时长误差 | 评测状态 |",
+            "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
         ]
     )
     for result in results:
         metrics = result.get("metrics", {})
         lines.append(
             "| {case_id} | {instruction_type} | {judge_mode} | {run_status} | {final_score} | "
-            "{must_cover} | {must_avoid} | {duration_delta} | {evaluation_status} |".format(
+            "{must_cover} | {must_avoid} | {default_precision} | {default_recall} | {default_f1} | "
+            "{duration_delta} | {evaluation_status} |".format(
                 case_id=result["case"].get("case_id", ""),
                 instruction_type=result["case"].get("instruction_type", ""),
                 judge_mode=result["case"].get("judge_mode", ""),
@@ -445,6 +469,9 @@ def _write_eval_report(
                 final_score=result.get("score", {}).get("final_score"),
                 must_cover=metrics.get("must_cover", {}).get("must_cover_coverage"),
                 must_avoid=metrics.get("must_avoid", {}).get("violation_rate"),
+                default_precision=metrics.get("default_highlight", {}).get("default_highlight_precision"),
+                default_recall=metrics.get("default_highlight", {}).get("default_highlight_recall"),
+                default_f1=metrics.get("default_highlight", {}).get("default_highlight_f1"),
                 duration_delta=metrics.get("duration", {}).get("duration_delta"),
                 evaluation_status=result.get("score", {}).get("evaluation_status", ""),
             )
@@ -479,6 +506,11 @@ def _write_eval_report(
             "- uncovered 样本不纳入自动平均分。",
             "- default_highlight_score 只在 generic 指令下作为主依据。",
             "- specific/conflict 指令以 must_cover_tags / must_avoid_tags 为主。",
+            "- GT 时间戳使用整数秒。",
+            "- 匹配时允许 boundary_tolerance_seconds=1.0 的边界容忍。",
+            "- IoU 和 overlap_ratio 是底层片段匹配工具。",
+            "- Precision、Recall、F1 是 generic 默认高光评测中面向用户展示的主要语义指标。",
+            "- 容忍窗口只影响 hit / miss 判断，不替代原始 IoU。",
         ]
     )
     path.parent.mkdir(parents=True, exist_ok=True)
