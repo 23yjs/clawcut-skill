@@ -40,17 +40,54 @@ def _recommended_duration(video_duration: float) -> float:
     return round(min(video_duration, min(max(video_duration * 0.15, 15.0), 60.0)), 3)
 
 
-def _build_duration_policy(video_duration: float, user_target_duration: float | None) -> dict[str, Any]:
+def _normalize_duration_policy_mode(mode: str | None) -> str:
+    normalized = str(mode or "bounded_auto").strip().lower()
+    if normalized not in {"bounded_auto", "llm_free"}:
+        raise SkillError(f"不支持的 duration_policy_mode：{mode}")
+    return normalized
+
+
+def _final_segments_total_duration(plan: dict[str, Any]) -> float:
+    total = 0.0
+    for segment in plan.get("final_segments", []):
+        try:
+            total += max(0.0, float(segment["end"]) - float(segment["start"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+    return round(total, 3)
+
+
+def _build_duration_policy(
+    video_duration: float,
+    user_target_duration: float | None,
+    duration_policy_mode: str = "bounded_auto",
+) -> dict[str, Any]:
+    duration_policy_mode = _normalize_duration_policy_mode(duration_policy_mode)
     if user_target_duration is not None:
         target = float(user_target_duration)
         return {
+            "duration_policy_mode": duration_policy_mode,
             "user_specified_duration": True,
             "user_target_duration": target,
             "recommended_duration": None,
             "selected_target_duration": target,
             "allowed_min_duration": target,
             "allowed_max_duration": target,
+            "final_total_duration": None,
             "duration_policy_reason": "用户明确指定目标时长，系统严格按照该时长规划剪辑。",
+        }
+
+    if duration_policy_mode == "llm_free":
+        return {
+            "duration_policy_mode": "llm_free",
+            "user_specified_duration": False,
+            "user_target_duration": None,
+            "recommended_duration": None,
+            "selected_target_duration": None,
+            "allowed_min_duration": 0.001,
+            "allowed_max_duration": round(float(video_duration), 3),
+            "final_total_duration": None,
+            "duration_policy_reason": "用户未指定目标时长，本次不预设固定时长预算，由模型根据视频内容密度和高光数量自行决定成片长度。",
         }
 
     recommended = _recommended_duration(video_duration)
@@ -59,12 +96,14 @@ def _build_duration_policy(video_duration: float, user_target_duration: float | 
     if allowed_max < allowed_min:
         allowed_min = allowed_max
     return {
+        "duration_policy_mode": "bounded_auto",
         "user_specified_duration": False,
         "user_target_duration": None,
         "recommended_duration": recommended,
         "selected_target_duration": recommended,
         "allowed_min_duration": allowed_min,
         "allowed_max_duration": allowed_max,
+        "final_total_duration": None,
         "duration_policy_reason": "用户未指定目标时长，系统根据视频总时长、内容密度和高光数量选择合理时长。",
     }
 
@@ -72,14 +111,20 @@ def _build_duration_policy(video_duration: float, user_target_duration: float | 
 def _normalize_plan_duration_policy(
     plan: dict[str, Any],
     base_policy: dict[str, Any],
+    video_duration: float,
 ) -> list[str]:
     if not isinstance(plan.get("duration_policy"), dict):
         plan["duration_policy"] = dict(base_policy)
-        return ["模型未输出 duration_policy，已使用系统计算的目标时长策略补齐。"]
+        warnings = ["模型未输出 duration_policy，已使用系统计算的目标时长策略补齐。"]
+        model_policy: dict[str, Any] = {}
+    else:
+        warnings = []
+        model_policy = dict(plan["duration_policy"])
 
-    warnings: list[str] = []
-    model_policy = dict(plan["duration_policy"])
     normalized = dict(base_policy)
+    normalized["duration_policy_mode"] = _normalize_duration_policy_mode(
+        base_policy.get("duration_policy_mode") or model_policy.get("duration_policy_mode")
+    )
     if str(model_policy.get("duration_policy_reason", "")).strip():
         normalized["duration_policy_reason"] = str(model_policy["duration_policy_reason"])
 
@@ -89,6 +134,24 @@ def _normalize_plan_duration_policy(
             warnings.append(
                 "模型 selected_target_duration 与用户指定时长不一致，已修正为用户指定时长。"
             )
+    elif normalized["duration_policy_mode"] == "llm_free":
+        final_total_duration = _final_segments_total_duration(plan)
+        if final_total_duration <= 0:
+            warnings.append("llm_free 模式下 final_segments 总时长无效，后续 validator 会阻断执行。")
+            final_total_duration = 0.0
+        model_selected = model_policy.get("selected_target_duration")
+        if model_selected not in (None, ""):
+            try:
+                model_selected_float = float(model_selected)
+                if abs(model_selected_float - final_total_duration) > 1.0:
+                    warnings.append("llm_free 模式下模型 selected_target_duration 与实际 final_segments 总时长差异较大，已按实际总时长记录。")
+            except (TypeError, ValueError):
+                warnings.append("llm_free 模式下模型 selected_target_duration 无法解析，已按实际总时长记录。")
+        normalized["recommended_duration"] = None
+        normalized["selected_target_duration"] = final_total_duration if final_total_duration > 0 else None
+        normalized["allowed_min_duration"] = 0.001
+        normalized["allowed_max_duration"] = round(float(video_duration), 3)
+        normalized["final_total_duration"] = final_total_duration
     else:
         allowed_min = float(base_policy["allowed_min_duration"])
         allowed_max = float(base_policy["allowed_max_duration"])
@@ -284,11 +347,13 @@ def _write_report(
         "",
         "## 目标时长策略",
         "",
+        f"- 时长策略模式：{duration_policy.get('duration_policy_mode')}",
         f"- 用户是否指定时长：{duration_policy.get('user_specified_duration')}",
         f"- 用户指定时长：{duration_policy.get('user_target_duration')}",
         f"- 系统推荐时长：{duration_policy.get('recommended_duration')}",
         f"- 模型选择时长 selected_target_duration：{duration_policy.get('selected_target_duration')}",
         f"- 允许范围：{duration_policy.get('allowed_min_duration')} - {duration_policy.get('allowed_max_duration')} 秒",
+        f"- duration_policy.final_total_duration：{duration_policy.get('final_total_duration')}",
         f"- 策略原因：{duration_policy.get('duration_policy_reason', '')}",
         f"- final_segments 总时长：{validation['total_duration']:.3f} 秒",
         f"- duration_delta：{validation['duration_delta']:.3f} 秒",
@@ -434,6 +499,7 @@ def run_skill(
     output_dir: Path = Path("outputs"),
     llm_video_url: str | None = None,
     llm_backend: str | None = None,
+    duration_policy_mode: str | None = None,
     config_path: Path | None = None,
     runtime_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -450,6 +516,7 @@ def run_skill(
     logger.info("启动参数：output_dir=%s", output_dir)
     logger.info("启动参数：llm_backend=%s", llm_backend or "config/default.yaml")
     logger.info("启动参数：llm_video_url_present=%s", bool(llm_video_url))
+    logger.info("启动参数：duration_policy_mode=%s", duration_policy_mode or "config/default.yaml")
     logger.info("启动参数：config=%s", config_path or "默认配置")
     logger.info("输入视频：%s", input_video)
     logger.info("本次输出目录：%s", paths["run"])
@@ -465,6 +532,12 @@ def run_skill(
         raise SkillError("target_duration 必须为正数")
 
     config = load_config(config_path)
+    configured_duration_mode = (
+        duration_policy_mode
+        or (config.get("duration_policy", {}) if isinstance(config.get("duration_policy"), dict) else {}).get("mode")
+        or "bounded_auto"
+    )
+    configured_duration_mode = _normalize_duration_policy_mode(configured_duration_mode)
     if llm_backend:
         config.setdefault("llm", {})
         config["llm"]["backend"] = llm_backend
@@ -476,8 +549,12 @@ def run_skill(
         logger.info("LLM 将使用外部视频 URL 输入：%s", _mask_url(llm_video_url))
     video_info = probe_video(input_video, config.get("ffmpeg", {}).get("probe_command", "ffprobe"), logger)
     logger.info("视频探测完成：%s", video_info)
-    duration_policy = _build_duration_policy(float(video_info["duration"]), target_duration)
-    selected_target_duration = float(duration_policy["selected_target_duration"])
+    duration_policy = _build_duration_policy(float(video_info["duration"]), target_duration, configured_duration_mode)
+    planning_target_duration = (
+        float(duration_policy["selected_target_duration"])
+        if duration_policy.get("selected_target_duration") is not None
+        else float(video_info["duration"])
+    )
     config["duration_policy"] = duration_policy
     runtime_context["duration_policy"] = duration_policy
     logger.info("目标时长策略：%s", duration_policy)
@@ -506,7 +583,7 @@ def run_skill(
     logger.info("使用的 LLM backend：%s", config.get("llm", {}).get("backend", "mock"))
 
     client = create_llm_client(config, logger=logger)
-    plan = client.generate_edit_plan(str(preview_path or ""), instruction, selected_target_duration, video_info, config)
+    plan = client.generate_edit_plan(str(preview_path or ""), instruction, planning_target_duration, video_info, config)
     logger.info("LLM 输出解析完成")
     plan = _attach_pipeline_metadata(
         plan,
@@ -515,17 +592,17 @@ def run_skill(
         input_video,
         preview_path,
     )
-    normalization_warnings = _normalize_plan_duration_policy(plan, duration_policy)
+    normalization_warnings = _normalize_plan_duration_policy(plan, duration_policy, float(video_info["duration"]))
     if normalization_warnings:
         logger.warning("duration_policy 修正：%s", normalization_warnings)
     try:
-        validation = assert_valid_plan(plan, video_info["duration"], selected_target_duration, config)
+        validation = assert_valid_plan(plan, video_info["duration"], plan["duration_policy"].get("selected_target_duration"), config)
     except SkillError as exc:
         llm_config = config.get("llm", {})
         used_backend = str(plan.get("llm_metadata", {}).get("backend", llm_config.get("backend", ""))).lower()
         if used_backend == "ark" and bool(llm_config.get("fallback_to_mock", True)):
             logger.warning("Ark LLM 输出校验失败，已回退到 mock：%s", exc)
-            plan = MockLLMClient().generate_edit_plan(str(preview_path or ""), instruction, selected_target_duration, video_info, config)
+            plan = MockLLMClient().generate_edit_plan(str(preview_path or ""), instruction, planning_target_duration, video_info, config)
             plan = _attach_pipeline_metadata(
                 plan,
                 model_video_input_source,
@@ -533,11 +610,13 @@ def run_skill(
                 input_video,
                 preview_path,
             )
-            normalization_warnings = _normalize_plan_duration_policy(plan, duration_policy)
-            validation = assert_valid_plan(plan, video_info["duration"], selected_target_duration, config)
+            normalization_warnings = _normalize_plan_duration_policy(plan, duration_policy, float(video_info["duration"]))
+            validation = assert_valid_plan(plan, video_info["duration"], plan["duration_policy"].get("selected_target_duration"), config)
         else:
             raise
     validation["warnings"].extend(normalization_warnings)
+    plan.setdefault("duration_policy", {})
+    plan["duration_policy"]["final_total_duration"] = validation["total_duration"]
     logger.info("剪辑方案校验完成：%s", validation)
     if validation.get("warnings"):
         logger.warning("validator warnings：%s", validation["warnings"])
@@ -599,6 +678,12 @@ def main() -> int:
     parser.add_argument("--target_duration", type=float, default=None)
     parser.add_argument("--output_dir", type=Path, default=Path("outputs"))
     parser.add_argument(
+        "--duration_policy_mode",
+        choices=["bounded_auto", "llm_free"],
+        default=None,
+        help="可选：未指定 target_duration 时的时长策略。bounded_auto 为默认 15% 策略，llm_free 让模型自由决定成片长度。",
+    )
+    parser.add_argument(
         "--llm_backend",
         choices=["ark", "mock"],
         default=None,
@@ -632,6 +717,7 @@ def main() -> int:
             output_dir,
             llm_video_url=args.llm_video_url,
             llm_backend=args.llm_backend,
+            duration_policy_mode=args.duration_policy_mode,
             config_path=args.config,
             runtime_context=runtime_context,
         )

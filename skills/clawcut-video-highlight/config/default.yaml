@@ -20,6 +20,9 @@ llm:
   video_fps: 1
   timeout_seconds: 120
 
+duration_policy:
+  mode: bounded_auto
+
 video_input_policy:
   prefer_original_url: true
   preview_upload_enabled: false

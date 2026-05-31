@@ -1,0 +1,225 @@
+{
+    "video_id": "vlog_demo1",
+    "video_path": "data/input/vlog_demo1.MP4",
+    "video_type": "vlog",
+    "duration_seconds": 262,
+    "video_summary": "视频记录一名高中生从清晨起床、赶到学校、上课和课间活动，到午间离校、下午返校、冲向食堂以及晚间放学的日常。内容采用第一视角拍摄和轻松吐槽式字幕，穿插课堂犯困、背课文、制作饭卡玩笑、下课抢跑和食堂用餐等校园生活片段，结尾出现抖音搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 4,
+            "description": "视频以校园生活片段拼贴作为片头，画面出现教室、课桌、手写作业和饭卡等内容，并显示“欢迎收看 09 年高中生的一天 vlog”的标题。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 4,
+            "end": 12,
+            "description": "出镜学生在卧室中从床上起身，又重新倒回床上，用夸张动作表现清晨不愿起床的状态。字幕以调侃方式强调刚起床时的疲惫。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 12,
+            "end": 24,
+            "description": "镜头切换到天色未亮的街道。拍摄者一边快速赶路一边表示自己又要迟到，并提到距离到校只剩几分钟，画面体现清晨匆忙赶往学校的过程。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 24,
+            "end": 34,
+            "description": "拍摄者到达学校门口，途中遇到同学并主动打招呼。随后镜头展示学生排队进入校门、通过闸机刷脸进校的过程。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 34,
+            "end": 42,
+            "description": "拍摄者进入教室，将外套和书包放到座位附近。教室中已有多名同学，镜头简短展示早晨到班后的准备状态。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 42,
+            "end": 53,
+            "description": "拍摄者坐在课桌前缓解赶路后的疲惫，镜头先拍摄桌下和书本，再切换为本人伏在桌面以及低头写字的画面。字幕提到先缓一会儿，并以轻松语气表现上课时的疲倦。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 53,
+            "end": 62,
+            "description": "课堂中，老师通过投影播放动画片段。镜头从学生座位方向拍摄黑板和投影画面，字幕提到老师播放了同学们喜欢的《辛普森一家》。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 62,
+            "end": 69,
+            "description": "下课后，拍摄者拿着写有大量笔记的课本或练习册，在教室或办公室附近寻找角落继续背诵课文。字幕说明自己课文尚未背完，需要利用课间完成任务。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 69,
+            "end": 75,
+            "description": "拍摄者回到座位后拿起饮料喝水，并短暂面对镜头休息。字幕以调侃语气表示先喝一口饮料缓解压力。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 75,
+            "end": 86,
+            "description": "镜头拍摄课桌下方、书包和教室内同学。拍摄者等待下课铃声并吐槽老师拖堂，字幕出现倒计时和希望老师不要继续讲课的内容。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 86,
+            "end": 93,
+            "description": "下课后，拍摄者从座位起身，经过教室书架和门口走出教室，镜头记录同学们陆续离开座位的过程。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 93,
+            "end": 98,
+            "description": "拍摄者通过校门闸机离开学校，镜头展示刷脸通道、校门和外侧街道。字幕以“打卡下班”的说法调侃午间离校。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 98,
+            "end": 116,
+            "description": "画面进入下午返校过程。拍摄者表示午睡闹钟没有响，幸好被家人叫醒，随后一边赶路一边观察前方同学，并再次通过学校闸机进入校园。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 116,
+            "end": 126,
+            "description": "拍摄者回到教室，在书架和座位附近整理书包。字幕提到同学们正在分发作业，自己借助教室中的忙乱状态回到座位。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 126,
+            "end": 132,
+            "description": "拍摄者坐在座位上做眼保健操，但随后低下头表现出明显困倦。字幕以自我调侃的方式说明自己认真做操，却困得难以坚持。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 132,
+            "end": 137,
+            "description": "镜头展示教室课桌上集中摆放的多瓶饮料，包括黄色瓶装饮料和透明瓶装饮料。字幕将这些饮品称为班级同学的“续命水源”。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 137,
+            "end": 159,
+            "description": "镜头切换到桌面近景。拍摄者展示一张带有卡套的饭卡，用白纸制作一张外观相似的替代卡片，将其放入卡套，并反复对比替代卡与原卡的外观，准备和同学开玩笑。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 159,
+            "end": 169,
+            "description": "镜头回到教室座位。拍摄者观察时间并等待下课，字幕出现距离铃声只剩数秒的倒计时。铃声临近时，拍摄者立即起身准备离开。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 169,
+            "end": 181,
+            "description": "拍摄者离开教室后快速穿过教学楼走廊，并跟随其他学生向楼梯方向移动。楼道中学生数量逐渐增加，画面节奏明显加快。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 181,
+            "end": 201,
+            "description": "通往楼下的楼梯十分拥挤，拍摄者在人群中寻找更快路线。镜头展示楼梯口和转角处的大量学生，字幕提到主楼梯人数太多，因此决定改走较小的楼梯。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 201,
+            "end": 224,
+            "description": "拍摄者沿小楼梯和室外通道快速下楼，随后穿过校园空地向食堂方向跑去。过程中不断尝试超过其他学生，字幕以游戏化语气描述抢占位置和被他人挡住路线的情况。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 224,
+            "end": 237,
+            "description": "拍摄者进入食堂，在就餐区域与同学碰面，并将准备好的替代饭卡交给同学。随后镜头跟随持卡同学移动，字幕提到对方刷卡时发现饭卡被调包。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 237,
+            "end": 244,
+            "description": "镜头展示食堂窗口和盛放食物的餐盘。拍摄者先领取餐食，并在同学发现饭卡问题后继续用轻松语气开玩笑，随后表示会将饭卡归还。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 244,
+            "end": 247,
+            "description": "画面切换到晚间自习。拍摄者坐在课桌前书写作业，镜头近距离展示握笔和纸面内容。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 247,
+            "end": 254,
+            "description": "晚自习即将结束，拍摄者在座位上整理书包，并等待下课铃。字幕再次出现数秒倒计时，表现随时准备离开教室的状态。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 254,
+            "end": 259,
+            "description": "下课后，拍摄者迅速离开座位并走出教室。镜头展示教室书架、同学和楼道，字幕表达撤离教室以及向同学告别的意思。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 259,
+            "end": 262,
+            "description": "视频切换到抖音平台片尾搜索引导页，出现搜索框、二维码和平台提示信息，不再包含校园 vlog 内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

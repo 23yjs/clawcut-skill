@@ -105,14 +105,25 @@ def _make_chunk_reviews(chunks: list[dict[str, Any]], segments: list[dict[str, A
 def _default_duration_policy(duration: float, target_duration: float) -> dict[str, Any]:
     target = min(float(target_duration), duration)
     return {
+        "duration_policy_mode": "bounded_auto",
         "user_specified_duration": True,
         "user_target_duration": float(target_duration),
         "recommended_duration": None,
         "selected_target_duration": target,
         "allowed_min_duration": target,
         "allowed_max_duration": target,
+        "final_total_duration": None,
         "duration_policy_reason": "mock 独立调用未提供 duration_policy，按传入 target_duration 兼容处理。",
     }
+
+
+def _mock_selected_target_duration(duration: float, target_duration: float, duration_policy: dict[str, Any]) -> float:
+    selected = duration_policy.get("selected_target_duration")
+    if selected not in (None, ""):
+        return min(max(1.0, float(selected)), duration)
+    if duration_policy.get("duration_policy_mode") == "llm_free" and not duration_policy.get("user_specified_duration"):
+        return round(min(duration, max(1.0, duration * 0.2)), 3)
+    return min(max(1.0, float(target_duration)), duration)
 
 
 def _make_excluded_highlights(
@@ -165,13 +176,23 @@ def generate_mock_plan(
     mock_config = config.get("mock_llm", {})
     duration = float(video_info["duration"])
     duration_policy = dict(config.get("duration_policy") or _default_duration_policy(duration, target_duration))
-    selected_target_duration = float(duration_policy.get("selected_target_duration", target_duration))
+    duration_policy.setdefault("duration_policy_mode", "bounded_auto")
+    selected_target_duration = _mock_selected_target_duration(duration, target_duration, duration_policy)
+    duration_policy["selected_target_duration"] = selected_target_duration
+    if duration_policy.get("duration_policy_mode") == "llm_free" and not duration_policy.get("user_specified_duration"):
+        duration_policy["recommended_duration"] = None
+        duration_policy["allowed_min_duration"] = 0.001
+        duration_policy["allowed_max_duration"] = round(duration, 3)
     chunks = _make_chunks(duration, int(mock_config.get("chunk_count", 6)))
     segments = _make_segments(
         duration,
         selected_target_duration,
         chunks,
         int(mock_config.get("max_segments", 5)),
+    )
+    duration_policy["final_total_duration"] = round(
+        sum(float(segment["end"]) - float(segment["start"]) for segment in segments),
+        3,
     )
     excluded_highlights = _make_excluded_highlights(chunks, segments, duration, selected_target_duration)
 

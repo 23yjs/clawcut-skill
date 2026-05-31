@@ -1,0 +1,169 @@
+{
+    "video_id": "knowledge-share-demo3",
+    "video_path": "data/input/knowledge-share-demo3.MP4",
+    "video_type": "knowledge_sharing",
+    "duration_seconds": 170,
+    "video_summary": "视频通过动画和生活化素材解释人类为什么不能像部分动物一样冬眠。内容先介绍冬眠的低代谢机制，再说明人类在体温调节、脑保护和代谢废物循环方面缺少必要能力，并进一步指出人类通过用火、衣物、食物储存和社会协作适应冬季。结尾补充人类仍保留轻微的季节性生理变化，并以温暖过冬的生活画面收束主题。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 8,
+            "description": "视频以冬眠动物、床铺和盖着被子的雕像等拼贴动画开场。旁白提出疑问：人类为什么不能像熊、刺猬和松鼠一样冬眠，在家睡上几个月，等天气转暖后再继续工作，而必须在严寒中维持日常生活。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 8,
+            "end": 15,
+            "description": "画面依次出现鼹鼠、带霜的动物和龟类素材。旁白进行简短自我介绍，并明确提出本期科普主题：人类为什么不能冬眠。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 15,
+            "end": 20,
+            "description": "镜头展示人物钻进被窝并在床上熟睡。旁白指出，大多数人对冬眠存在误解，将冬眠简单理解为躲在温暖的被窝里睡大觉。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 20,
+            "end": 28,
+            "description": "画面使用熊和文字动画解释冬眠的本质：冬眠是动物在极端环境下主动触发的低代谢休眠模式，身体会降低体温、放慢心率并显著减少代谢消耗。字幕将其比作生物体的低功耗模式。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 28,
+            "end": 35,
+            "description": "画面展示电量不足的手机和焦急查看手机的人物。旁白将冬眠类比为手机的省电模式：低电量时可以延长续航，但人类无法像动物一样在冬季主动切换到这种状态。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 35,
+            "end": 42,
+            "description": "镜头展示人物卧床和盖着毯子的雕像。旁白提出人类无法冬眠的第一个身体限制：进入冬眠需要大幅降低能量消耗，而这通常意味着体温也必须显著下降。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 42,
+            "end": 53,
+            "description": "画面通过文字动画介绍人体低温风险。旁白说明，人类属于恒温动物，体温低于约三十五摄氏度时意识会变得模糊，低于约二十八摄氏度时心脏可能停止正常工作；大脑虽然只占较小体重比例，却消耗全身较多能量。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 53,
+            "end": 63,
+            "description": "画面展示动物、大脑保护机制示意图、低温环境中的神经组织和细胞素材。旁白指出，能够冬眠的动物具有特殊的脑保护机制，使神经元可以在低温和低氧条件下存活，而人类缺少这套系统。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 63,
+            "end": 69,
+            "description": "镜头切换到医院病房和生命监护仪。旁白说明，如果人类强行进入低温冬眠，可能出现神经元大量死亡、失忆、痴呆或成为植物人等严重后果，更大的可能是无法再次醒来。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 69,
+            "end": 79,
+            "description": "画面展示冬眠中的松鼠和尿素循环文字动画。旁白指出，部分冬眠动物可以数月不吃不喝，是因为体内具有自身的尿素循环机制，能够回收利用代谢产生的物质，并在超低消耗状态下减少排泄需求。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 79,
+            "end": 89,
+            "description": "镜头使用人体器官示意图展示代谢废物堆积造成的影响。旁白指出，人类没有冬眠动物的循环能力，尿素和肌酐等物质一旦在体内持续堆积，可能引发尿毒症、脑水肿等严重问题。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 89,
+            "end": 94,
+            "description": "画面依次展示从猿类到现代人的面部变化，并穿插冬眠动物。旁白提出疑问：既然人类缺少多种冬眠能力，那么漫长进化过程中究竟获得了什么优势。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 94,
+            "end": 106,
+            "description": "画面展示围坐篝火的早期人类、用火动画、衣物和动物毛发。旁白说明，人类与专注于冬眠适应的动物走上不同路线，将更多能力用于大脑和工具发展：学会使用火取暖、烹饪和驱赶野兽，也学会制作衣物并利用动物毛皮抵御寒冷。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 106,
+            "end": 119,
+            "description": "画面展示早期人类搬运资源、小动物在落叶间觅食、农作物和腌制食材。旁白指出，人类逐渐发展出协作、种植、储存和腌制食物的能力，使全年都可以获得较稳定的能量供应。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 119,
+            "end": 130,
+            "description": "镜头先展示雪地中的动物，再展示人们在雪中活动、圣诞老人和挂满红灯笼的树木。旁白对比指出，对于部分动物而言冬季意味着生存危机，但对于掌握技术的人类而言，冬天已经成为可以正常生活、甚至庆祝重要节日的季节。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 130,
+            "end": 137,
+            "description": "画面展示人物在冬季早晨起床并踩到地板。旁白总结，与其说人类缺少冬眠能力，不如说人类已经通过其他方式解决了冬季生存问题，早已不再依赖冬眠。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 137,
+            "end": 149,
+            "description": "画面展示夜间床铺、手机和人物形象，并通过大字动画强调激素、代谢和囤脂。旁白补充说明，虽然人类不能真正冬眠，但仍保留轻微的季节性节律：冬季甲状腺激素水平和代谢可能有所变化，食欲更容易上升，并偏好热量较高的食物。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 149,
+            "end": 156,
+            "description": "镜头展示人物在床上翻滚赖床以及热气腾腾的火锅。旁白用轻松语气说明，冬天不想上班、容易犯困和偏爱高热量食物，并不完全是懒惰，也可以理解为人类仍保留了一些与冬眠有关的本能倾向。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 156,
+            "end": 167,
+            "description": "画面先展示睡眠中的人物，随后切换到窗外雪景、室内取暖和夜晚阅读的温馨生活场景。旁白总结，人类不必真的沉睡，因为已经学会依靠火光、衣物、房屋和陪伴，将冬天过得安稳而温暖。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 167,
+            "end": 170,
+            "description": "视频切换到抖音平台片尾搜索引导页，出现搜索框、二维码和平台提示信息，不再包含知识讲解内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

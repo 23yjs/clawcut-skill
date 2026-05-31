@@ -62,6 +62,32 @@ def build_strict_json_edit_prompt(
 如果候选高光很多，请优先选择最高价值、最符合用户指令、最不重复的片段。
 未被选入的高光请放入 excluded_highlights，并说明 excluded_reason。
 """.strip()
+    elif duration_policy.get("duration_policy_mode") == "llm_free":
+        duration_instructions = """
+用户没有指定成片时长，本次不预设固定时长预算。
+不要使用“原视频 15%”“最短 15 秒”或“最长 60 秒”作为隐含限制。
+请根据视频内容自行决定高光视频的合理长度。
+目标不是尽可能保留原视频，也不是为了提高召回率而保留大量普通内容。
+
+请优先保留：
+1. 最具代表性的高光内容；
+2. 信息密度最高的内容；
+3. 画面、声音或字幕证据充分的片段；
+4. 能独立传播的片段；
+5. 具有明显卖点、动作、结果或叙事价值的片段。
+
+请主动排除：
+1. 重复展示；
+2. 低信息量片段；
+3. 无关过渡；
+4. 片尾平台引导页；
+5. 账号信息；
+6. 不能增强成片价值的普通内容。
+
+请根据高光数量和内容密度自行决定 final_segments，并在 duration_policy_reason 中说明为什么选择当前成片长度。
+final_segments 总时长必须大于 0，且不得超过原始视频总时长。
+excluded_highlights 只用于解释未选候选，不参与最终剪辑。
+""".strip()
     else:
         duration_instructions = f"""
 用户没有明确指定目标时长。
@@ -83,7 +109,7 @@ selected_target_duration 必须在 {float(duration_policy["allowed_min_duration"
 {instruction}
 
 目标总时长：
-{target_duration:.3f} 秒
+{"未预设固定目标时长，由模型自行决定" if duration_policy.get("duration_policy_mode") == "llm_free" and not duration_policy.get("user_specified_duration") else f"{target_duration:.3f} 秒"}
 
 目标时长策略：
 {duration_policy_json}
@@ -113,7 +139,7 @@ selected_target_duration 必须在 {float(duration_policy["allowed_min_duration"
 
 阶段 3：全局剪辑规划与自检
 - 选择 final_segments。
-- 控制总时长尽量接近 selected_target_duration。
+- 如果存在明确 selected_target_duration，控制总时长尽量接近 selected_target_duration；如果是 llm_free 且用户未指定时长，则由你根据高光内容自行决定总时长。
 - 检查是否覆盖用户要求的重点。
 - 避免重复、无关、过长铺垫、空镜、语义不完整片段。
 - 避免切在半句话、半个动作或关键结果之前。
@@ -191,6 +217,7 @@ selected_target_duration 必须在 {float(duration_policy["allowed_min_duration"
 
 选择 final_segments 时必须遵守：
 - final_segments 总时长尽量接近 selected_target_duration；
+- 当 duration_policy_mode 为 llm_free 且用户未指定时长时，不要套用固定秒数范围；final_segments 总时长由你自行选择，但必须大于 0 且不超过原视频总时长；
 - 宁可略短，也不要加入低质量无关片段；
 - 不要因为高光很多就超过用户明确指定的时长；
 - 优先选择信息密度高、与用户指令相关、画面/声音证据充分的片段；
@@ -215,12 +242,14 @@ selected_target_duration 必须在 {float(duration_policy["allowed_min_duration"
 必须严格返回以下 JSON 结构：
 {{
   "duration_policy": {{
+    "duration_policy_mode": "bounded_auto / llm_free",
     "user_specified_duration": true,
     "user_target_duration": 30.0,
     "recommended_duration": null,
     "selected_target_duration": 30.0,
     "allowed_min_duration": 30.0,
     "allowed_max_duration": 30.0,
+    "final_total_duration": 30.0,
     "duration_policy_reason": "为什么选择这个目标时长"
   }},
   "video_type": "ecommerce_product / product_showcase / product_launch / course / talk / sports / game / action / vlog / travel / lifestyle / other",

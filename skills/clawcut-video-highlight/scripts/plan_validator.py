@@ -30,6 +30,18 @@ def _resolve_selected_target_duration(
 ) -> tuple[float, dict[str, Any]]:
     duration_policy = plan.get("duration_policy")
     if isinstance(duration_policy, dict):
+        mode = str(duration_policy.get("duration_policy_mode", "bounded_auto") or "bounded_auto")
+        if mode == "llm_free" and not bool(duration_policy.get("user_specified_duration")):
+            try:
+                selected_target_duration = float(duration_policy.get("selected_target_duration") or 0)
+            except (TypeError, ValueError):
+                selected_target_duration = 0.0
+                errors.append("llm_free 模式下 duration_policy.selected_target_duration 无效")
+            if selected_target_duration <= 0:
+                errors.append("llm_free 模式下 duration_policy.selected_target_duration 必须大于 0")
+            if selected_target_duration > video_duration:
+                errors.append("llm_free 模式下 duration_policy.selected_target_duration 不得超过原视频时长")
+            return selected_target_duration, duration_policy
         try:
             selected_target_duration = float(duration_policy["selected_target_duration"])
         except (KeyError, TypeError, ValueError):
@@ -70,12 +82,14 @@ def _compat_schema_plan(
         else:
             fallback_target = float(target_duration if target_duration is not None else min(video_duration, 30.0))
             schema_plan["duration_policy"] = {
+                "duration_policy_mode": "bounded_auto",
                 "user_specified_duration": target_duration is not None,
                 "user_target_duration": float(target_duration) if target_duration is not None else None,
                 "recommended_duration": None,
                 "selected_target_duration": fallback_target,
                 "allowed_min_duration": fallback_target,
                 "allowed_max_duration": fallback_target,
+                "final_total_duration": None,
                 "duration_policy_reason": "兼容旧版 plan：原始 JSON 缺少 duration_policy。",
             }
     schema_plan.setdefault("excluded_highlights", [])
@@ -224,7 +238,16 @@ def validate_plan(
 
     total_duration = sum(max(0.0, _segment_duration(segment)) for segment in segments)
     duration_delta = abs(total_duration - effective_target_duration)
-    if duration_delta > target_tolerance:
+    is_llm_free = (
+        isinstance(duration_policy, dict)
+        and str(duration_policy.get("duration_policy_mode", "")) == "llm_free"
+        and not bool(duration_policy.get("user_specified_duration"))
+    )
+    if is_llm_free and total_duration <= 0:
+        errors.append("llm_free 模式下 final_segments 总时长必须大于 0")
+    if is_llm_free and total_duration > video_duration:
+        errors.append("llm_free 模式下 final_segments 总时长不得超过原视频时长")
+    if (not is_llm_free) and duration_delta > target_tolerance:
         errors.append(
             f"片段总时长 {total_duration:.3f} 秒不接近可实现目标 "
             f"{effective_target_duration:.3f} 秒；容忍误差为 {target_tolerance:.3f} 秒"

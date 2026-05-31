@@ -1,0 +1,825 @@
+{
+    "video_id": "sports_demo1",
+    "video_path": "data/input/sports_demo1.MP4",
+    "video_type": "sports",
+    "duration_seconds": 1046,
+    "video_summary": "视频为一段室内篮球比赛记录，白红球衣队与黑绿球衣队持续进行攻防对抗。视频包含开场连续快攻得分、暂停期间的替补席和热身画面，以及恢复比赛后的阵地进攻、抢断反击、篮下终结、犯规和罚球过程；成功投篮和上篮已与普通推进、投篮不中、死球和场边画面分开标注。视频在比赛尚未结束时中止。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 4,
+            "description": "黑绿球衣队在前场进行普通阵地进攻，持球队员在外线运球并寻找传球机会，没有形成明确得分。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 4,
+            "end": 9,
+            "description": "白红球衣队截断对方球权后立即发起快攻，持球队员快速推进至篮下并成功上篮得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 9,
+            "end": 16,
+            "description": "快攻得分后比赛短暂停顿，镜头带到场边观众和球员重新落位，不包含新的有效进攻。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 16,
+            "end": 20,
+            "description": "黑绿球衣队重新发起普通进攻，在前场运球和传导球，尚未形成具有明确结果的攻防事件。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 20,
+            "end": 25,
+            "description": "白红球衣队获得球权后迅速推进，持球队员冲入篮下完成一次成功上篮得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 25,
+            "end": 31,
+            "description": "得分后比赛暂停，球员向场边移动并准备进入暂停阶段，没有新的比赛高光。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 31,
+            "end": 43,
+            "description": "暂停期间，场边人员和身穿橙色服装的热身球员出现在画面中，教练在场边组织队伍。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 43,
+            "end": 55,
+            "description": "暂停仍在继续，球员在球场一侧进行投篮热身和简单活动，画面不属于正式比赛回合。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 55,
+            "end": 62,
+            "description": "镜头切换到场边啦啦队和替补席区域，比赛尚未恢复。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 62,
+            "end": 80,
+            "description": "暂停期间镜头持续展示场边人员、替补席和啦啦队，球员在场边集合并听取安排。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 80,
+            "end": 96,
+            "description": "球员逐渐返回球场并完成站位，裁判和双方球员准备恢复比赛。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 96,
+            "end": 106,
+            "description": "比赛重新开始，双方围绕开球和前场推进展开争夺，尚未出现明确得分。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 106,
+            "end": 116,
+            "description": "白红球衣队组织进攻并尝试出手，投篮未形成明确得分，黑绿球衣队随后控制篮板球。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 116,
+            "end": 123,
+            "description": "黑绿球衣队抢下球权后推进到前场，并逐步将球传入篮下区域。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 123,
+            "end": 127,
+            "description": "黑绿球衣队在篮下完成一次近距离终结并成功得分，白红球衣队随后准备从底线发球。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 127,
+            "end": 140,
+            "description": "白红球衣队从后场推进并尝试回应，双方在篮下发生篮板争夺，但没有确认新的得分。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 140,
+            "end": 146,
+            "description": "黑绿球衣队在外线进行普通传导和组织进攻，尚未形成有效终结。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 146,
+            "end": 151,
+            "description": "白红球衣队完成抢断后快速反击，持球队员直奔篮下并成功上篮得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 151,
+            "end": 160,
+            "description": "得分后双方重新落位，镜头短暂展示场边和观众反应，没有新的进攻事件。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 160,
+            "end": 176,
+            "description": "双方进行连续的普通攻防转换，包含前场推进、传球和防守落位，但没有确认成功得分。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 176,
+            "end": 190,
+            "description": "比赛继续进行，双方先后尝试突破和投篮并争抢篮板，未确认出现新的有效得分。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 190,
+            "end": 200,
+            "description": "白红球衣队发动转换进攻，随后比赛进入短暂停顿，镜头出现计分牌和场边画面。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 200,
+            "end": 206,
+            "description": "白红球衣队向篮下发起一次突破和终结尝试，但画面不足以确认投篮命中。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 206,
+            "end": 220,
+            "description": "黑绿球衣队重新组织进攻并完成出手，白红球衣队随后抢到篮板并准备推进，没有确认得分。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 220,
+            "end": 226,
+            "description": "白红球衣队控制球权后在后场完成衔接，并加速向前场推进。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 226,
+            "end": 231,
+            "description": "白红球衣队抓住转换机会快速推进至篮下，完成一次成功上篮得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 231,
+            "end": 240,
+            "description": "得分后比赛短暂停顿，镜头带到观众和场边，球员等待重新发球。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_028",
+            "start": 240,
+            "end": 250,
+            "description": "黑绿球衣队发起阵地进攻并尝试出手，白红球衣队随后保护篮板并发动反击。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_029",
+            "start": 250,
+            "end": 255,
+            "description": "白红球衣队在反击中快速冲击篮下，完成一次近距离终结并成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_030",
+            "start": 255,
+            "end": 264,
+            "description": "得分后球员重新站位，比赛处于发球和回防过渡阶段，没有新的进攻结果。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_031",
+            "start": 264,
+            "end": 272,
+            "description": "黑绿球衣队在前场耐心组织进攻，将球逐渐送入靠近篮筐的位置。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_032",
+            "start": 272,
+            "end": 278,
+            "description": "黑绿球衣队在篮下完成一次近距离出手并成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_033",
+            "start": 278,
+            "end": 292,
+            "description": "白红球衣队从底线发球后推进并尝试回应，双方在篮下争抢篮板，随后出现短暂停顿。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_034",
+            "start": 292,
+            "end": 305,
+            "description": "黑绿球衣队在外线获得出手机会并完成投篮，但没有确认命中，双方继续争夺篮板。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_035",
+            "start": 305,
+            "end": 316,
+            "description": "白红球衣队突破进入内线并与防守球员发生身体接触，裁判鸣哨，形成一次具有威胁的进攻和犯规事件。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_036",
+            "start": 316,
+            "end": 333,
+            "description": "犯规后比赛进入罚球和死球处理阶段，球员站位等待恢复比赛，信息增量较低。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_037",
+            "start": 333,
+            "end": 344,
+            "description": "黑绿球衣队恢复进攻，在前场进行常规传球和运球组织。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_038",
+            "start": 344,
+            "end": 360,
+            "description": "双方持续进行攻防转换和篮板争夺，期间包含多次尝试，但没有确认成功得分。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_039",
+            "start": 360,
+            "end": 368,
+            "description": "黑绿球衣队完成一次投篮尝试但未确认命中，白红球衣队抢下篮板后立即向前推进。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_040",
+            "start": 368,
+            "end": 373,
+            "description": "白红球衣队快速反击至篮下，持球队员完成一次成功上篮得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_041",
+            "start": 373,
+            "end": 380,
+            "description": "上篮得分后，双方球员回防并重新完成站位，比赛准备继续。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_042",
+            "start": 380,
+            "end": 393,
+            "description": "黑绿球衣队组织阵地进攻并将球送入篮下，随后完成一次近距离终结并成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_043",
+            "start": 393,
+            "end": 401,
+            "description": "白红球衣队发起回应进攻，在推进和突破过程中与防守球员发生接触，随后比赛短暂停顿。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_044",
+            "start": 401,
+            "end": 414,
+            "description": "双方恢复普通攻防，围绕前场传导、突破和篮板展开争夺，没有确认得分。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_045",
+            "start": 414,
+            "end": 425,
+            "description": "黑绿球衣队获得一次中距离或外线投篮机会，出手后双方继续争抢篮板，未确认投篮命中。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_046",
+            "start": 425,
+            "end": 440,
+            "description": "比赛节奏加快，双方连续推进并交换球权，镜头短暂带到计分牌，但没有单独确认新的得分事件。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_047",
+            "start": 440,
+            "end": 449,
+            "description": "白红球衣队从后场发起进攻，在防守压力下完成传球和推进。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_048",
+            "start": 449,
+            "end": 462,
+            "description": "双方围绕篮下展开身体对抗，随后进入罚球或死球处理阶段，没有确认新的运动战得分。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_049",
+            "start": 462,
+            "end": 473,
+            "description": "白红球衣队在前场控制球权并尝试组织进攻，黑绿球衣队随后完成抢断并形成反击机会。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_050",
+            "start": 473,
+            "end": 481,
+            "description": "黑绿球衣队抢断后快速推进至篮下，持球队员完成一次成功上篮得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_051",
+            "start": 481,
+            "end": 493,
+            "description": "得分后比赛短暂停顿，镜头展示观众和场边区域，球员等待重新恢复比赛。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_052",
+            "start": 493,
+            "end": 505,
+            "description": "白红球衣队向内线发起进攻并与防守球员发生接触，随后进入死球状态，未确认投篮命中。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_053",
+            "start": 505,
+            "end": 513,
+            "description": "比赛处于死球和场边等待阶段，镜头展示球员重新站位，没有新的进攻内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_054",
+            "start": 513,
+            "end": 529,
+            "description": "比赛恢复后双方进行罚球、发球和普通攻防衔接，未确认独立的高价值得分事件。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_055",
+            "start": 529,
+            "end": 537,
+            "description": "黑绿球衣队在转换进攻中快速推进，并在篮下完成一次近距离终结和成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_056",
+            "start": 537,
+            "end": 542,
+            "description": "白红球衣队尝试从后场推进，但在防守压力下丢失球权。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_057",
+            "start": 542,
+            "end": 546,
+            "description": "黑绿球衣队截断球权后立即发动快速反击，持球队员单人推进至篮下并成功上篮得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_058",
+            "start": 546,
+            "end": 558,
+            "description": "得分后双方重新进入攻防转换，球员在前场争夺球权，随后比赛出现短暂停顿。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_059",
+            "start": 558,
+            "end": 567,
+            "description": "黑绿球衣队组织一次阵地进攻并尝试出手，双方在篮下争抢篮板，未确认命中。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_060",
+            "start": 567,
+            "end": 579,
+            "description": "白红球衣队向前场推进并冲击篮下，黑绿球衣队随后重新获得球权，没有确认成功得分。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_061",
+            "start": 579,
+            "end": 593,
+            "description": "双方继续进行常规攻防和篮板争夺，多次尝试均未形成可确认的得分结果。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_062",
+            "start": 593,
+            "end": 607,
+            "description": "比赛节奏相对平稳，双方围绕半场阵地进攻进行传导和防守落位。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_063",
+            "start": 607,
+            "end": 613,
+            "description": "比赛短暂停顿，球员重新站位并等待发球或裁判恢复比赛。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_064",
+            "start": 613,
+            "end": 623,
+            "description": "白红球衣队从外线向内线发起突破并完成一次终结尝试，黑绿球衣队随后获得球权并推进。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_065",
+            "start": 623,
+            "end": 641,
+            "description": "双方连续交换球权并展开攻防转换，期间出现身体接触和裁判鸣哨，未确认新的得分。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_066",
+            "start": 641,
+            "end": 647,
+            "description": "比赛进入罚球或重新发球前的准备阶段，球员站位等待恢复。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_067",
+            "start": 647,
+            "end": 666,
+            "description": "双方恢复比赛并进行常规前场组织、突破和回防，没有确认成功得分。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_068",
+            "start": 666,
+            "end": 677,
+            "description": "比赛再次处于死球和站位调整阶段，镜头主要展示等待恢复比赛的球员。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_069",
+            "start": 677,
+            "end": 693,
+            "description": "黑绿球衣队组织前场进攻并完成一次尝试，白红球衣队随后获得球权并推进，没有确认得分。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_070",
+            "start": 693,
+            "end": 707,
+            "description": "白红球衣队从侧翼和内线方向展开进攻，完成一次投篮尝试后比赛短暂停顿，未确认命中。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_071",
+            "start": 707,
+            "end": 721,
+            "description": "比赛恢复后双方进行普通攻防转换和外线传导，没有明确得分事件。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_072",
+            "start": 721,
+            "end": 733,
+            "description": "比赛进入死球或人员调整阶段，球员在场上重新站位，信息增量较低。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_073",
+            "start": 733,
+            "end": 738,
+            "description": "镜头短暂展示场边和计分牌，比赛尚未形成新的有效回合。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_074",
+            "start": 738,
+            "end": 753,
+            "description": "黑绿球衣队重新发起阵地进攻并尝试出手，白红球衣队随后保护篮板并进入转换。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_075",
+            "start": 753,
+            "end": 760,
+            "description": "白红球衣队快速冲击篮下并完成一次近距离终结尝试，画面呈现较强威胁，但无法独立确认是否得分。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_076",
+            "start": 760,
+            "end": 773,
+            "description": "比赛短暂调整后继续，双方回到普通推进、传球和防守落位阶段。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_077",
+            "start": 773,
+            "end": 789,
+            "description": "双方在前场进行连续攻防和篮板争夺，镜头间歇出现计分牌，未确认独立得分事件。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_078",
+            "start": 789,
+            "end": 804,
+            "description": "双方继续进行常规进攻与回防，包含传球、突破和出手尝试，但没有确认成功得分。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_079",
+            "start": 804,
+            "end": 813,
+            "description": "白红球衣队加速推进并冲击篮下，完成一次终结尝试后由黑绿球衣队控制篮板。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_080",
+            "start": 813,
+            "end": 827,
+            "description": "白红球衣队在前场持续组织进攻并完成出手，随后比赛进入短暂停顿，未确认投篮命中。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_081",
+            "start": 827,
+            "end": 833,
+            "description": "球员在篮下附近等待恢复比赛，镜头主要展示站位和场边观众，没有新的高光动作。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_082",
+            "start": 833,
+            "end": 846,
+            "description": "比赛重新开始，黑绿球衣队在前场组织进攻并尝试从内线寻找终结机会。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_083",
+            "start": 846,
+            "end": 860,
+            "description": "白红球衣队获得球权后向前推进，双方在篮下再次争抢篮板，未确认成功得分。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_084",
+            "start": 860,
+            "end": 872,
+            "description": "黑绿球衣队发起进攻并完成一次近距离尝试，白红球衣队随后控制球权推进，未确认命中。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_085",
+            "start": 872,
+            "end": 893,
+            "description": "双方持续进行节奏稳定的普通攻防转换，包含计分牌画面和多次传导，但没有确认新的得分事件。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_086",
+            "start": 893,
+            "end": 898,
+            "description": "白红球衣队向篮下突破并完成一次投篮尝试，结果无法从画面中独立确认。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_087",
+            "start": 898,
+            "end": 905,
+            "description": "黑绿球衣队获得球权后推进，白红球衣队迅速形成反抢和新的快攻机会。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_088",
+            "start": 905,
+            "end": 908,
+            "description": "白红球衣队抓住转换机会快速推进至篮下，完成一次成功上篮得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_089",
+            "start": 908,
+            "end": 920,
+            "description": "黑绿球衣队从底线重新发球并推进到前场，进行一次普通进攻尝试，随后白红球衣队重新获得球权。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_090",
+            "start": 920,
+            "end": 933,
+            "description": "白红球衣队在外线和侧翼组织进攻并完成投篮尝试，双方争抢篮板后比赛进入死球状态。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_091",
+            "start": 933,
+            "end": 948,
+            "description": "双方恢复半场攻防，围绕传球、突破和篮下争夺展开连续对抗，没有确认新的得分。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_092",
+            "start": 948,
+            "end": 950,
+            "description": "白红球衣队在前场完成传导并将球送入靠近篮筐的位置。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_093",
+            "start": 950,
+            "end": 954,
+            "description": "白红球衣队在篮下完成一次近距离终结并成功得分，随后球员立即回防。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_094",
+            "start": 954,
+            "end": 959,
+            "description": "得分后双方完成回防和发球衔接，黑绿球衣队重新获得球权。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_095",
+            "start": 959,
+            "end": 966,
+            "description": "黑绿球衣队在前场组织进攻，并从外线逐步向内线制造终结机会。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_096",
+            "start": 966,
+            "end": 971,
+            "description": "黑绿球衣队突破进入篮下并完成一次近距离终结，随后画面出现计分牌，显示本次进攻形成得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_097",
+            "start": 971,
+            "end": 988,
+            "description": "黑绿球衣队继续在前场尝试外线和内线进攻，白红球衣队随后重新控制球权，没有确认新的命中。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_098",
+            "start": 988,
+            "end": 1000,
+            "description": "白红球衣队从后场推进，黑绿球衣队施加防守压力并在转换中获得新的进攻机会。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_099",
+            "start": 1000,
+            "end": 1011,
+            "description": "黑绿球衣队突破至篮下并尝试近距离终结，随后球员在篮下重新站位，无法独立确认投篮命中。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_100",
+            "start": 1011,
+            "end": 1020,
+            "description": "黑绿球衣队继续在前场发起进攻并尝试中距离或内线出手，白红球衣队随后抢到篮板。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_101",
+            "start": 1020,
+            "end": 1030,
+            "description": "黑绿球衣队再次利用转换机会冲击篮下，白红球衣队随后从后场重新开始推进，未确认得分。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_102",
+            "start": 1030,
+            "end": 1046,
+            "description": "比赛进入视频末段，双方仍在持续进行前场推进、传球和防守落位。视频在比赛尚未结束时中止，没有片尾页面。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        }
+    ]
+}

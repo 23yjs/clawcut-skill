@@ -1,0 +1,185 @@
+{
+    "video_id": "knowledge-share-demo1",
+    "video_path": "data/input/knowledge-share-demo1.MP4",
+    "video_type": "knowledge_sharing",
+    "duration_seconds": 126,
+    "video_summary": "视频为关于高效学习和知识管理的方法分享。出镜人物指出，低效学习的根源不是记忆力不足或信息量不够，而是缺乏能够组织和关联知识的系统，并结合图式理论说明应主动构建个人知识图谱。后半段进一步介绍将信息写入知识库、持续加工、建立关联并形成行动清单的方法，结尾总结其对于个人成长和提升决策效率的价值。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 5,
+            "description": "视频以读书、出镜人物低头思考和黑底字幕画面开场。旁白指出，有些人学习速度较慢、付出努力却效率不高，原因不是记忆力差，而是没有建立系统。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 5,
+            "end": 10,
+            "description": "画面展示出镜人物坐在大量书籍之间阅读，并穿插搬运书籍和电脑页面的镜头。旁白将低效学习比作仓鼠囤积食物，指出很多人会不断收藏文章和保存资料。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 10,
+            "end": 16,
+            "description": "出镜人物面对镜头讲解，字幕指出被收集的知识点彼此孤立，最终会在大脑中形成一堆难以实际利用的信息。片段结尾出现黑底的信息垃圾提示画面。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 16,
+            "end": 21,
+            "description": "出镜人物继续说明，学习问题不在于拥有多少信息，而在于能否将这些信息有效地组织起来。画面切换到人物在电脑前查看个人知识页面的镜头。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 21,
+            "end": 36,
+            "description": "画面展示知识节点关系图、图式理论说明页、学者访谈片段以及课堂互动素材。旁白介绍图式理论，并指出大脑不是将信息杂乱无章地储存起来，而是将其构建为一个相互关联的知识框架。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 36,
+            "end": 44,
+            "description": "画面先展示出镜人物坐在书堆之间阅读，随后切换为电脑中的知识网络页面。旁白指出，真正的学习不是孤立地记忆新事实，而是将新信息有效整合进已有的知识图式中。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 44,
+            "end": 49,
+            "description": "镜头近距离展示双手使用键盘录入内容。旁白说明，高效学习的本质是有意识地构建并持续扩展自己的知识图式。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 49,
+            "end": 53,
+            "description": "视频切换为黑底文字页，明确展示核心方法：停止被动输入，开始主动链接。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 53,
+            "end": 61,
+            "description": "画面展示翻阅书籍和电脑中的知识库页面。旁白指出，每学习一个新知识，不应只满足于看懂，而要主动思考它属于哪个知识框架，以及它与哪些已有认知存在联系。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 61,
+            "end": 66,
+            "description": "电脑屏幕显示文章页面。旁白进一步提出，应判断新知识是否能够帮助更新已有认知，甚至重组一个旧的知识框架。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 66,
+            "end": 71,
+            "description": "镜头展示个人知识管理网站中的多个知识模块。旁白总结，这一过程是在编织一张强大而有序的个人知识网络。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 71,
+            "end": 76,
+            "description": "画面穿插电脑页面、商业摄影现场和手机订单截图。旁白以自身经历为例，表示自己依靠这套系统学习商业摄影，学习半年后获得了金额为二十万元的订单。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 76,
+            "end": 80,
+            "description": "出镜人物面对镜头讲解，随后画面展示自媒体账号数据截图。旁白继续以自身经历举例，提到转型自媒体半年、累计获得二十五万关注，并将年收入提升为月收入。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 80,
+            "end": 85,
+            "description": "电脑屏幕展示知识库中的文章页面。旁白说明，自己会将所有有价值的信息放入知识库中进行集中管理。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 85,
+            "end": 90,
+            "description": "画面切换为知识库后台列表页面。旁白强调，重点不是简单收集信息，而是进行后续加工，包括写下感悟并开展批判性思考。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 90,
+            "end": 94,
+            "description": "知识库页面中出现多个内容卡片。旁白说明，还需要将信息关联到其他重要模型上，最终生成可执行的行动清单。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 94,
+            "end": 100,
+            "description": "画面展示文章页面，并切换为出镜人物面对镜头讲解。旁白指出，经过系统加工后，知识不再是零散的信息，而能够直接转化为推动商业价值和个人成长的工具。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 100,
+            "end": 107,
+            "description": "镜头展示出镜人物坐在大量书籍之间整理资料，并穿插个人知识网络网站页面。旁白说明，构建知识图式需要投入额外精力，因此会劝退一部分追求速成的人。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 107,
+            "end": 111,
+            "description": "电脑屏幕持续展示结构化的个人知识网络。旁白指出，前期投入精力建立连接和组织结构，恰恰是知识复利的起点。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 111,
+            "end": 117,
+            "description": "画面展示人物在电脑前查阅和整理信息。旁白说明，一旦系统建立起来，分析问题和做出决策的速度与深度都会明显超过从前。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 117,
+            "end": 122,
+            "description": "画面返回出镜人物正面讲解。出镜人物总结，主动构建知识系统是摆脱低水平勤奋、实现高效成长的根本路径。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 122,
+            "end": 126,
+            "description": "视频切换到抖音平台片尾搜索引导页，出现账号头像、抖音号、搜索框和发现更多创作者的提示，不再包含知识分享内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

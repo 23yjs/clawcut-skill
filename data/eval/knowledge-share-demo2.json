@@ -1,0 +1,185 @@
+{
+    "video_id": "knowledge-share-demo2",
+    "video_path": "data/input/knowledge-share-demo2.MP4",
+    "video_type": "knowledge_sharing",
+    "duration_seconds": 185,
+    "video_summary": "视频通过动画故事讲解“德西效应”，说明金钱奖励、社会评价和外部命令虽然能够短期刺激行为，却可能削弱原本来自兴趣和自主选择的内在动力。视频先用老人通过逐步取消奖励让孩子停止玩耍的故事解释机制，再结合实验和生活案例说明外部激励的潜在影响，最后提出保护兴趣纯粹性、为必要任务赋予意义和自主感的方法。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 5,
+            "description": "视频以黑底白字引语开场：“鸡蛋，从外打破——是食物，而从内打破——就是生命。”画面用于引出内在动力与外部力量的主题。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 5,
+            "end": 14,
+            "description": "画面出现“德西效应”标题。动画中的人物原本因为热爱而创作，随后有人提出付费，旁白询问：当一个人因为内心喜欢而做一件事，却突然有人开始为它付钱时，原本喜欢它的理由是否还会保持不变。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 14,
+            "end": 21,
+            "description": "动画讲述一位老人居住的院子总被一群吵闹玩耍的孩子打扰。老人没有直接驱赶孩子，而是思考出一个新的处理办法。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 21,
+            "end": 31,
+            "description": "老人找到孩子们，表示自己很喜欢听他们的笑声，并承诺以后孩子们每天来院子玩耍，就给每人一块钱。孩子们对能够获得奖励感到惊喜。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 31,
+            "end": 40,
+            "description": "获得奖励后，孩子们第二天玩得更加起劲。一周后，老人表示经济紧张，只能将每天的奖励减少到五毛钱。孩子们虽然不满，但仍然继续来玩。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 40,
+            "end": 50,
+            "description": "又过了一周，老人宣布自己已经没有钱，之后不能再给奖励。孩子们愤怒地表示不给钱就不会继续玩耍，随后离开院子。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 50,
+            "end": 57,
+            "description": "老人重新获得安静的院子。画面缩小并用箭头展示变化：孩子们原本因为内在兴趣玩耍，接受金钱后，行为逐渐受到外部奖励驱动。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 57,
+            "end": 63,
+            "description": "画面正式总结“德西效应”的核心悖论：外部奖励不仅可能激励行为，也可能重新定义行为的意义，使原本出于兴趣的活动转变为以奖励为目的的任务。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 63,
+            "end": 72,
+            "description": "画面出现心理学家爱德华·德西，并介绍其在二十世纪七十年代进行的实验。实验让两组学生完成有趣的智力题，其中一组获得金钱奖励，另一组没有奖励。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 72,
+            "end": 83,
+            "description": "动画对比两组学生在自由活动时间到来后的表现：曾经获得奖励的学生对解题兴趣明显下降，而没有奖励的学生仍然愿意继续挑战。旁白指出，金钱介入将有趣的挑战转化成了有偿任务，并抽离了部分内在愉悦。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 83,
+            "end": 93,
+            "description": "视频进入生活案例。动画人物原本因为热爱而画画，但在发现画作可以售卖后，落笔时原本自然流露的表达可能逐渐变成迎合市场的盘算。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 93,
+            "end": 102,
+            "description": "第二个生活案例展示人物原本只是单纯记录并分享生活，但当她开始紧盯点赞数量和反馈增长后，最初的感动与感悟可能逐渐被对评价结果的期待覆盖。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 102,
+            "end": 110,
+            "description": "第三个生活案例展示人物原本主动整理房间，但在听到他人要求自己打扫卫生后，原本因主动营造美好环境而产生的愉悦感可能迅速消散。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 110,
+            "end": 123,
+            "description": "画面将金钱奖励、社会评价和外部命令并列展示，并将它们比作从外部劈向鸡蛋的斧头。旁白说明，这些外部力量虽然可以短期推动行为，却也可能造成物质至上、渴望认同和自主感缺失，使原本具有成长可能的内在动力受到损害。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 123,
+            "end": 134,
+            "description": "动画展示上大学、拿到证书和找到稳定工作等外部目标。旁白指出，有些人在完成这些阶段性任务后反而陷入空虚，因为意义感不再来自内心的充盈，而是依赖外部评价和认可；当这些外部支点减弱时，内驱力也会逐渐枯竭。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 134,
+            "end": 140,
+            "description": "画面中的人物低头站立，旁白提出新的问题：应当如何重新找回内在的力量，并唤醒已经沉睡的内驱力。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 140,
+            "end": 150,
+            "description": "视频提出第一种方法“守护”。对于阅读、艺术、探索和兴趣等与成长和创造有关的事情，应尽量保持其纯粹性，减少不必要的干预，让人能够单纯享受投入和心流的过程。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 150,
+            "end": 160,
+            "description": "视频提出第二种方法“赋能”。对于工作、家务和基础学习等不得不完成的任务，不应只将外部奖励视为唯一方法，而应尝试为任务赋予意义感、自主权和胜任感。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 160,
+            "end": 172,
+            "description": "画面回到独自站立的人物。旁白总结，内驱力不是后天刻意培养出来的技巧，而是一种需要被唤醒的本能，如同鸡蛋内部的胚胎一样始终存在于内心深处。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 172,
+            "end": 178,
+            "description": "人物抬头站立，画面出现“我想成为这样的自己”的文字，用于表达重新听见内心声音并按照自身意愿成长的结尾主题。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 178,
+            "end": 181,
+            "description": "画面仅展示创作者账号名称“@爱观察的汤姆”，不再包含新的知识讲解内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 181,
+            "end": 185,
+            "description": "视频切换到抖音平台片尾搜索引导页，出现账号头像、抖音号、搜索框和发现更多创作者的提示，不再包含知识分享内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

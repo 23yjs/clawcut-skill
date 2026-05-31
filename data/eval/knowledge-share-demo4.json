@@ -1,0 +1,201 @@
+{
+    "video_id": "knowledge-share-demo4",
+    "video_path": "data/input/knowledge-share-demo4.MP4",
+    "video_type": "knowledge_sharing",
+    "duration_seconds": 212,
+    "video_summary": "视频为逻辑能力提升方法分享。出镜人物先通过以偏概全、稻草人谬误和人身攻击等例子说明逻辑混乱的常见表现及其影响，随后介绍书写整理、思维导图对比和 RAP 表达框架等训练方法。结尾推荐有助于提升逻辑能力的书籍、影视作品和游戏，并出现抖音搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 7,
+            "description": "出镜人物面对镜头提出核心观点：一个人可能并不是笨，而是逻辑混乱。她强调逻辑能力比表达能力和认知能力更基础，也是支撑这些能力的重要条件。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 7,
+            "end": 16,
+            "description": "出镜人物继续说明，逻辑越混乱，人生越容易陷入混乱，并表示接下来的内容将集中提供提升逻辑能力的方法，不进行无关铺垫。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 16,
+            "end": 20,
+            "description": "出镜人物开始第一部分内容，表示将先列举几种常见的逻辑混乱表现。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 20,
+            "end": 28,
+            "description": "出镜人物举例说明：因为遇到的两名浙江人数学成绩较差，就得出浙江人不适合学习数学的结论。她指出，这种使用少量案例推导普遍结论的做法属于以偏概全。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 28,
+            "end": 38,
+            "description": "出镜人物举例说明：当有人评价某位演员演技不好，另一方却反问演员既然不好为什么很有名、导演为什么选他。她指出，这种故意曲解对方原始观点并加以攻击的做法属于稻草人谬误。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 38,
+            "end": 45,
+            "description": "出镜人物继续举例：有人用“连大学都没有毕业，有什么资格讨论教育”回应观点。她指出，这种不讨论观点本身、转而攻击发言者个人背景的做法属于人身攻击。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 45,
+            "end": 58,
+            "description": "出镜人物提到偷换概念，并描述与逻辑混乱的人交流时常见的状态：沟通过程缺少有效信息，容易被情绪化表达取代，甚至可能逐渐演变为争吵。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 58,
+            "end": 69,
+            "description": "出镜人物总结逻辑混乱可能带来的后果，包括人际关系紧张、因思路不清晰而降低工作效率、职业发展受阻，以及缺乏基本判断能力后更容易被骗或踩坑。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 69,
+            "end": 75,
+            "description": "出镜人物提出问题：应当如何提升逻辑能力。她表示已经总结出几个实用方法，并开始进入方法讲解部分。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 75,
+            "end": 89,
+            "description": "出镜人物介绍第一个方法：书写。当遇到某件事、看到新闻或产生观点时，应立即找纸和笔，将脑中所有想法写下来，想到哪里写到哪里。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 89,
+            "end": 107,
+            "description": "出镜人物说明初次书写时不需要考虑逻辑，应先让想法充分输出。完成后再使用另一种颜色的笔整理内容，圈出文章的大框架和大结构，提炼每个结构中的逻辑链，并尝试整理为思维导图。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 107,
+            "end": 122,
+            "description": "出镜人物补充说明，手动整理完成后还需要借助 AI 或应用程序生成电子版思维导图，并将自己整理的版本与自动生成版本进行对比。通过反复归类和比较，可以逐渐内化逻辑结构。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 122,
+            "end": 129,
+            "description": "出镜人物建议观众点赞收藏当前视频，并将拆解本视频文案结构作为练习：先自行拆解一遍，再让 AI 拆解一遍，比较两者差异。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 129,
+            "end": 137,
+            "description": "出镜人物介绍第二个方法：使用结构化框架向他人复述知识，通过持续输出表达训练逻辑能力。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 137,
+            "end": 145,
+            "description": "出镜人物提出一个简单的表达框架——RAP 法则。她首先解释 R 代表结果，表达时应优先说明结果，而且结果要尽量具体，并具备可操作性。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 145,
+            "end": 151,
+            "description": "出镜人物给出 R 的示例表达：希望今后每周三召开一次复盘会，以帮助团队更好地了解过去一周的工作。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 151,
+            "end": 161,
+            "description": "出镜人物解释 RAP 法则中的 A 代表听众。表达时应从听众角度出发，思考对方为什么要听、内容对对方有什么用途，并明确说明对听众的实际价值。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 161,
+            "end": 168,
+            "description": "出镜人物进一步建议，在表达中多使用“我们”这类集体用词，而不是反复使用“我”和“你”，以增强与听众之间的共同感。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 168,
+            "end": 179,
+            "description": "出镜人物解释 RAP 法则中的 P 代表提炼要点。能够用三句话讲清楚的内容，应尽量避免使用十句话；需要主动删除冗余信息，概括核心内容。她总结，高级表达和高级写作都应做到直白、精准和到位。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 179,
+            "end": 189,
+            "description": "出镜人物表示，最后将推荐一些有助于提升逻辑能力的书籍和游戏，让观众通过阅读和娱乐活动更加轻松地训练逻辑能力。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 189,
+            "end": 199,
+            "description": "画面切换为黑底推荐清单，逐步列出书籍类资源，包括《简单的逻辑学》《批判性思维工具》《金字塔原理》和《思考，快与慢》。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 199,
+            "end": 203,
+            "description": "黑底推荐清单继续展示影视类资源，包括《十二怒汉》《9号秘事》《记忆碎片》和《穆赫兰道》。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 203,
+            "end": 209,
+            "description": "黑底推荐清单继续展示游戏类资源，包括数独、围棋、桥牌、狼人杀、密室，以及《见证者》和《传送门》。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 209,
+            "end": 212,
+            "description": "视频切换到抖音平台片尾搜索引导页，出现账号头像、抖音号、搜索框和发现更多创作者的提示，不再包含知识讲解内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}
