@@ -14,6 +14,7 @@ class ResolverValidationError(ValueError):
 
 REQUIRED_FIELDS = {
     "instruction_mode",
+    "selection_scope",
     "resolution_status",
     "use_default_highlights",
     "relevant_segment_ids",
@@ -22,6 +23,7 @@ REQUIRED_FIELDS = {
     "resolver_reason",
 }
 INSTRUCTION_MODES = {"generic", "specific", "conflict", "unresolved"}
+SELECTION_SCOPES = {"not_applicable", "preferential", "exclusive", "unknown"}
 RESOLUTION_STATUSES = {"resolved", "partial", "unresolved", "failed"}
 
 
@@ -47,6 +49,7 @@ def validate_resolver_result(
         raise ResolverValidationError(f"Resolver 输出缺少字段：{', '.join(missing)}")
 
     instruction_mode = result["instruction_mode"]
+    selection_scope = result["selection_scope"]
     resolution_status = result["resolution_status"]
     use_default_highlights = result["use_default_highlights"]
     relevant_segment_ids = _string_list(result["relevant_segment_ids"], "relevant_segment_ids")
@@ -56,6 +59,8 @@ def validate_resolver_result(
 
     if instruction_mode not in INSTRUCTION_MODES:
         raise ResolverValidationError(f"instruction_mode 不合法：{instruction_mode}")
+    if selection_scope not in SELECTION_SCOPES:
+        raise ResolverValidationError(f"selection_scope 不合法：{selection_scope}")
     if resolution_status not in RESOLUTION_STATUSES:
         raise ResolverValidationError(f"resolution_status 不合法：{resolution_status}")
     if not isinstance(use_default_highlights, bool):
@@ -75,21 +80,29 @@ def validate_resolver_result(
         raise ResolverValidationError(f"Resolver 引用了 GT 中不存在的 segment_id：{', '.join(unknown_ids)}")
 
     if instruction_mode == "generic":
+        if selection_scope != "not_applicable":
+            raise ResolverValidationError("generic 的 selection_scope 必须是 not_applicable")
         if resolution_status != "resolved" or not use_default_highlights:
             raise ResolverValidationError("generic 必须 resolved 且 use_default_highlights=true")
         if relevant_segment_ids or forbidden_segment_ids:
             raise ResolverValidationError("generic 的 relevant_segment_ids 和 forbidden_segment_ids 必须为空")
     elif instruction_mode == "specific":
+        if selection_scope not in {"preferential", "exclusive"}:
+            raise ResolverValidationError("specific 的 selection_scope 必须是 preferential 或 exclusive")
         if use_default_highlights:
             raise ResolverValidationError("specific 必须 use_default_highlights=false")
         if resolution_status == "resolved" and not relevant_segment_ids:
             raise ResolverValidationError("specific resolved 时 relevant_segment_ids 不能为空")
     elif instruction_mode == "conflict":
+        if selection_scope not in {"preferential", "exclusive"}:
+            raise ResolverValidationError("conflict 的 selection_scope 必须是 preferential 或 exclusive")
         if use_default_highlights:
             raise ResolverValidationError("conflict 必须 use_default_highlights=false")
         if resolution_status == "resolved" and not relevant_segment_ids and not forbidden_segment_ids:
             raise ResolverValidationError("conflict resolved 时 relevant 或 forbidden 至少一个非空")
     elif instruction_mode == "unresolved":
+        if selection_scope != "unknown":
+            raise ResolverValidationError("unresolved 的 selection_scope 必须是 unknown")
         if use_default_highlights:
             raise ResolverValidationError("unresolved 必须 use_default_highlights=false")
         if resolution_status not in {"unresolved", "partial"}:
@@ -99,6 +112,7 @@ def validate_resolver_result(
 
     return {
         "instruction_mode": instruction_mode,
+        "selection_scope": selection_scope,
         "resolution_status": resolution_status,
         "use_default_highlights": use_default_highlights,
         "relevant_segment_ids": relevant_segment_ids,

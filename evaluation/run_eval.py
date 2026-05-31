@@ -716,6 +716,7 @@ def _run_auto_eval(args: argparse.Namespace) -> int:
                 api_key_env=str(resolver_api_key_env),
                 timeout_seconds=int(resolver_timeout_seconds),
             ),
+            generated_case_json=args.generated_case_json,
         )
     )
     print(f"自动评测完成：{args.output_dir}")
@@ -737,6 +738,7 @@ def main() -> int:
     parser.add_argument("--resolver_base_url", default=None)
     parser.add_argument("--resolver_api_key_env", default=None)
     parser.add_argument("--resolver_timeout_seconds", type=int, default=None)
+    parser.add_argument("--generated_case_json", type=Path)
 
     parser.add_argument("--cases", type=Path)
     parser.add_argument("--annotations", type=Path)

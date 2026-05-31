@@ -69,7 +69,7 @@ def resolve_gt_path_by_video_id(video_id: str, gt_dir: Path) -> Path:
     return expected_gt_path
 
 
-def validate_gt_annotation(annotation: dict[str, Any], gt_path: Path) -> list[str]:
+def validate_gt_annotation(annotation: dict[str, Any], gt_path: Path, *, strict_timeline: bool = True) -> list[str]:
     if not isinstance(annotation, dict):
         raise ValueError(f"GT 根节点必须是 JSON object：{gt_path}")
 
@@ -115,7 +115,6 @@ def validate_gt_annotation(annotation: dict[str, Any], gt_path: Path) -> list[st
 
     if isinstance(semantic_segments, list):
         seen_segment_ids: set[str] = set()
-        previous_start: int | None = None
         previous_end: int | None = None
         for index, segment in enumerate(semantic_segments):
             prefix = f"semantic_segments[{index}]"
@@ -155,11 +154,22 @@ def validate_gt_annotation(annotation: dict[str, Any], gt_path: Path) -> list[st
                     errors.append(f"{prefix}.start 必须小于 end")
                 if _is_int(duration_seconds) and end > duration_seconds:
                     errors.append(f"{prefix}.end 不能大于 duration_seconds")
-                if previous_start is not None and start < previous_start:
-                    warnings.append(f"{prefix} 未按照 start 升序排列")
-                if previous_end is not None and start < previous_end:
-                    warnings.append(f"{prefix} 与前一个 semantic segment 存在时间重叠")
-                previous_start = start
+                if strict_timeline:
+                    if index == 0 and start != 0:
+                        errors.append(f"{prefix}.start 必须从 0 开始")
+                    if previous_end is not None and start != previous_end:
+                        errors.append(f"{prefix}.start 必须等于前一个片段 end，不能有空白或重叠")
+                    if (
+                        _is_int(duration_seconds)
+                        and index == len(semantic_segments) - 1
+                        and end != duration_seconds
+                    ):
+                        errors.append(f"{prefix}.end 必须等于 duration_seconds")
+                else:
+                    if previous_end is not None and start < previous_end:
+                        warnings.append(f"{prefix} 与前一个 semantic segment 存在时间重叠")
+                    if previous_end is not None and start > previous_end:
+                        warnings.append(f"{prefix} 与前一个 semantic segment 存在空白区间")
                 previous_end = end
 
             if "description" in segment and not _is_non_empty_string(description):

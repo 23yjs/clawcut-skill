@@ -32,16 +32,16 @@ def _gt_payload() -> dict:
             },
             {
                 "segment_id": "seg_002",
-                "start": 30,
-                "end": 40,
-                "description": "商品核心卖点讲解。",
+                "start": 9,
+                "end": 100,
+                "description": "商品核心卖点讲解和中间上下文。",
                 "default_highlight_score": 5,
                 "avoid_by_default": False,
             },
             {
                 "segment_id": "seg_003",
                 "start": 100,
-                "end": 110,
+                "end": 120,
                 "description": "片尾账号信息。",
                 "default_highlight_score": 1,
                 "avoid_by_default": True,
@@ -54,6 +54,25 @@ def _prepare_files(tmp_path: Path) -> AutoEvalConfig:
     gt_dir = tmp_path / "gt"
     _write_json(gt_dir / "demo.json", _gt_payload())
     skill_output_dir = tmp_path / "skill_output"
+    _write_json(
+        skill_output_dir / "reports" / "result_summary.json",
+        {
+            "status": "success",
+            "duration_policy": {
+                "duration_policy_mode": "bounded_auto",
+                "user_specified_duration": False,
+                "user_target_duration": None,
+                "recommended_duration": 18.0,
+                "selected_target_duration": 18.0,
+                "allowed_min_duration": 15.0,
+                "allowed_max_duration": 60.0,
+                "final_total_duration": 15.0,
+                "duration_policy_reason": "测试",
+            },
+            "selected_target_duration": 18.0,
+            "final_total_duration": 15.0,
+        },
+    )
     _write_json(
         skill_output_dir / "reports" / "segments.json",
         {
@@ -77,6 +96,7 @@ def _prepare_files(tmp_path: Path) -> AutoEvalConfig:
 def _resolver_result(**overrides) -> dict:
     result = {
         "instruction_mode": "specific",
+        "selection_scope": "preferential",
         "resolution_status": "resolved",
         "use_default_highlights": False,
         "relevant_segment_ids": ["seg_001"],
@@ -121,6 +141,7 @@ def test_auto_eval_generic_scores_and_writes_files(tmp_path, monkeypatch):
         monkeypatch,
         _resolver_result(
             instruction_mode="generic",
+            selection_scope="not_applicable",
             use_default_highlights=True,
             relevant_segment_ids=[],
             forbidden_segment_ids=[],
@@ -129,7 +150,9 @@ def test_auto_eval_generic_scores_and_writes_files(tmp_path, monkeypatch):
     result = run_auto_eval(config)
     _assert_common_outputs(config.output_dir)
     assert result["evaluation_status"] == "scored"
-    assert "default_highlight_f1" in result["semantic_metrics"]
+    assert result["evaluation_scope"] == "official"
+    assert result["selection_score_v1"] is not None
+    assert "default_highlight_f1" in result["legacy_metrics"]
 
 
 def test_auto_eval_specific_scores_reference_metrics(tmp_path, monkeypatch):
@@ -138,7 +161,8 @@ def test_auto_eval_specific_scores_reference_metrics(tmp_path, monkeypatch):
     result = run_auto_eval(config)
     _assert_common_outputs(config.output_dir)
     assert result["evaluation_status"] == "scored"
-    assert result["semantic_metrics"]["relevant_segment_recall"] == 1.0
+    assert result["evaluation_scope"] == "official"
+    assert result["time_metrics"]["relevant_duration_coverage"] == 0.778
 
 
 def test_auto_eval_conflict_scores_forbidden_metrics(tmp_path, monkeypatch):
@@ -155,7 +179,8 @@ def test_auto_eval_conflict_scores_forbidden_metrics(tmp_path, monkeypatch):
     result = run_auto_eval(config)
     _assert_common_outputs(config.output_dir)
     assert result["semantic_metrics"]["forbidden_segment_hit_count"] == 1
-    assert result["semantic_metrics"]["forbidden_segment_violation_rate"] == 0.5
+    assert result["legacy_metrics"]["forbidden_segment_violation_rate"] == 0.5
+    assert result["time_metrics"]["forbidden_duration_ratio"] == 0.533
 
 
 def test_auto_eval_unresolved_requires_manual_review(tmp_path, monkeypatch):
@@ -164,6 +189,7 @@ def test_auto_eval_unresolved_requires_manual_review(tmp_path, monkeypatch):
         monkeypatch,
         _resolver_result(
             instruction_mode="unresolved",
+            selection_scope="unknown",
             resolution_status="unresolved",
             relevant_segment_ids=[],
             unresolved_requirements=["GT 没有语气兴奋度信息"],
@@ -173,7 +199,7 @@ def test_auto_eval_unresolved_requires_manual_review(tmp_path, monkeypatch):
     result = run_auto_eval(config)
     _assert_common_outputs(config.output_dir)
     assert result["evaluation_status"] == "manual_review_required"
-    assert result["semantic_metrics"] is None
+    assert result["legacy_metrics"] is None
     assert result["final_score"] is None
 
 
@@ -199,6 +225,25 @@ def test_find_nested_skill_output(tmp_path, monkeypatch):
     _write_json(gt_dir / "demo.json", _gt_payload())
     skill_root = tmp_path / "outputs"
     _write_json(
+        skill_root / "demo" / "reports" / "result_summary.json",
+        {
+            "status": "success",
+            "duration_policy": {
+                "duration_policy_mode": "bounded_auto",
+                "user_specified_duration": True,
+                "user_target_duration": 20,
+                "recommended_duration": None,
+                "selected_target_duration": 20,
+                "allowed_min_duration": 20,
+                "allowed_max_duration": 20,
+                "final_total_duration": 7,
+                "duration_policy_reason": "测试",
+            },
+            "selected_target_duration": 20,
+            "final_total_duration": 7,
+        },
+    )
+    _write_json(
         skill_root / "demo" / "reports" / "segments.json",
         {"final_segments": [{"start": 1, "end": 8}]},
     )
@@ -215,3 +260,89 @@ def test_find_nested_skill_output(tmp_path, monkeypatch):
     result = run_auto_eval(config)
     assert result["evaluation_status"] == "scored"
     assert result["segments_json"].endswith("outputs/demo/reports/segments.json")
+
+
+def test_auto_eval_llm_free_is_diagnostic_only(tmp_path, monkeypatch):
+    config = _prepare_files(tmp_path)
+    summary_path = config.skill_output_dir / "reports" / "result_summary.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    summary["duration_policy"]["duration_policy_mode"] = "llm_free"
+    summary["duration_policy"]["user_specified_duration"] = False
+    summary["duration_policy"]["user_target_duration"] = None
+    summary["duration_policy"]["recommended_duration"] = None
+    summary["duration_policy"]["selected_target_duration"] = 15.0
+    summary["duration_policy"]["final_total_duration"] = 15.0
+    summary["selected_target_duration"] = 15.0
+    summary["final_total_duration"] = 15.0
+    _write_json(summary_path, summary)
+    _patch_resolver(
+        monkeypatch,
+        _resolver_result(
+            instruction_mode="generic",
+            selection_scope="not_applicable",
+            use_default_highlights=True,
+            relevant_segment_ids=[],
+            forbidden_segment_ids=[],
+        ),
+    )
+    result = run_auto_eval(config)
+    assert result["evaluation_status"] == "diagnostic_only"
+    assert result["evaluation_scope"] == "diagnostic_only"
+    assert result["selection_score_v1"] is None
+
+
+def test_auto_eval_uses_frozen_generated_case_without_resolver(tmp_path, monkeypatch):
+    config = _prepare_files(tmp_path)
+    frozen_case = {
+        "case_id": "frozen_demo",
+        "video_id": "demo",
+        "instruction": "测试指令",
+        "target_duration": None,
+        **_resolver_result(relevant_segment_ids=["seg_001"]),
+        "resolver_backend": "ark",
+        "resolver_prompt_version": "resolver_v2",
+    }
+    frozen_path = tmp_path / "frozen.json"
+    _write_json(frozen_path, frozen_case)
+    config.generated_case_json = frozen_path
+
+    def fail_resolver(**kwargs):
+        raise AssertionError("不应调用 Ark Resolver")
+
+    monkeypatch.setattr("evaluation.auto_eval.resolve_instruction_with_ark", fail_resolver)
+    result = run_auto_eval(config)
+    assert result["evaluation_status"] == "scored"
+    assert result["resolver_metadata"]["resolver_backend"] == "frozen"
+    assert (config.output_dir / "generated_case.json").exists()
+
+
+def test_frozen_generated_case_mismatch_errors(tmp_path):
+    config = _prepare_files(tmp_path)
+    frozen_case = {
+        "case_id": "frozen_demo",
+        "video_id": "other",
+        "instruction": "测试指令",
+        "target_duration": None,
+        **_resolver_result(relevant_segment_ids=["seg_001"]),
+    }
+    frozen_path = tmp_path / "bad_frozen.json"
+    _write_json(frozen_path, frozen_case)
+    config.generated_case_json = frozen_path
+    with pytest.raises(ValueError):
+        run_auto_eval(config)
+
+
+def test_frozen_generated_case_unknown_segment_errors(tmp_path):
+    config = _prepare_files(tmp_path)
+    frozen_case = {
+        "case_id": "frozen_demo",
+        "video_id": "demo",
+        "instruction": "测试指令",
+        "target_duration": None,
+        **_resolver_result(relevant_segment_ids=["seg_x"]),
+    }
+    frozen_path = tmp_path / "bad_segment.json"
+    _write_json(frozen_path, frozen_case)
+    config.generated_case_json = frozen_path
+    with pytest.raises(Exception):
+        run_auto_eval(config)

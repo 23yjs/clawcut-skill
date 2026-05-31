@@ -17,6 +17,7 @@ GT = {
 def _result(**overrides):
     result = {
         "instruction_mode": "specific",
+        "selection_scope": "preferential",
         "resolution_status": "resolved",
         "use_default_highlights": False,
         "relevant_segment_ids": ["seg_001"],
@@ -33,6 +34,7 @@ class InstructionResolverValidationTests(unittest.TestCase):
         result = validate_resolver_result(
             _result(
                 instruction_mode="generic",
+                selection_scope="not_applicable",
                 use_default_highlights=True,
                 relevant_segment_ids=[],
                 forbidden_segment_ids=[],
@@ -44,10 +46,15 @@ class InstructionResolverValidationTests(unittest.TestCase):
     def test_valid_specific(self) -> None:
         result = validate_resolver_result(_result(), GT)
         self.assertEqual(result["instruction_mode"], "specific")
+        self.assertEqual(result["selection_scope"], "preferential")
+
+    def test_valid_specific_exclusive(self) -> None:
+        result = validate_resolver_result(_result(selection_scope="exclusive"), GT)
+        self.assertEqual(result["selection_scope"], "exclusive")
 
     def test_valid_conflict(self) -> None:
         result = validate_resolver_result(
-            _result(instruction_mode="conflict", forbidden_segment_ids=["seg_003"]),
+            _result(instruction_mode="conflict", selection_scope="exclusive", forbidden_segment_ids=["seg_003"]),
             GT,
         )
         self.assertEqual(result["forbidden_segment_ids"], ["seg_003"])
@@ -56,6 +63,7 @@ class InstructionResolverValidationTests(unittest.TestCase):
         result = validate_resolver_result(
             _result(
                 instruction_mode="unresolved",
+                selection_scope="unknown",
                 resolution_status="unresolved",
                 relevant_segment_ids=[],
                 unresolved_requirements=["GT 没有情绪描述"],
@@ -81,6 +89,7 @@ class InstructionResolverValidationTests(unittest.TestCase):
             validate_resolver_result(
                 _result(
                     instruction_mode="generic",
+                    selection_scope="not_applicable",
                     use_default_highlights=False,
                     relevant_segment_ids=[],
                     forbidden_segment_ids=[],
@@ -91,6 +100,22 @@ class InstructionResolverValidationTests(unittest.TestCase):
     def test_specific_resolved_without_relevant_errors(self) -> None:
         with self.assertRaises(ResolverValidationError):
             validate_resolver_result(_result(relevant_segment_ids=[]), GT)
+
+    def test_specific_invalid_scope_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(_result(selection_scope="not_applicable"), GT)
+
+    def test_conflict_with_explicit_forbidden_is_valid(self) -> None:
+        result = validate_resolver_result(
+            _result(
+                instruction_mode="conflict",
+                selection_scope="preferential",
+                relevant_segment_ids=["seg_001"],
+                forbidden_segment_ids=["seg_003"],
+            ),
+            GT,
+        )
+        self.assertEqual(result["selection_scope"], "preferential")
 
 
 if __name__ == "__main__":

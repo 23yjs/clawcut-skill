@@ -25,6 +25,7 @@ GT = {
 def _resolver_result() -> dict:
     return {
         "instruction_mode": "specific",
+        "selection_scope": "preferential",
         "resolution_status": "resolved",
         "use_default_highlights": False,
         "relevant_segment_ids": ["seg_001"],

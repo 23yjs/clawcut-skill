@@ -21,7 +21,7 @@ def _valid_annotation(**overrides: Any) -> dict[str, Any]:
         "video_id": "demo",
         "video_path": "data/input/demo.MP4",
         "video_type": "ecommerce_product",
-        "duration_seconds": 20,
+        "duration_seconds": 8,
         "video_summary": "一个用于测试的电商视频。",
         "semantic_segments": [
             {
@@ -134,8 +134,9 @@ class GTLoaderTests(unittest.TestCase):
         self.assertTrue(any("额外顶层字段" in warning for warning in warnings))
         self.assertTrue(any("额外字段" in warning for warning in warnings))
 
-    def test_gap_and_small_overlap_only_warn(self) -> None:
+    def test_gap_and_overlap_error_in_strict_timeline(self) -> None:
         annotation = _valid_annotation(
+            duration_seconds=18,
             semantic_segments=[
                 {
                     "segment_id": "seg_001",
@@ -163,7 +164,41 @@ class GTLoaderTests(unittest.TestCase):
                 },
             ]
         )
-        warnings = validate_gt_annotation(annotation, Path("demo.json"))
+        with self.assertRaises(ValueError):
+            validate_gt_annotation(annotation, Path("demo.json"))
+
+    def test_gap_and_overlap_can_warn_for_legacy_compatibility(self) -> None:
+        annotation = _valid_annotation(
+            duration_seconds=18,
+            semantic_segments=[
+                {
+                    "segment_id": "seg_001",
+                    "start": 0,
+                    "end": 8,
+                    "description": "第一段。",
+                    "default_highlight_score": 4,
+                    "avoid_by_default": False,
+                },
+                {
+                    "segment_id": "seg_002",
+                    "start": 10,
+                    "end": 15,
+                    "description": "中间有空白区间。",
+                    "default_highlight_score": 3,
+                    "avoid_by_default": False,
+                },
+                {
+                    "segment_id": "seg_003",
+                    "start": 14,
+                    "end": 18,
+                    "description": "与上一段少量重叠。",
+                    "default_highlight_score": 3,
+                    "avoid_by_default": False,
+                },
+            ]
+        )
+        warnings = validate_gt_annotation(annotation, Path("demo.json"), strict_timeline=False)
+        self.assertTrue(any("空白区间" in warning for warning in warnings))
         self.assertTrue(any("时间重叠" in warning for warning in warnings))
 
     def test_load_gt_file_rejects_jsonl(self) -> None:

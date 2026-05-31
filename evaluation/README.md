@@ -150,12 +150,85 @@ instruction + GT.video_summary + GT.semantic_segments
 
 当前评分路径：
 
-- `generic`：使用默认高光 `Precision / Recall / F1`。
-- `specific`：使用 `relevant_segment_ids` 的 Precision / Recall / F1。
+- `generic`：使用默认高光价值、默认应避免内容和时长控制计算 `selection_score_v1`。
+- `specific`：使用 `relevant_segment_ids` 的时间级 Precision / Coverage / F1。
 - `conflict`：同时检查 `relevant_segment_ids` 和 `forbidden_segment_ids`。
 - `partial / unresolved`：不强行打分，进入人工复核。
+- `llm_free`：只作为诊断模式，`evaluation_scope=diagnostic_only`，不输出正式 `selection_score_v1`。
 
-## 6. dry run
+## 6. selection_score_v1 选段质量总分
+
+`selection_score_v1` 是 0-100 分的确定性选段质量分，只评价“选了哪些内容”，不评价成片审美、镜头衔接、音画同步、口播截断或剪辑节奏。
+
+正式输出字段：
+
+```text
+evaluation_status = scored
+evaluation_scope = official
+score_version = selection_score_v1
+selection_score_v1 = 0-100
+final_score = selection_score_v1
+```
+
+Generic 指令使用默认高光价值评分：
+
+```text
+selection_score_v1
+= 100
+× generic_value_score
+× default_avoid_compliance_score
+× duration_score
+```
+
+Specific / conflict 指令使用 guided 评分。Resolver 会输出：
+
+```text
+selection_scope:
+  preferential  # 重点保留目标内容，允许少量上下文
+  exclusive     # 只剪目标内容，原则上不允许混入非目标内容
+```
+
+`preferential`：
+
+```text
+guided_core_score = 0.70 × relevant_duration_coverage + 0.30 × relevant_duration_precision
+```
+
+`exclusive`：
+
+```text
+guided_core_score = relevant_duration_f1
+```
+
+最终：
+
+```text
+selection_score_v1
+= 100
+× guided_core_score
+× forbidden_compliance_score
+× duration_score
+```
+
+时间区间会先做并集。例如 `0-10` 和 `8-15` 只按 `0-15` 计算为 15 秒，不会重复计时。
+
+## 7. frozen generated_case 复用
+
+Resolver 输出存在轻微波动。正式 A/B 实验应先人工检查 `generated_case.json`，然后复用冻结后的评分标准：
+
+```bash
+python evaluation/run_eval.py \
+  --input_video data/input/ecom_cup_demo1.MP4 \
+  --instruction "剪出这个视频的高光时刻" \
+  --skill_output_dir outputs/ecom_cup_demo1 \
+  --gt_dir data/eval \
+  --generated_case_json eval_outputs/auto_ark_generic/generated_case.json \
+  --output_dir eval_outputs/auto_ark_generic_frozen
+```
+
+传入 `--generated_case_json` 时不会调用 Ark Resolver。程序会校验 `video_id`、`instruction`、`target_duration` 和所有 `segment_id`，任何不一致都会直接报错。
+
+## 8. dry run
 
 只打印将要执行的 `run_skill.py` 命令，不实际剪辑视频。
 
@@ -169,7 +242,7 @@ python evaluation/run_eval.py \
   --dry_run
 ```
 
-## 7. 只评分已有输出
+## 9. 只评分已有输出
 
 如果已经有 `eval_outputs/mock_v1/runs/<case_id>/...` 产物，可以只重新评分：
 
@@ -182,7 +255,7 @@ python evaluation/run_eval.py \
   --score_only
 ```
 
-## 8. 评测路径说明
+## 10. 评测路径说明
 
 - `generic`：主要使用 `default_highlight_score`，同时检查默认应避免内容。
 - `specific`：主要使用 `must_cover_tags` / `must_avoid_tags`。

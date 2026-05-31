@@ -81,6 +81,20 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
   --llm_backend mock
 ```
 
+诊断性自由时长实验：
+
+```bash
+python skills/clawcut-video-highlight/scripts/run_skill.py \
+  --input_video data/input/demo.mp4 \
+  --instruction "剪出这个视频的高光时刻" \
+  --output_dir outputs \
+  --llm_backend ark \
+  --llm_video_url "https://your-public-video-url/demo.mp4" \
+  --duration_policy_mode llm_free
+```
+
+`llm_free` 仅用于诊断实验：用户未指定 `--target_duration` 时不预设 15%/15-60 秒预算，让视频模型自行决定成片长度。正式默认策略仍是 `bounded_auto`。
+
 ark + 原视频 URL 模式：
 
 ```bash
@@ -129,6 +143,30 @@ outputs/ecom_cup_demo/
 当候选高光多于目标时长容量时，Skill 会输出 `excluded_highlights`，说明哪些候选高光因为时长限制、重复内容或优先级较低没有进入最终剪辑。这些片段不会被 `ffmpeg` 裁剪，只用于解释。
 
 失败时也会尽量写入 `reports/result_summary.json`，其中包含 `status: failed`、错误类型、错误信息、日志路径和已生成的部分输出。
+
+## 自动评测与 selection_score_v1
+
+评测模块支持 Ark Instruction Resolver 自动单条评测：
+
+```bash
+python evaluation/run_eval.py \
+  --input_video data/input/ecom_cup_demo1.MP4 \
+  --instruction "剪出这个视频的高光时刻" \
+  --skill_output_dir outputs/ecom_cup_demo1 \
+  --gt_dir data/eval \
+  --output_dir eval_outputs/auto_generic
+```
+
+`selection_score_v1` 是 0-100 分的选段质量分，只评价：
+
+- 是否选择了正确内容；
+- 是否覆盖用户关心内容；
+- 是否混入无关或明确禁止内容；
+- 是否遵循目标时长。
+
+它不评价最终成片审美、转场、口播截断、音画同步或节奏。
+
+`llm_free` 输出只进入 `diagnostic_only`，不产生正式 `selection_score_v1`。正式 A/B 实验建议先人工检查 `generated_case.json`，再用 `--generated_case_json` 复用同一评分标准。
 
 ## 视频输入策略
 

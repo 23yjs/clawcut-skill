@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 
-RESOLVER_PROMPT_VERSION = "resolver_v1"
+RESOLVER_PROMPT_VERSION = "resolver_v2"
 
 
 RESOLVER_SYSTEM_PROMPT = """你是视频剪辑评测系统中的 Instruction Resolver。
@@ -32,6 +32,7 @@ RESOLVER_SYSTEM_PROMPT = """你是视频剪辑评测系统中的 Instruction Res
 输出 JSON Schema 固定为：
 {
   "instruction_mode": "generic | specific | conflict | unresolved",
+  "selection_scope": "not_applicable | preferential | exclusive | unknown",
   "resolution_status": "resolved | partial | unresolved | failed",
   "use_default_highlights": true,
   "relevant_segment_ids": [],
@@ -41,10 +42,12 @@ RESOLVER_SYSTEM_PROMPT = """你是视频剪辑评测系统中的 Instruction Res
 }
 
 字段规则：
-- generic：用户只要求默认高光时使用；resolution_status 必须为 resolved；use_default_highlights 必须为 true；relevant_segment_ids 和 forbidden_segment_ids 必须为空数组。
+- generic：用户只要求默认高光时使用；selection_scope 必须为 not_applicable；resolution_status 必须为 resolved；use_default_highlights 必须为 true；relevant_segment_ids 和 forbidden_segment_ids 必须为空数组。
 - specific：用户明确要求保留某些内容；use_default_highlights 必须为 false；resolved 时 relevant_segment_ids 必须非空。
-- conflict：用户既要求保留内容，又明确排除内容；use_default_highlights 必须为 false；resolved 时 relevant_segment_ids 或 forbidden_segment_ids 至少一个非空。
-- unresolved：GT 信息不足，无法可靠映射用户要求；use_default_highlights 必须为 false；resolution_status 必须为 unresolved 或 partial；unresolved_requirements 必须非空。
+  - 如果用户说“突出、优先、包含、重点展示”等，selection_scope 为 preferential，允许少量上下文。
+  - 如果用户说“只剪、仅保留、不要其他、只要”等，selection_scope 为 exclusive，原则上不允许混入非目标内容。
+- conflict：用户既要求保留内容，又明确排除内容；selection_scope 必须为 preferential 或 exclusive；use_default_highlights 必须为 false；resolved 时 relevant_segment_ids 或 forbidden_segment_ids 至少一个非空。
+- unresolved：GT 信息不足，无法可靠映射用户要求；selection_scope 必须为 unknown；use_default_highlights 必须为 false；resolution_status 必须为 unresolved 或 partial；unresolved_requirements 必须非空。
 """
 
 
