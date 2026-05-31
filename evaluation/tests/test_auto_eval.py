@@ -58,6 +58,15 @@ def _prepare_files(tmp_path: Path) -> AutoEvalConfig:
         skill_output_dir / "reports" / "result_summary.json",
         {
             "status": "success",
+            "input_video": "data/input/demo.MP4",
+            "instruction": "测试指令",
+            "target_duration": None,
+            "skill_backend_requested": "ark",
+            "skill_backend_used": "ark",
+            "fallback_used": False,
+            "source_video_duration": 120,
+            "skill_prompt_version": "highlight_prompt_v1",
+            "skill_model": "test-skill-model",
             "duration_policy": {
                 "duration_policy_mode": "bounded_auto",
                 "user_specified_duration": False,
@@ -71,6 +80,9 @@ def _prepare_files(tmp_path: Path) -> AutoEvalConfig:
             },
             "selected_target_duration": 18.0,
             "final_total_duration": 15.0,
+            "highlight_video": str(skill_output_dir / "videos" / "highlight.mp4"),
+            "segments_json": str(skill_output_dir / "reports" / "segments.json"),
+            "run_log": str(skill_output_dir / "logs" / "run.log"),
         },
     )
     _write_json(
@@ -82,6 +94,10 @@ def _prepare_files(tmp_path: Path) -> AutoEvalConfig:
             ]
         },
     )
+    (skill_output_dir / "videos").mkdir(parents=True, exist_ok=True)
+    (skill_output_dir / "videos" / "highlight.mp4").write_bytes(b"fake mp4")
+    (skill_output_dir / "logs").mkdir(parents=True, exist_ok=True)
+    (skill_output_dir / "logs" / "run.log").write_text("使用的 LLM backend：ark\n", encoding="utf-8")
     return AutoEvalConfig(
         input_video=Path("data/input/demo.MP4"),
         instruction="测试指令",
@@ -124,6 +140,34 @@ def _patch_resolver(monkeypatch, result: dict) -> None:
         return result, _metadata()
 
     monkeypatch.setattr("evaluation.auto_eval.resolve_instruction_with_ark", fake_resolve_instruction_with_ark)
+    _patch_technical(monkeypatch)
+
+
+def _patch_technical(monkeypatch) -> None:
+    def fake_check_technical_quality(**kwargs):
+        return {
+            "technical_quality_passed": True,
+            "technical_quality_errors": [],
+            "technical_quality_warnings": [],
+            "planned_total_duration": 15.0,
+            "rendered_duration": 15.0,
+            "rendered_duration_delta": 0.0,
+            "rendered_duration_error_ratio": 0.0,
+            "video_stream_present": True,
+            "source_has_audio": True,
+            "highlight_has_audio": True,
+            "audio_stream_consistent": True,
+            "decode_success": True,
+            "decode_error": "",
+            "black_frame_duration": 0.0,
+            "black_frame_ratio": 0.0,
+            "compression_ratio": 0.125,
+            "selected_source_union_duration": 15.0,
+            "duplicate_source_duration": 0.0,
+            "duplicate_source_ratio": 0.0,
+        }
+
+    monkeypatch.setattr("evaluation.auto_eval.check_technical_quality", fake_check_technical_quality)
 
 
 def _assert_common_outputs(output_dir: Path) -> None:
@@ -149,7 +193,7 @@ def test_auto_eval_generic_scores_and_writes_files(tmp_path, monkeypatch):
     )
     result = run_auto_eval(config)
     _assert_common_outputs(config.output_dir)
-    assert result["evaluation_status"] == "scored"
+    assert result["evaluation_status"] == "selection_scored_aesthetic_pending"
     assert result["evaluation_scope"] == "official"
     assert result["selection_score_v1"] is not None
     assert "default_highlight_f1" in result["legacy_metrics"]
@@ -160,7 +204,7 @@ def test_auto_eval_specific_scores_reference_metrics(tmp_path, monkeypatch):
     _patch_resolver(monkeypatch, _resolver_result(relevant_segment_ids=["seg_001"]))
     result = run_auto_eval(config)
     _assert_common_outputs(config.output_dir)
-    assert result["evaluation_status"] == "scored"
+    assert result["evaluation_status"] == "selection_scored_aesthetic_pending"
     assert result["evaluation_scope"] == "official"
     assert result["time_metrics"]["relevant_duration_coverage"] == 0.778
 
@@ -205,6 +249,7 @@ def test_auto_eval_unresolved_requires_manual_review(tmp_path, monkeypatch):
 
 def test_auto_eval_resolver_failure_writes_failure_result(tmp_path, monkeypatch):
     config = _prepare_files(tmp_path)
+    _patch_technical(monkeypatch)
 
     def fake_resolve_instruction_with_ark(**kwargs):
         raise ArkResolverError("resolver failed")
@@ -214,7 +259,7 @@ def test_auto_eval_resolver_failure_writes_failure_result(tmp_path, monkeypatch)
     assert (config.output_dir / "resolver_request.json").exists()
     assert (config.output_dir / "evaluation_result.json").exists()
     assert (config.output_dir / "eval_report.md").exists()
-    assert not (config.output_dir / "resolver_response.json").exists()
+    assert (config.output_dir / "resolver_response.json").exists()
     assert result["evaluation_status"] == "resolver_failed"
     assert result["final_score"] is None
     assert "resolver failed" in result["error_message"]
@@ -228,6 +273,14 @@ def test_find_nested_skill_output(tmp_path, monkeypatch):
         skill_root / "demo" / "reports" / "result_summary.json",
         {
             "status": "success",
+            "input_video": "data/input/demo.MP4",
+            "instruction": "测试指令",
+            "target_duration": 20,
+            "skill_backend_requested": "ark",
+            "skill_backend_used": "ark",
+            "fallback_used": False,
+            "source_video_duration": 120,
+            "skill_prompt_version": "highlight_prompt_v1",
             "duration_policy": {
                 "duration_policy_mode": "bounded_auto",
                 "user_specified_duration": True,
@@ -241,12 +294,19 @@ def test_find_nested_skill_output(tmp_path, monkeypatch):
             },
             "selected_target_duration": 20,
             "final_total_duration": 7,
+            "highlight_video": str(skill_root / "demo" / "videos" / "highlight.mp4"),
+            "segments_json": str(skill_root / "demo" / "reports" / "segments.json"),
+            "run_log": str(skill_root / "demo" / "logs" / "run.log"),
         },
     )
     _write_json(
         skill_root / "demo" / "reports" / "segments.json",
         {"final_segments": [{"start": 1, "end": 8}]},
     )
+    (skill_root / "demo" / "videos").mkdir(parents=True, exist_ok=True)
+    (skill_root / "demo" / "videos" / "highlight.mp4").write_bytes(b"fake mp4")
+    (skill_root / "demo" / "logs").mkdir(parents=True, exist_ok=True)
+    (skill_root / "demo" / "logs" / "run.log").write_text("使用的 LLM backend：ark\n", encoding="utf-8")
     config = AutoEvalConfig(
         input_video=Path("data/input/demo.MP4"),
         instruction="测试指令",
@@ -258,7 +318,7 @@ def test_find_nested_skill_output(tmp_path, monkeypatch):
     )
     _patch_resolver(monkeypatch, _resolver_result(relevant_segment_ids=["seg_001"]))
     result = run_auto_eval(config)
-    assert result["evaluation_status"] == "scored"
+    assert result["evaluation_status"] == "selection_scored_aesthetic_pending"
     assert result["segments_json"].endswith("outputs/demo/reports/segments.json")
 
 
@@ -310,10 +370,62 @@ def test_auto_eval_uses_frozen_generated_case_without_resolver(tmp_path, monkeyp
         raise AssertionError("不应调用 Ark Resolver")
 
     monkeypatch.setattr("evaluation.auto_eval.resolve_instruction_with_ark", fail_resolver)
+    _patch_technical(monkeypatch)
     result = run_auto_eval(config)
-    assert result["evaluation_status"] == "scored"
+    assert result["evaluation_status"] == "selection_scored_aesthetic_pending"
     assert result["resolver_metadata"]["resolver_backend"] == "frozen"
     assert (config.output_dir / "generated_case.json").exists()
+
+
+def test_auto_eval_with_judge_video_url_outputs_final_score_v2(tmp_path, monkeypatch):
+    config = _prepare_files(tmp_path)
+    config.judge_video_url = "https://example.com/highlight.mp4?debug=1"
+    _patch_resolver(
+        monkeypatch,
+        _resolver_result(
+            instruction_mode="generic",
+            selection_scope="not_applicable",
+            use_default_highlights=True,
+            relevant_segment_ids=[],
+            forbidden_segment_ids=[],
+        ),
+    )
+
+    def fake_judge(**kwargs):
+        return {
+            "judge_status": "scored",
+            "aesthetic_score_v1": 80.0,
+            "judge_stability_warning": False,
+            "judge_manual_review_required": False,
+            "judge_confidence": 0.9,
+        }
+
+    monkeypatch.setattr("evaluation.auto_eval.run_aesthetic_judge", fake_judge)
+    result = run_auto_eval(config)
+    assert result["evaluation_status"] == "scored_complete"
+    assert result["aesthetic_score_v1"] == 80.0
+    assert result["final_score_v2"] is not None
+    request = json.loads((config.output_dir / "aesthetic_judge_request.json").read_text(encoding="utf-8"))
+    assert "debug=1" not in str(request)
+
+
+def test_auto_eval_mock_fallback_is_diagnostic_only(tmp_path, monkeypatch):
+    config = _prepare_files(tmp_path)
+    summary_path = config.skill_output_dir / "reports" / "result_summary.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    summary["skill_backend_used"] = "mock"
+    summary["fallback_used"] = True
+    _write_json(summary_path, summary)
+
+    def fail_resolver(**kwargs):
+        raise AssertionError("mock fallback 不应进入 Resolver")
+
+    monkeypatch.setattr("evaluation.auto_eval.resolve_instruction_with_ark", fail_resolver)
+    _patch_technical(monkeypatch)
+    result = run_auto_eval(config)
+    assert result["evaluation_status"] == "diagnostic_only"
+    assert result["selection_score_v1"] is None
+    assert result["final_score_v2"] is None
 
 
 def test_frozen_generated_case_mismatch_errors(tmp_path):

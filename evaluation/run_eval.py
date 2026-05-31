@@ -17,6 +17,7 @@ SCRIPTS_DIR = ROOT_DIR / "skills" / "clawcut-video-highlight" / "scripts"
 RUN_SKILL = SCRIPTS_DIR / "run_skill.py"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
+from ark_aesthetic_judge_client import ArkAestheticJudgeConfig  # noqa: E402
 from ark_resolver_client import ArkResolverConfig  # noqa: E402
 from auto_eval import AutoEvalConfig, run_auto_eval  # noqa: E402
 from gt_loader import load_gt_dir  # noqa: E402
@@ -702,6 +703,10 @@ def _run_auto_eval(args: argparse.Namespace) -> int:
         or llm_config.get("timeout_seconds")
         or ArkResolverConfig().timeout_seconds
     )
+    judge_model = args.judge_model or resolver_model
+    judge_base_url = args.judge_base_url or resolver_base_url
+    judge_api_key_env = args.judge_api_key_env or resolver_api_key_env
+    judge_timeout_seconds = args.judge_timeout_seconds or resolver_timeout_seconds
     result = run_auto_eval(
         AutoEvalConfig(
             input_video=args.input_video,
@@ -717,6 +722,14 @@ def _run_auto_eval(args: argparse.Namespace) -> int:
                 timeout_seconds=int(resolver_timeout_seconds),
             ),
             generated_case_json=args.generated_case_json,
+            judge_video_url=args.judge_video_url,
+            aesthetic_judge_config=ArkAestheticJudgeConfig(
+                model=str(judge_model),
+                base_url=str(judge_base_url),
+                api_key_env=str(judge_api_key_env),
+                timeout_seconds=int(judge_timeout_seconds),
+            ),
+            judge_repeats=int(args.judge_repeats),
         )
     )
     print(f"自动评测完成：{args.output_dir}")
@@ -739,6 +752,12 @@ def main() -> int:
     parser.add_argument("--resolver_api_key_env", default=None)
     parser.add_argument("--resolver_timeout_seconds", type=int, default=None)
     parser.add_argument("--generated_case_json", type=Path)
+    parser.add_argument("--judge_video_url")
+    parser.add_argument("--judge_model", default=None)
+    parser.add_argument("--judge_base_url", default=None)
+    parser.add_argument("--judge_api_key_env", default="ARK_API_KEY")
+    parser.add_argument("--judge_timeout_seconds", type=int, default=None)
+    parser.add_argument("--judge_repeats", type=int, default=1)
 
     parser.add_argument("--cases", type=Path)
     parser.add_argument("--annotations", type=Path)

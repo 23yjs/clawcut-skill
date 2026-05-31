@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import re
 import traceback
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,8 @@ from make_preview import make_preview
 from plan_validator import assert_valid_plan
 from utils import SkillError, ensure_dir, load_config, setup_logger, write_json, write_text
 from video_probe import probe_video
+
+SKILL_PROMPT_VERSION = "highlight_prompt_v1"
 
 
 def _mask_url(url: str) -> str:
@@ -248,7 +251,15 @@ def _write_success_summary(
     plan: dict[str, Any],
     validation: dict[str, Any],
     preview_path: Path | None,
+    video_info: dict[str, Any] | None = None,
+    skill_backend_requested: str = "unknown",
+    run_started_at: str = "",
+    run_finished_at: str = "",
 ) -> None:
+    video_info = video_info or {}
+    llm_metadata = plan.get("llm_metadata", {}) if isinstance(plan.get("llm_metadata"), dict) else {}
+    skill_backend_used = str(llm_metadata.get("backend", "") or "").strip().lower() or "unknown"
+    fallback_used = skill_backend_requested == "ark" and skill_backend_used != "ark"
     write_json(
         summary_path,
         {
@@ -256,6 +267,14 @@ def _write_success_summary(
             "input_video": str(input_video),
             "instruction": instruction,
             "target_duration": plan.get("duration_policy", {}).get("user_target_duration"),
+            "skill_backend_requested": skill_backend_requested,
+            "skill_backend_used": skill_backend_used,
+            "fallback_used": fallback_used,
+            "source_video_duration": video_info.get("duration"),
+            "run_started_at": run_started_at,
+            "run_finished_at": run_finished_at,
+            "skill_prompt_version": SKILL_PROMPT_VERSION,
+            "skill_model": llm_metadata.get("model", ""),
             "duration_policy": plan.get("duration_policy", {}),
             "selected_target_duration": validation.get("selected_target_duration"),
             "final_total_duration": validation.get("total_duration"),
@@ -284,6 +303,9 @@ def _write_failure_summary(
     error_type: str,
     error_message: str,
     duration_policy: dict[str, Any] | None = None,
+    skill_backend_requested: str | None = None,
+    run_started_at: str | None = None,
+    run_finished_at: str | None = None,
 ) -> None:
     write_json(
         summary_path,
@@ -292,6 +314,14 @@ def _write_failure_summary(
             "input_video": str(input_video),
             "instruction": instruction,
             "target_duration": float(target_duration) if target_duration is not None else None,
+            "skill_backend_requested": skill_backend_requested or "",
+            "skill_backend_used": "",
+            "fallback_used": False,
+            "source_video_duration": None,
+            "run_started_at": run_started_at or "",
+            "run_finished_at": run_finished_at or "",
+            "skill_prompt_version": SKILL_PROMPT_VERSION,
+            "skill_model": "",
             "duration_policy": duration_policy or {},
             "selected_target_duration": (duration_policy or {}).get("selected_target_duration"),
             "error_type": error_type,
@@ -503,7 +533,9 @@ def run_skill(
     config_path: Path | None = None,
     runtime_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    run_started_at = datetime.now().isoformat(timespec="seconds")
     runtime_context = runtime_context if runtime_context is not None else {}
+    runtime_context["run_started_at"] = run_started_at
     paths = _output_paths(output_dir, input_video)
     for key in ("videos", "reports", "logs", "work"):
         ensure_dir(paths[key])
@@ -581,6 +613,8 @@ def run_skill(
     logger.info("模型输入路径或 URL：%s", _mask_url(model_video_input_path_or_url))
     logger.info("最终裁剪源：%s", input_video)
     logger.info("使用的 LLM backend：%s", config.get("llm", {}).get("backend", "mock"))
+    skill_backend_requested = str(config.get("llm", {}).get("backend", "mock") or "mock").strip().lower()
+    runtime_context["skill_backend_requested"] = skill_backend_requested
 
     client = create_llm_client(config, logger=logger)
     plan = client.generate_edit_plan(str(preview_path or ""), instruction, planning_target_duration, video_info, config)
@@ -648,6 +682,7 @@ def run_skill(
         run_log_path=paths["log"],
     )
     logger.info("中文报告已写入：%s", paths["report"])
+    run_finished_at = datetime.now().isoformat(timespec="seconds")
     _write_success_summary(
         paths["result_summary"],
         paths,
@@ -656,6 +691,10 @@ def run_skill(
         plan,
         validation,
         preview_path,
+        video_info,
+        skill_backend_requested,
+        run_started_at,
+        run_finished_at,
     )
     logger.info("结果摘要已写入：%s", paths["result_summary"])
     logger.info("Skill 运行完成")
@@ -733,6 +772,9 @@ def main() -> int:
             exc.__class__.__name__,
             str(exc),
             duration_policy=runtime_context.get("duration_policy"),
+            skill_backend_requested=runtime_context.get("skill_backend_requested") or args.llm_backend,
+            run_started_at=runtime_context.get("run_started_at"),
+            run_finished_at=datetime.now().isoformat(timespec="seconds"),
         )
         print(f"ClawCut 视频高光剪辑 Skill 运行失败：{exc}")
         print(f"结果摘要：{paths['result_summary']}")
@@ -750,6 +792,9 @@ def main() -> int:
             exc.__class__.__name__,
             str(exc),
             duration_policy=runtime_context.get("duration_policy"),
+            skill_backend_requested=runtime_context.get("skill_backend_requested") or args.llm_backend,
+            run_started_at=runtime_context.get("run_started_at"),
+            run_finished_at=datetime.now().isoformat(timespec="seconds"),
         )
         print(f"ClawCut 视频高光剪辑 Skill 运行失败：{exc}")
         print(f"结果摘要：{paths['result_summary']}")

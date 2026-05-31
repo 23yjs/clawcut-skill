@@ -144,7 +144,7 @@ outputs/ecom_cup_demo/
 
 失败时也会尽量写入 `reports/result_summary.json`，其中包含 `status: failed`、错误类型、错误信息、日志路径和已生成的部分输出。
 
-## 自动评测与 selection_score_v1
+## 自动评测、审美 Judge 与 final_score_v2
 
 评测模块支持 Ark Instruction Resolver 自动单条评测：
 
@@ -157,16 +157,42 @@ python evaluation/run_eval.py \
   --output_dir eval_outputs/auto_generic
 ```
 
-`selection_score_v1` 是 0-100 分的选段质量分，只评价：
+完整评测分为四层：
+
+- Layer 0 `artifact_validation`：检查本轮 Skill 产物是否和当前输入、指令、时长一致，并拦截 mock fallback。
+- Layer 1 `selection_score_v1`：0-100 分，只评价“剪了什么”。
+- Layer 2 `technical_quality`：用 ffprobe/ffmpeg 检查成片是否可解码、时长是否合理、音频是否一致、黑屏和重复源区间情况。
+- Layer 3 `aesthetic_score_v1`：Ark 成片审美 Judge，只评价最终 `highlight.mp4` 的观看体验。
+
+`selection_score_v1` 只评价：
 
 - 是否选择了正确内容；
 - 是否覆盖用户关心内容；
 - 是否混入无关或明确禁止内容；
 - 是否遵循目标时长。
 
-它不评价最终成片审美、转场、口播截断、音画同步或节奏。
+`aesthetic_score_v1` 评价片段边界完整性、转场连贯性、节奏简洁性、音画连续性和独立可看性。它不读取 GT、`final_segments`、Resolver 输出或已有分数。
+
+当且仅当 artifact、technical、selection 和 aesthetic 全部通过时，输出：
+
+```text
+final_score_v2 = 0.70 × selection_score_v1 + 0.30 × aesthetic_score_v1
+```
+
+如果没有提供 `--judge_video_url`，系统会保留 `selection_score_v1`，但 `aesthetic_score_v1` 和 `final_score_v2` 为 `null`，状态为 `selection_scored_aesthetic_pending`。
+
+`--judge_video_url` 必须指向最终上传后的 `videos/highlight.mp4`，不要传原视频 URL。当前项目不自动上传成片到 TOS。
 
 `llm_free` 输出只进入 `diagnostic_only`，不产生正式 `selection_score_v1`。正式 A/B 实验建议先人工检查 `generated_case.json`，再用 `--generated_case_json` 复用同一评分标准。
+
+批量评测使用：
+
+```bash
+python evaluation/run_batch_eval.py \
+  --cases data/eval/batch_cases.jsonl \
+  --gt_dir data/eval \
+  --output_dir eval_outputs/batch_v1
+```
 
 ## 视频输入策略
 

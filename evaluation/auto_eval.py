@@ -7,19 +7,31 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from .aesthetic_judge import run_aesthetic_judge, sanitize_url
+    from .aesthetic_judge_prompts import AESTHETIC_JUDGE_PROMPT_VERSION, build_safe_aesthetic_judge_request_record
+    from .ark_aesthetic_judge_client import ArkAestheticJudgeConfig, ArkAestheticJudgeError
     from .ark_resolver_client import ArkResolverConfig, ArkResolverError
+    from .artifact_validation import validate_skill_artifacts
     from .gt_loader import load_gt_by_input_video
     from .instruction_resolver import ResolverValidationError, resolve_instruction_with_ark, validate_resolver_result
     from .metrics import compute_default_highlight_metrics, compute_segment_reference_metrics
     from .resolver_prompts import RESOLVER_PROMPT_VERSION, build_resolver_user_payload
+    from .run_manifest import build_run_manifest, write_run_manifest
     from .selection_scoring import compute_generic_selection_score, compute_guided_selection_score
+    from .technical_quality import check_technical_quality
 except ImportError:  # pragma: no cover - script mode
+    from aesthetic_judge import run_aesthetic_judge, sanitize_url
+    from aesthetic_judge_prompts import AESTHETIC_JUDGE_PROMPT_VERSION, build_safe_aesthetic_judge_request_record
+    from ark_aesthetic_judge_client import ArkAestheticJudgeConfig, ArkAestheticJudgeError
     from ark_resolver_client import ArkResolverConfig, ArkResolverError
+    from artifact_validation import validate_skill_artifacts
     from gt_loader import load_gt_by_input_video
     from instruction_resolver import ResolverValidationError, resolve_instruction_with_ark, validate_resolver_result
     from metrics import compute_default_highlight_metrics, compute_segment_reference_metrics
     from resolver_prompts import RESOLVER_PROMPT_VERSION, build_resolver_user_payload
+    from run_manifest import build_run_manifest, write_run_manifest
     from selection_scoring import compute_generic_selection_score, compute_guided_selection_score
+    from technical_quality import check_technical_quality
 
 
 @dataclass
@@ -32,6 +44,9 @@ class AutoEvalConfig:
     output_dir: Path
     resolver_config: ArkResolverConfig
     generated_case_json: Path | None = None
+    judge_video_url: str | None = None
+    aesthetic_judge_config: ArkAestheticJudgeConfig | None = None
+    judge_repeats: int = 1
 
 
 def _write_json(path: Path, data: dict[str, Any]) -> None:
@@ -278,20 +293,42 @@ def _write_report(path: Path, result: dict[str, Any]) -> None:
     time_metrics = result.get("time_metrics") or {}
     duration_context = result.get("duration_context") or {}
     generated_case = result.get("generated_case") or {}
+    artifact_validation = result.get("artifact_validation") or {}
+    technical_quality = result.get("technical_quality") or {}
+    aesthetic_judge = result.get("aesthetic_judge") or {}
     lines = [
-        "# Ark Instruction Resolver 自动评测报告",
+        "# ClawCut 完整自动评测报告",
         "",
         "## 基本信息",
         f"- evaluation_status: `{result.get('evaluation_status')}`",
         f"- evaluation_scope: `{result.get('evaluation_scope')}`",
         f"- score_version: `{result.get('score_version')}`",
         f"- selection_score_v1: `{result.get('selection_score_v1')}`",
+        f"- aesthetic_score_v1: `{result.get('aesthetic_score_v1')}`",
+        f"- final_score_v2: `{result.get('final_score_v2')}`",
         f"- video_id: `{result.get('video_id')}`",
         f"- instruction_mode: `{result.get('instruction_mode')}`",
         f"- selection_scope: `{result.get('selection_scope')}`",
         f"- resolution_status: `{result.get('resolution_status')}`",
         f"- resolver_backend: `{result.get('resolver_backend')}`",
         f"- final_score: `{result.get('final_score')}`",
+        "",
+        "## Artifact Validation",
+        f"- artifact_validation_passed: `{artifact_validation.get('artifact_validation_passed')}`",
+        f"- skill_backend_requested: `{artifact_validation.get('skill_backend_requested')}`",
+        f"- skill_backend_used: `{artifact_validation.get('skill_backend_used')}`",
+        f"- fallback_used: `{artifact_validation.get('fallback_used')}`",
+        f"- errors: `{artifact_validation.get('artifact_validation_errors')}`",
+        f"- warnings: `{artifact_validation.get('artifact_validation_warnings')}`",
+        "",
+        "## Technical Quality",
+        f"- technical_quality_passed: `{technical_quality.get('technical_quality_passed')}`",
+        f"- rendered_duration: `{technical_quality.get('rendered_duration')}`",
+        f"- rendered_duration_error_ratio: `{technical_quality.get('rendered_duration_error_ratio')}`",
+        f"- black_frame_ratio: `{technical_quality.get('black_frame_ratio')}`",
+        f"- duplicate_source_ratio: `{technical_quality.get('duplicate_source_ratio')}`",
+        f"- errors: `{technical_quality.get('technical_quality_errors')}`",
+        f"- warnings: `{technical_quality.get('technical_quality_warnings')}`",
         "",
         "## Resolver 结果",
         f"- use_default_highlights: `{generated_case.get('use_default_highlights')}`",
@@ -326,6 +363,22 @@ def _write_report(path: Path, result: dict[str, Any]) -> None:
             lines.append(f"- {key}: `{value}`")
     else:
         lines.append("- 无旧版语义指标，需要人工复核。")
+    lines.extend(["", "## 成片审美 Judge"])
+    if aesthetic_judge:
+        for key, value in aesthetic_judge.items():
+            if key in {"judge_results", "judge_metadata"}:
+                continue
+            lines.append(f"- {key}: `{value}`")
+    else:
+        lines.append("- 未执行。")
+    lines.extend(
+        [
+            "",
+            "## 最终综合分",
+            "- final_score_v2 = 0.70 × selection_score_v1 + 0.30 × aesthetic_score_v1",
+            f"- final_score_v2: `{result.get('final_score_v2')}`",
+        ]
+    )
     if result.get("error_message"):
         lines.extend(["", "## 错误信息", f"- {result.get('error_type')}: {result.get('error_message')}"])
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -346,8 +399,10 @@ def _failure_result(
         "selection_scope": None,
         "resolution_status": None,
         "evaluation_scope": "failed",
-        "score_version": "selection_score_v1",
+        "score_version": "final_score_v2",
         "selection_score_v1": None,
+        "aesthetic_score_v1": None,
+        "final_score_v2": None,
         "resolver_backend": "ark",
         "semantic_metrics": None,
         "legacy_metrics": None,
@@ -361,12 +416,173 @@ def _failure_result(
     }
 
 
+def _aesthetic_request_record(
+    config: AutoEvalConfig,
+    gt_annotation: dict[str, Any],
+    duration_context: dict[str, Any],
+    technical_quality: dict[str, Any],
+) -> dict[str, Any]:
+    judge_config = config.aesthetic_judge_config or ArkAestheticJudgeConfig()
+    if not config.judge_video_url:
+        return {"status": "pending", "reason": "未提供 --judge_video_url"}
+    return build_safe_aesthetic_judge_request_record(
+        judge_video_url_sanitized=sanitize_url(str(config.judge_video_url)),
+        instruction=config.instruction,
+        video_type=str(gt_annotation.get("video_type", "")),
+        target_duration=config.target_duration,
+        rendered_duration=technical_quality.get("rendered_duration") or duration_context.get("final_total_duration"),
+        model=judge_config.model,
+    )
+
+
+def _write_manifest(
+    config: AutoEvalConfig,
+    gt_annotation: dict[str, Any] | None,
+    artifact_validation: dict[str, Any] | None,
+    generated_case: dict[str, Any] | None,
+    segments_json: str | None,
+) -> None:
+    artifact_validation = artifact_validation or {}
+    paths = artifact_validation.get("paths", {}) if isinstance(artifact_validation.get("paths"), dict) else {}
+    gt_path = config.gt_dir / f"{Path(config.input_video).stem}.json"
+    generated_case_path = config.output_dir / "generated_case.json"
+    highlight_video_path = Path(paths["highlight_video"]) if paths.get("highlight_video") else None
+    segments_json_path = Path(segments_json) if segments_json else (Path(paths["segments_json"]) if paths.get("segments_json") else None)
+    duration_context = artifact_validation.get("result_summary", {}).get("duration_policy", {}) if isinstance(artifact_validation.get("result_summary"), dict) else {}
+    judge_config = config.aesthetic_judge_config or ArkAestheticJudgeConfig()
+    manifest = build_run_manifest(
+        run_id=config.output_dir.name,
+        repo_root=Path(__file__).resolve().parents[1],
+        input_video_path=config.input_video,
+        gt_path=gt_path if gt_path.exists() else None,
+        instruction=config.instruction,
+        target_duration=config.target_duration,
+        duration_policy_mode=duration_context.get("duration_policy_mode"),
+        skill_prompt_version=artifact_validation.get("skill_prompt_version"),
+        resolver_prompt_version=(generated_case or {}).get("resolver_prompt_version") or RESOLVER_PROMPT_VERSION,
+        aesthetic_judge_prompt_version=AESTHETIC_JUDGE_PROMPT_VERSION,
+        skill_model=artifact_validation.get("skill_model"),
+        resolver_model=config.resolver_config.model,
+        aesthetic_judge_model=judge_config.model,
+        skill_backend_requested=artifact_validation.get("skill_backend_requested"),
+        skill_backend_used=artifact_validation.get("skill_backend_used"),
+        fallback_used=artifact_validation.get("fallback_used"),
+        generated_case_path=generated_case_path if generated_case_path.exists() else None,
+        segments_json_path=segments_json_path,
+        highlight_video_path=highlight_video_path,
+        judge_repeats=config.judge_repeats,
+        judge_video_url=config.judge_video_url,
+    )
+    write_run_manifest(config.output_dir / "run_manifest.json", manifest)
+
+
 def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
     config.output_dir.mkdir(parents=True, exist_ok=True)
     gt_annotation: dict[str, Any] | None = None
     resolver_request: dict[str, Any] | None = None
+    artifact_validation: dict[str, Any] = {}
+    technical_quality: dict[str, Any] = {}
+    aesthetic_summary: dict[str, Any] | None = None
+    generated_case: dict[str, Any] | None = None
+    resolver_metadata: dict[str, Any] | None = None
+    result: dict[str, Any]
     try:
         gt_annotation = load_gt_by_input_video(config.input_video, config.gt_dir)
+        artifact_validation = validate_skill_artifacts(
+            input_video=config.input_video,
+            instruction=config.instruction,
+            target_duration=config.target_duration,
+            skill_output_dir=config.skill_output_dir,
+        )
+        _write_json(config.output_dir / "artifact_validation.json", artifact_validation)
+
+        if not artifact_validation.get("artifact_validation_passed"):
+            result = {
+                "evaluation_status": "invalid_artifact",
+                "evaluation_scope": "failed",
+                "score_version": "final_score_v2",
+                "selection_score_v1": None,
+                "aesthetic_score_v1": None,
+                "final_score_v2": None,
+                "final_score": None,
+                "video_id": gt_annotation.get("video_id"),
+                "instruction": config.instruction,
+                "target_duration": config.target_duration,
+                "artifact_validation": artifact_validation,
+                "technical_quality": {},
+                "resolver_metadata": None,
+                "generated_case": None,
+                "error_type": "ArtifactValidationError",
+                "error_message": "; ".join(artifact_validation.get("artifact_validation_errors", [])),
+            }
+            _write_json(config.output_dir / "resolver_request.json", {"status": "skipped", "reason": "invalid_artifact"})
+            _write_json(config.output_dir / "resolver_response.json", {"status": "skipped", "reason": "invalid_artifact"})
+            _write_json(config.output_dir / "resolver_metadata.json", {"status": "skipped", "reason": "invalid_artifact"})
+            _write_json(config.output_dir / "generated_case.json", {"status": "skipped", "reason": "invalid_artifact"})
+            _write_json(config.output_dir / "technical_quality.json", {"status": "skipped", "reason": "invalid_artifact"})
+            _write_json(config.output_dir / "aesthetic_judge_request.json", {"status": "skipped", "reason": "invalid_artifact"})
+            _write_json(config.output_dir / "aesthetic_judge_response.json", {"status": "skipped", "reason": "invalid_artifact"})
+            _write_json(config.output_dir / "aesthetic_judge_metadata.json", {"status": "skipped", "reason": "invalid_artifact"})
+            _write_json(config.output_dir / "evaluation_result.json", result)
+            _write_report(config.output_dir / "eval_report.md", result)
+            _write_manifest(config, gt_annotation, artifact_validation, None, None)
+            return result
+
+        official_backend_allowed = (
+            artifact_validation.get("skill_backend_used") == "ark"
+            and not bool(artifact_validation.get("fallback_used"))
+        )
+
+        segments_json = Path(artifact_validation["paths"]["segments_json"])
+        result_summary_json = Path(artifact_validation["paths"]["result_summary"])
+        highlight_video = Path(artifact_validation["paths"]["highlight_video"])
+        final_segments = load_final_segments(segments_json)
+        result_summary = load_result_summary(result_summary_json)
+        duration_context = _duration_context(
+            result_summary=result_summary,
+            gt_annotation=gt_annotation,
+            final_segments=final_segments,
+        )
+        technical_quality = check_technical_quality(
+            input_video=config.input_video,
+            highlight_video=highlight_video,
+            final_segments=final_segments,
+            source_video_duration=artifact_validation.get("source_video_duration") or duration_context.get("video_duration"),
+        )
+        _write_json(config.output_dir / "technical_quality.json", technical_quality)
+
+        if not official_backend_allowed:
+            result = {
+                "evaluation_status": "diagnostic_only",
+                "evaluation_scope": "diagnostic_only",
+                "score_version": "final_score_v2",
+                "selection_score_v1": None,
+                "aesthetic_score_v1": None,
+                "final_score_v2": None,
+                "final_score": None,
+                "video_id": gt_annotation["video_id"],
+                "instruction": config.instruction,
+                "target_duration": config.target_duration,
+                "artifact_validation": artifact_validation,
+                "technical_quality": technical_quality,
+                "duration_context": duration_context,
+                "segments_json": str(segments_json),
+                "result_summary_json": str(result_summary_json),
+                "error_type": "MockFallbackNotOfficial",
+                "error_message": "正式评分要求 skill_backend_used=ark 且 fallback_used=false。",
+            }
+            _write_json(config.output_dir / "resolver_request.json", {"status": "skipped", "reason": "diagnostic_only"})
+            _write_json(config.output_dir / "resolver_response.json", {"status": "skipped", "reason": "diagnostic_only"})
+            _write_json(config.output_dir / "resolver_metadata.json", {"status": "skipped", "reason": "diagnostic_only"})
+            _write_json(config.output_dir / "generated_case.json", {"status": "skipped", "reason": "diagnostic_only"})
+            _write_json(config.output_dir / "aesthetic_judge_request.json", {"status": "skipped", "reason": "diagnostic_only"})
+            _write_json(config.output_dir / "aesthetic_judge_response.json", {"status": "skipped", "reason": "diagnostic_only"})
+            _write_json(config.output_dir / "aesthetic_judge_metadata.json", {"status": "skipped", "reason": "diagnostic_only"})
+            _write_json(config.output_dir / "evaluation_result.json", result)
+            _write_report(config.output_dir / "eval_report.md", result)
+            _write_manifest(config, gt_annotation, artifact_validation, None, str(segments_json))
+            return result
+
         if config.generated_case_json:
             generated_case = _load_frozen_generated_case(
                 generated_case_json=config.generated_case_json,
@@ -380,6 +596,8 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
                 "source_generated_case_json": str(config.generated_case_json),
                 "resolver_prompt_version": generated_case.get("resolver_prompt_version"),
             }
+            _write_json(config.output_dir / "resolver_request.json", {"status": "skipped", "reason": "frozen_generated_case"})
+            _write_json(config.output_dir / "resolver_response.json", _resolver_fields_from_generated_case(generated_case))
         else:
             resolver_request = build_resolver_user_payload(
                 instruction=config.instruction,
@@ -404,24 +622,8 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
                 resolver_result=resolver_result,
             )
         _write_json(config.output_dir / "generated_case.json", generated_case)
-        if config.generated_case_json:
+        if resolver_metadata:
             _write_json(config.output_dir / "resolver_metadata.json", resolver_metadata)
-
-        segments_json = find_skill_segments_json(
-            skill_output_dir=config.skill_output_dir,
-            input_video=config.input_video,
-        )
-        result_summary_json = find_skill_result_summary_json(
-            skill_output_dir=config.skill_output_dir,
-            input_video=config.input_video,
-        )
-        final_segments = load_final_segments(segments_json)
-        result_summary = load_result_summary(result_summary_json)
-        duration_context = _duration_context(
-            result_summary=result_summary,
-            gt_annotation=gt_annotation,
-            final_segments=final_segments,
-        )
         legacy_metrics = _legacy_metrics(
             resolver_result=resolver_result,
             final_segments=final_segments,
@@ -433,11 +635,70 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
             gt_annotation=gt_annotation,
             duration_context=duration_context,
         )
+        technical_passed = bool(technical_quality.get("technical_quality_passed"))
+        status = evaluation_status
+        if evaluation_status == "scored" and not technical_passed:
+            status = "technical_quality_failed"
+        elif evaluation_status == "scored" and not config.judge_video_url:
+            status = "selection_scored_aesthetic_pending"
+
+        _write_json(config.output_dir / "aesthetic_judge_request.json", _aesthetic_request_record(config, gt_annotation, duration_context, technical_quality))
+        if status == "selection_scored_aesthetic_pending":
+            _write_json(config.output_dir / "aesthetic_judge_response.json", {"status": "pending", "reason": "未提供 --judge_video_url"})
+            _write_json(config.output_dir / "aesthetic_judge_metadata.json", {"status": "pending"})
+        elif status in {"manual_review_required", "diagnostic_only", "technical_quality_failed"}:
+            _write_json(config.output_dir / "aesthetic_judge_response.json", {"status": "skipped", "reason": status})
+            _write_json(config.output_dir / "aesthetic_judge_metadata.json", {"status": "skipped", "reason": status})
+        else:
+            try:
+                judge_config = config.aesthetic_judge_config or ArkAestheticJudgeConfig()
+                aesthetic_summary = run_aesthetic_judge(
+                    judge_video_url=str(config.judge_video_url),
+                    instruction=config.instruction,
+                    video_type=str(gt_annotation.get("video_type", "")),
+                    target_duration=config.target_duration,
+                    rendered_duration=technical_quality.get("rendered_duration"),
+                    config=judge_config,
+                    repeats=config.judge_repeats,
+                )
+                _write_json(config.output_dir / "aesthetic_judge_response.json", aesthetic_summary)
+                _write_json(
+                    config.output_dir / "aesthetic_judge_metadata.json",
+                    {"judge_metadata": aesthetic_summary.get("judge_metadata", [])},
+                )
+            except Exception as exc:
+                aesthetic_summary = {
+                    "judge_status": "failed",
+                    "aesthetic_score_v1": None,
+                    "error_type": exc.__class__.__name__,
+                    "error_message": str(exc),
+                }
+                status = "judge_failed"
+                _write_json(config.output_dir / "aesthetic_judge_response.json", aesthetic_summary)
+                _write_json(config.output_dir / "aesthetic_judge_metadata.json", {"status": "failed"})
+
+        aesthetic_score_v1 = aesthetic_summary.get("aesthetic_score_v1") if aesthetic_summary else None
+        final_score_v2 = None
+        if aesthetic_summary and aesthetic_summary.get("judge_status") == "scored":
+            if aesthetic_summary.get("judge_stability_warning") or aesthetic_summary.get("judge_manual_review_required"):
+                status = "judge_manual_review_required"
+            elif (
+                status == "scored"
+                and evaluation_scope == "official"
+                and technical_passed
+                and selection_score_v1 is not None
+                and aesthetic_score_v1 is not None
+            ):
+                final_score_v2 = round(0.70 * float(selection_score_v1) + 0.30 * float(aesthetic_score_v1), 3)
+                status = "scored_complete"
+
         result = {
-            "evaluation_status": evaluation_status,
+            "evaluation_status": status,
             "evaluation_scope": evaluation_scope,
-            "score_version": "selection_score_v1",
+            "score_version": "final_score_v2",
             "selection_score_v1": selection_score_v1,
+            "aesthetic_score_v1": aesthetic_score_v1,
+            "final_score_v2": final_score_v2,
             "video_id": gt_annotation["video_id"],
             "instruction": config.instruction,
             "target_duration": config.target_duration,
@@ -452,17 +713,24 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
             "score_components": {
                 "duration_score": duration_context.get("duration_score"),
                 "selection_score_v1": selection_score_v1,
+                "aesthetic_score_v1": aesthetic_score_v1,
+                "final_score_v2": final_score_v2,
             },
+            "artifact_validation": artifact_validation,
+            "technical_quality": technical_quality,
+            "aesthetic_judge": aesthetic_summary,
             "resolver_metadata": resolver_metadata,
             "generated_case": generated_case,
             "segments_json": str(segments_json),
             "result_summary_json": str(result_summary_json),
-            "final_score": selection_score_v1,
+            "final_score": final_score_v2,
         }
     except (ArkResolverError, ResolverValidationError, json.JSONDecodeError) as exc:
         if config.generated_case_json is not None:
             raise
         result = _failure_result(config=config, gt_annotation=gt_annotation, error=exc)
+        result["artifact_validation"] = artifact_validation
+        result["technical_quality"] = technical_quality
         if resolver_request is None and gt_annotation is not None:
             resolver_request = build_resolver_user_payload(
                 instruction=config.instruction,
@@ -470,7 +738,20 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
                 gt_annotation=gt_annotation,
             )
             _write_json(config.output_dir / "resolver_request.json", resolver_request)
+        _write_json(config.output_dir / "resolver_response.json", {"status": "failed", "reason": "resolver_failed"})
+        _write_json(config.output_dir / "resolver_metadata.json", {"status": "failed", "reason": "resolver_failed"})
+        _write_json(config.output_dir / "generated_case.json", {"status": "skipped", "reason": "resolver_failed"})
+        _write_json(config.output_dir / "aesthetic_judge_request.json", {"status": "skipped", "reason": "resolver_failed"})
+        _write_json(config.output_dir / "aesthetic_judge_response.json", {"status": "skipped", "reason": "resolver_failed"})
+        _write_json(config.output_dir / "aesthetic_judge_metadata.json", {"status": "skipped", "reason": "resolver_failed"})
 
     _write_json(config.output_dir / "evaluation_result.json", result)
     _write_report(config.output_dir / "eval_report.md", result)
+    _write_manifest(
+        config,
+        gt_annotation,
+        result.get("artifact_validation") or artifact_validation,
+        generated_case,
+        result.get("segments_json"),
+    )
     return result

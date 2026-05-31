@@ -156,7 +156,80 @@ instruction + GT.video_summary + GT.semantic_segments
 - `partial / unresolved`：不强行打分，进入人工复核。
 - `llm_free`：只作为诊断模式，`evaluation_scope=diagnostic_only`，不输出正式 `selection_score_v1`。
 
-## 6. selection_score_v1 选段质量总分
+## 6. 完整评测闭环与 final_score_v2
+
+新版自动评测拆成四层：
+
+```text
+Layer 0：artifact_validation
+Layer 1：selection_score_v1
+Layer 2：technical_quality
+Layer 3：aesthetic_score_v1
+```
+
+`artifact_validation` 会读取 `reports/result_summary.json`、`reports/segments.json`、`videos/highlight.mp4` 和 `logs/run.log`，确认本次产物与当前 `input_video / instruction / target_duration` 一致。正式评分要求：
+
+```text
+skill_backend_used = ark
+fallback_used = false
+```
+
+如果 Skill 回退到 mock，评测只进入 `diagnostic_only`，不会输出正式总分。
+
+`technical_quality` 使用 `ffprobe` 和 `ffmpeg` 检查：
+
+- rendered_duration 与计划时长偏差；
+- 是否有视频流；
+- 原视频有音频时成片是否保留音频；
+- 是否能正常解码；
+- 黑屏比例；
+- 源时间轴重复选择比例；
+- compression_ratio。
+
+`technical_quality` 是硬门槛和 warning 层，不做复杂加权。
+
+`aesthetic_score_v1` 是 Ark 成片审美 Judge 分数。Judge 只允许读取：
+
+- 最终 `highlight.mp4` 的 `--judge_video_url`；
+- 用户 instruction；
+- video_type；
+- 可选 target_duration；
+- 可选 rendered_duration。
+
+Judge 严禁读取 GT、semantic_segments、Resolver 输出、`final_segments`、Skill reason、selection_score 或原视频 URL。
+
+Judge 五项评分维度均为 0-5：
+
+- `clip_boundary_completeness`
+- `transition_coherence`
+- `pacing_and_conciseness`
+- `audio_visual_continuity`
+- `standalone_watchability`
+
+Python 端计算：
+
+```text
+aesthetic_score_v1 = 20 × 五项平均分
+```
+
+最终综合分：
+
+```text
+final_score_v2 = 0.70 × selection_score_v1 + 0.30 × aesthetic_score_v1
+```
+
+如果没有传 `--judge_video_url`：
+
+```text
+evaluation_status = selection_scored_aesthetic_pending
+selection_score_v1 = 保留
+aesthetic_score_v1 = null
+final_score_v2 = null
+```
+
+注意：`--judge_video_url` 必须是最终 `videos/highlight.mp4` 的可访问 URL，不是原视频 URL。当前版本不自动上传成片到 TOS。
+
+## 7. selection_score_v1 选段质量总分
 
 `selection_score_v1` 是 0-100 分的确定性选段质量分，只评价“选了哪些内容”，不评价成片审美、镜头衔接、音画同步、口播截断或剪辑节奏。
 
@@ -167,7 +240,7 @@ evaluation_status = scored
 evaluation_scope = official
 score_version = selection_score_v1
 selection_score_v1 = 0-100
-final_score = selection_score_v1
+final_score_v2 = null 或综合分
 ```
 
 Generic 指令使用默认高光价值评分：
@@ -212,7 +285,7 @@ selection_score_v1
 
 时间区间会先做并集。例如 `0-10` 和 `8-15` 只按 `0-15` 计算为 15 秒，不会重复计时。
 
-## 7. frozen generated_case 复用
+## 8. frozen generated_case 复用
 
 Resolver 输出存在轻微波动。正式 A/B 实验应先人工检查 `generated_case.json`，然后复用冻结后的评分标准：
 
@@ -228,7 +301,53 @@ python evaluation/run_eval.py \
 
 传入 `--generated_case_json` 时不会调用 Ark Resolver。程序会校验 `video_id`、`instruction`、`target_duration` 和所有 `segment_id`，任何不一致都会直接报错。
 
-## 8. dry run
+每个评测目录都会复制本次使用的 `generated_case.json`，并写入 `resolver_metadata.json`，保证单个目录可以独立复现。
+
+## 9. run_manifest 可复现清单
+
+自动评测会输出 `run_manifest.json`，记录：
+
+- git commit；
+- input_video / GT / generated_case / segments_json / highlight.mp4 的 sha256；
+- instruction、target_duration、duration_policy_mode；
+- Skill / Resolver / Aesthetic Judge 的 prompt version 和模型；
+- backend/fallback 状态；
+- Judge repeat 次数；
+- `judge_video_url_sha256`。
+
+为避免泄露签名 URL，manifest 不保存 TOS query string，只保存去除 query 的可读 URL 和完整 URL 的 sha256。
+
+## 10. 批量评测
+
+批量输入 JSONL 示例：
+
+```json
+{"case_id":"case_001","input_video":"data/input/ecom_cup_demo1.MP4","instruction":"剪出这个视频的高光时刻","skill_output_dir":"outputs/ecom_cup_demo1","judge_video_url":"https://example.com/highlight.mp4"}
+```
+
+运行：
+
+```bash
+python evaluation/run_batch_eval.py \
+  --cases data/eval/batch_cases.jsonl \
+  --gt_dir data/eval \
+  --output_dir eval_outputs/batch_v1
+```
+
+输出：
+
+```text
+results.csv
+summary.json
+summary.md
+runs/<case_id>/evaluation_result.json
+runs/<case_id>/eval_report.md
+runs/<case_id>/run_manifest.json
+```
+
+单条失败不会中断整个批次。
+
+## 11. dry run
 
 只打印将要执行的 `run_skill.py` 命令，不实际剪辑视频。
 
@@ -242,7 +361,7 @@ python evaluation/run_eval.py \
   --dry_run
 ```
 
-## 9. 只评分已有输出
+## 12. 只评分已有输出
 
 如果已经有 `eval_outputs/mock_v1/runs/<case_id>/...` 产物，可以只重新评分：
 
@@ -255,7 +374,7 @@ python evaluation/run_eval.py \
   --score_only
 ```
 
-## 10. 评测路径说明
+## 13. 评测路径说明
 
 - `generic`：主要使用 `default_highlight_score`，同时检查默认应避免内容。
 - `specific`：主要使用 `must_cover_tags` / `must_avoid_tags`。
