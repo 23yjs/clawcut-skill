@@ -37,6 +37,7 @@ from metrics import (  # noqa: E402
     segment_duration,
 )
 from plan_validator import validate_plan  # noqa: E402
+from tos_uploader import build_tos_upload_config  # noqa: E402
 from utils import load_config, read_json  # noqa: E402
 
 
@@ -741,6 +742,15 @@ def _run_auto_eval(args: argparse.Namespace) -> int:
                 timeout_seconds=args.dover_timeout_seconds,
             ),
             technical_quality_config=args.technical_quality_config,
+            auto_upload_judge_video=bool(args.auto_upload_judge_video),
+            tos_upload_config=build_tos_upload_config(
+                enabled=bool(args.auto_upload_judge_video),
+                bucket=args.tos_bucket,
+                region=args.tos_region,
+                endpoint=args.tos_endpoint,
+                key_prefix=args.tos_key_prefix,
+                presign_expires_seconds=args.tos_presign_expires_seconds,
+            ),
         )
     )
     print(f"自动评测完成：{args.output_dir}")
@@ -769,6 +779,12 @@ def main() -> int:
     parser.add_argument("--judge_api_key_env", default="ARK_API_KEY")
     parser.add_argument("--judge_timeout_seconds", type=int, default=None)
     parser.add_argument("--judge_repeats", type=int, default=1)
+    parser.add_argument("--auto_upload_judge_video", action="store_true")
+    parser.add_argument("--tos_bucket", default=None)
+    parser.add_argument("--tos_region", default=None)
+    parser.add_argument("--tos_endpoint", default=None)
+    parser.add_argument("--tos_key_prefix", default=None)
+    parser.add_argument("--tos_presign_expires_seconds", type=int, default=None)
     parser.add_argument("--enable_dover", action="store_true")
     parser.add_argument("--require_dover", action="store_true")
     parser.add_argument("--dover_repo_dir", type=Path)

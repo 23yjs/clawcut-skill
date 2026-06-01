@@ -12,11 +12,13 @@ try:
     from .ark_resolver_client import ArkResolverConfig
     from .auto_eval import AutoEvalConfig, run_auto_eval
     from .dover_quality import build_dover_config
+    from .tos_uploader import build_tos_upload_config
 except ImportError:  # pragma: no cover - script mode
     from ark_aesthetic_judge_client import ArkAestheticJudgeConfig
     from ark_resolver_client import ArkResolverConfig
     from auto_eval import AutoEvalConfig, run_auto_eval
     from dover_quality import build_dover_config
+    from tos_uploader import build_tos_upload_config
 
 
 CSV_FIELDS = [
@@ -54,6 +56,7 @@ CSV_FIELDS = [
     "dover_raw_technical_score",
     "dover_raw_visual_aesthetic_score",
     "editing_experience_score_v1",
+    "judge_video_upload_status",
     "decode_success",
     "audio_stream_consistent",
     "judge_confidence",
@@ -86,6 +89,7 @@ def _row(case: dict[str, Any], result: dict[str, Any], elapsed: float) -> dict[s
     aesthetic = result.get("aesthetic_judge") or {}
     perceptual = result.get("perceptual_video_quality") or {}
     editing = result.get("editing_experience") or {}
+    upload = result.get("judge_video_upload") or {}
     return {
         "case_id": case.get("case_id", ""),
         "video_id": result.get("video_id", ""),
@@ -121,6 +125,7 @@ def _row(case: dict[str, Any], result: dict[str, Any], elapsed: float) -> dict[s
         "dover_raw_technical_score": perceptual.get("dover_raw_technical_score"),
         "dover_raw_visual_aesthetic_score": perceptual.get("dover_raw_visual_aesthetic_score"),
         "editing_experience_score_v1": result.get("editing_experience_score_v1") or editing.get("editing_experience_score_v1"),
+        "judge_video_upload_status": upload.get("upload_status") or upload.get("status"),
         "decode_success": technical.get("decode_success"),
         "audio_stream_consistent": technical.get("audio_stream_consistent"),
         "judge_confidence": aesthetic.get("judge_confidence") or editing.get("judge_confidence"),
@@ -151,6 +156,12 @@ def main() -> int:
     parser.add_argument("--judge_base_url", default="https://ark.cn-beijing.volces.com/api/v3")
     parser.add_argument("--judge_api_key_env", default="ARK_API_KEY")
     parser.add_argument("--judge_repeats", type=int, default=1)
+    parser.add_argument("--auto_upload_judge_video", action="store_true")
+    parser.add_argument("--tos_bucket", default=None)
+    parser.add_argument("--tos_region", default=None)
+    parser.add_argument("--tos_endpoint", default=None)
+    parser.add_argument("--tos_key_prefix", default=None)
+    parser.add_argument("--tos_presign_expires_seconds", type=int)
     parser.add_argument("--enable_dover", action="store_true")
     parser.add_argument("--require_dover", action="store_true")
     parser.add_argument("--dover_repo_dir", type=Path)
@@ -201,6 +212,15 @@ def main() -> int:
                         timeout_seconds=args.dover_timeout_seconds,
                     ),
                     technical_quality_config=args.technical_quality_config,
+                    auto_upload_judge_video=bool(args.auto_upload_judge_video),
+                    tos_upload_config=build_tos_upload_config(
+                        enabled=bool(args.auto_upload_judge_video),
+                        bucket=case.get("tos_bucket") or args.tos_bucket,
+                        region=case.get("tos_region") or args.tos_region,
+                        endpoint=case.get("tos_endpoint") or args.tos_endpoint,
+                        key_prefix=case.get("tos_key_prefix") or args.tos_key_prefix,
+                        presign_expires_seconds=case.get("tos_presign_expires_seconds") or args.tos_presign_expires_seconds,
+                    ),
                 )
             )
         except Exception as exc:

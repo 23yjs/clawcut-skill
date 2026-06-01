@@ -247,7 +247,35 @@ aesthetic_score_v1 = null
 final_score_v2 = null
 ```
 
-注意：`--judge_video_url` 必须是最终 `videos/highlight.mp4` 的可访问 URL，不是原视频 URL。当前版本不自动上传成片到 TOS。
+注意：`--judge_video_url` 必须是最终 `videos/highlight.mp4` 的可访问 URL，不是原视频 URL。也可以启用 `--auto_upload_judge_video` 自动把本地 `highlight.mp4` 上传到 TOS，并将生成的 GET 预签名 URL 仅用于 Ark Judge。
+
+默认 TOS 对象路径：
+
+```text
+output/<video_id>/instruction-<instruction_hash>/<run_id>/highlight.mp4
+```
+
+`instruction_hash` 由 `video_id`、用户指令和 `target_duration` 共同计算；`run_id` 来自本次评测输出目录名。因此同一视频在不同指令、不同目标时长或不同评测 run 下不会覆盖旧文件。评测目录会额外输出 `tos_upload.json`，只保存去除 query string 的 URL、完整签名 URL 的 sha256、bucket 和 object key，不保存 AK/SK 或签名参数。
+
+自动上传示例：
+
+```bash
+export TOS_ACCESS_KEY="..."
+export TOS_SECRET_KEY="..."
+
+python evaluation/run_eval.py \
+  --input_video data/input/ecom_cup_demo1.MP4 \
+  --instruction "剪出这个视频的高光时刻" \
+  --skill_output_dir outputs/full_score_v2_ark/ecom_cup_demo1 \
+  --gt_dir data/eval \
+  --generated_case_json eval_outputs/ecom_cup_demo1_full_score_v2/generated_case.json \
+  --output_dir eval_outputs/ecom_cup_demo1_auto_upload_score \
+  --auto_upload_judge_video \
+  --tos_bucket clawcut \
+  --tos_region cn-beijing \
+  --tos_endpoint tos-cn-beijing.volces.com \
+  --tos_key_prefix output
+```
 
 ## 7. selection_score_v1 选段质量总分
 
@@ -415,4 +443,4 @@ python evaluation/run_eval.py \
 
 - 第一版默认使用 mock backend。
 - `description_mock_judge` 是启发式 mock，不是真实 LLM Judge。
-- 不新增 ASR、抽帧、场景检测或 TOS 上传能力。
+- 不新增 ASR、抽帧或场景检测；TOS 上传是可选能力，只在 `--auto_upload_judge_video` 开启时执行。

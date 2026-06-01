@@ -20,6 +20,7 @@ try:
     from .run_manifest import build_run_manifest, write_run_manifest
     from .selection_scoring import compute_generic_selection_score, compute_guided_selection_score
     from .technical_quality import check_technical_quality
+    from .tos_uploader import TosUploadConfig, upload_judge_video_to_tos
 except ImportError:  # pragma: no cover - script mode
     from aesthetic_judge import run_aesthetic_judge, sanitize_url
     from aesthetic_judge_prompts import AESTHETIC_JUDGE_PROMPT_VERSION, build_safe_aesthetic_judge_request_record
@@ -34,6 +35,7 @@ except ImportError:  # pragma: no cover - script mode
     from run_manifest import build_run_manifest, write_run_manifest
     from selection_scoring import compute_generic_selection_score, compute_guided_selection_score
     from technical_quality import check_technical_quality
+    from tos_uploader import TosUploadConfig, upload_judge_video_to_tos
 
 
 @dataclass
@@ -51,6 +53,8 @@ class AutoEvalConfig:
     judge_repeats: int = 1
     dover_config: DoverConfig | None = None
     technical_quality_config: Path | None = None
+    auto_upload_judge_video: bool = False
+    tos_upload_config: TosUploadConfig | None = None
 
 
 def _write_json(path: Path, data: dict[str, Any]) -> None:
@@ -300,6 +304,7 @@ def _write_report(path: Path, result: dict[str, Any]) -> None:
     artifact_validation = result.get("artifact_validation") or {}
     technical_quality = result.get("technical_quality") or {}
     perceptual_quality = result.get("perceptual_video_quality") or {}
+    judge_video_upload = result.get("judge_video_upload") or {}
     editing_experience = result.get("editing_experience") or {}
     aesthetic_judge = result.get("aesthetic_judge") or {}
     lines = [
@@ -342,6 +347,13 @@ def _write_report(path: Path, result: dict[str, Any]) -> None:
         f"- dover_fused_overall_score: `{perceptual_quality.get('dover_fused_overall_score')}`",
         f"- dover_raw_technical_score: `{perceptual_quality.get('dover_raw_technical_score')}`",
         f"- dover_raw_visual_aesthetic_score: `{perceptual_quality.get('dover_raw_visual_aesthetic_score')}`",
+        "",
+        "## Judge 视频上传",
+        f"- provider: `{judge_video_upload.get('provider')}`",
+        f"- upload_status: `{judge_video_upload.get('upload_status') or judge_video_upload.get('status')}`",
+        f"- object_key: `{judge_video_upload.get('object_key')}`",
+        f"- judge_video_url_sanitized: `{judge_video_upload.get('judge_video_url_sanitized')}`",
+        f"- signed_url_present: `{judge_video_upload.get('signed_url_present')}`",
         "",
         "## Resolver 结果",
         f"- use_default_highlights: `{generated_case.get('use_default_highlights')}`",
@@ -434,12 +446,14 @@ def _aesthetic_request_record(
     gt_annotation: dict[str, Any],
     duration_context: dict[str, Any],
     technical_quality: dict[str, Any],
+    judge_video_url: str | None = None,
 ) -> dict[str, Any]:
     judge_config = config.aesthetic_judge_config or ArkAestheticJudgeConfig()
-    if not config.judge_video_url:
+    effective_judge_video_url = judge_video_url or config.judge_video_url
+    if not effective_judge_video_url:
         return {"status": "pending", "reason": "未提供 --judge_video_url"}
     return build_safe_aesthetic_judge_request_record(
-        judge_video_url_sanitized=sanitize_url(str(config.judge_video_url)),
+        judge_video_url_sanitized=sanitize_url(str(effective_judge_video_url)),
         instruction=config.instruction,
         video_type=str(gt_annotation.get("video_type", "")),
         target_duration=config.target_duration,
@@ -454,6 +468,8 @@ def _write_manifest(
     artifact_validation: dict[str, Any] | None,
     generated_case: dict[str, Any] | None,
     segments_json: str | None,
+    judge_video_url: str | None = None,
+    judge_video_upload: dict[str, Any] | None = None,
 ) -> None:
     artifact_validation = artifact_validation or {}
     paths = artifact_validation.get("paths", {}) if isinstance(artifact_validation.get("paths"), dict) else {}
@@ -484,18 +500,21 @@ def _write_manifest(
         segments_json_path=segments_json_path,
         highlight_video_path=highlight_video_path,
         judge_repeats=config.judge_repeats,
-        judge_video_url=config.judge_video_url,
+        judge_video_url=judge_video_url or config.judge_video_url,
+        judge_video_upload=judge_video_upload,
     )
     write_run_manifest(config.output_dir / "run_manifest.json", manifest)
 
 
 def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
     config.output_dir.mkdir(parents=True, exist_ok=True)
+    effective_judge_video_url = config.judge_video_url
     gt_annotation: dict[str, Any] | None = None
     resolver_request: dict[str, Any] | None = None
     artifact_validation: dict[str, Any] = {}
     technical_quality: dict[str, Any] = {}
     perceptual_video_quality: dict[str, Any] = {"provider": "DOVER", "status": "disabled", "dover_status": "disabled"}
+    tos_upload: dict[str, Any] = {"provider": "tos", "status": "disabled", "upload_status": "disabled"}
     aesthetic_summary: dict[str, Any] | None = None
     generated_case: dict[str, Any] | None = None
     resolver_metadata: dict[str, Any] | None = None
@@ -524,6 +543,7 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
                 "target_duration": config.target_duration,
                 "artifact_validation": artifact_validation,
                 "technical_quality": {},
+                "judge_video_upload": {"provider": "tos", "status": "skipped", "reason": "invalid_artifact"},
                 "resolver_metadata": None,
                 "generated_case": None,
                 "error_type": "ArtifactValidationError",
@@ -535,6 +555,7 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
             _write_json(config.output_dir / "generated_case.json", {"status": "skipped", "reason": "invalid_artifact"})
             _write_json(config.output_dir / "technical_quality.json", {"status": "skipped", "reason": "invalid_artifact"})
             _write_json(config.output_dir / "dover_quality.json", {"status": "skipped", "reason": "invalid_artifact"})
+            _write_json(config.output_dir / "tos_upload.json", {"provider": "tos", "status": "skipped", "reason": "invalid_artifact"})
             _write_json(config.output_dir / "aesthetic_judge_request.json", {"status": "skipped", "reason": "invalid_artifact"})
             _write_json(config.output_dir / "aesthetic_judge_response.json", {"status": "skipped", "reason": "invalid_artifact"})
             _write_json(config.output_dir / "aesthetic_judge_metadata.json", {"status": "skipped", "reason": "invalid_artifact"})
@@ -576,6 +597,7 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
                 "artifact_validation": artifact_validation,
                 "technical_quality": technical_quality,
                 "perceptual_video_quality": perceptual_video_quality,
+                "judge_video_upload": {"provider": "tos", "status": "skipped", "reason": "diagnostic_only"},
                 "editing_experience": {"provider": "ark_judge", "status": "skipped", "reason": "diagnostic_only"},
                 "duration_context": duration_context,
                 "segments_json": str(segments_json),
@@ -589,6 +611,7 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
             _write_json(config.output_dir / "generated_case.json", {"status": "skipped", "reason": "diagnostic_only"})
             _write_json(config.output_dir / "technical_quality.json", technical_quality)
             _write_json(config.output_dir / "dover_quality.json", perceptual_video_quality)
+            _write_json(config.output_dir / "tos_upload.json", {"provider": "tos", "status": "skipped", "reason": "diagnostic_only"})
             _write_json(config.output_dir / "aesthetic_judge_request.json", {"status": "skipped", "reason": "diagnostic_only"})
             _write_json(config.output_dir / "aesthetic_judge_response.json", {"status": "skipped", "reason": "diagnostic_only"})
             _write_json(config.output_dir / "aesthetic_judge_metadata.json", {"status": "skipped", "reason": "diagnostic_only"})
@@ -671,21 +694,42 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
             status = "dover_failed"
         if evaluation_status == "scored" and not technical_passed:
             status = "technical_quality_failed"
-        elif status == "scored" and not config.judge_video_url:
+        elif status == "scored" and not effective_judge_video_url and config.auto_upload_judge_video:
+            upload_config = config.tos_upload_config or TosUploadConfig(enabled=True)
+            tos_upload, uploaded_judge_video_url = upload_judge_video_to_tos(
+                video_path=highlight_video,
+                video_id=str(gt_annotation["video_id"]),
+                instruction=config.instruction,
+                target_duration=config.target_duration,
+                run_id=config.output_dir.name,
+                config=upload_config,
+            )
+            if uploaded_judge_video_url:
+                effective_judge_video_url = uploaded_judge_video_url
+            else:
+                status = "judge_video_upload_failed"
+        elif effective_judge_video_url:
+            tos_upload = {"provider": "tos", "status": "skipped", "reason": "--judge_video_url 已提供"}
+
+        if status == "scored" and not effective_judge_video_url:
             status = "selection_scored_aesthetic_pending"
 
-        _write_json(config.output_dir / "aesthetic_judge_request.json", _aesthetic_request_record(config, gt_annotation, duration_context, technical_quality))
+        _write_json(config.output_dir / "tos_upload.json", tos_upload)
+        _write_json(
+            config.output_dir / "aesthetic_judge_request.json",
+            _aesthetic_request_record(config, gt_annotation, duration_context, technical_quality, effective_judge_video_url),
+        )
         if status == "selection_scored_aesthetic_pending":
             _write_json(config.output_dir / "aesthetic_judge_response.json", {"status": "pending", "reason": "未提供 --judge_video_url"})
             _write_json(config.output_dir / "aesthetic_judge_metadata.json", {"status": "pending"})
-        elif status in {"manual_review_required", "diagnostic_only", "technical_quality_failed", "dover_failed"}:
+        elif status in {"manual_review_required", "diagnostic_only", "technical_quality_failed", "dover_failed", "judge_video_upload_failed"}:
             _write_json(config.output_dir / "aesthetic_judge_response.json", {"status": "skipped", "reason": status})
             _write_json(config.output_dir / "aesthetic_judge_metadata.json", {"status": "skipped", "reason": status})
         else:
             try:
                 judge_config = config.aesthetic_judge_config or ArkAestheticJudgeConfig()
                 aesthetic_summary = run_aesthetic_judge(
-                    judge_video_url=str(config.judge_video_url),
+                    judge_video_url=str(effective_judge_video_url),
                     instruction=config.instruction,
                     video_type=str(gt_annotation.get("video_type", "")),
                     target_duration=config.target_duration,
@@ -759,6 +803,7 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
             "artifact_validation": artifact_validation,
             "technical_quality": technical_quality,
             "perceptual_video_quality": perceptual_video_quality,
+            "judge_video_upload": tos_upload,
             "editing_experience": {
                 "provider": "ark_judge",
                 "status": aesthetic_summary.get("judge_status") if aesthetic_summary else ("pending" if status == "selection_scored_aesthetic_pending" else "skipped"),
@@ -794,6 +839,7 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
         _write_json(config.output_dir / "generated_case.json", {"status": "skipped", "reason": "resolver_failed"})
         _write_json(config.output_dir / "technical_quality.json", technical_quality or {"status": "skipped", "reason": "resolver_failed"})
         _write_json(config.output_dir / "dover_quality.json", perceptual_video_quality or {"status": "skipped", "reason": "resolver_failed"})
+        _write_json(config.output_dir / "tos_upload.json", {"provider": "tos", "status": "skipped", "reason": "resolver_failed"})
         _write_json(config.output_dir / "aesthetic_judge_request.json", {"status": "skipped", "reason": "resolver_failed"})
         _write_json(config.output_dir / "aesthetic_judge_response.json", {"status": "skipped", "reason": "resolver_failed"})
         _write_json(config.output_dir / "aesthetic_judge_metadata.json", {"status": "skipped", "reason": "resolver_failed"})
@@ -806,5 +852,7 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
         result.get("artifact_validation") or artifact_validation,
         generated_case,
         result.get("segments_json"),
+        judge_video_url=effective_judge_video_url,
+        judge_video_upload=tos_upload,
     )
     return result

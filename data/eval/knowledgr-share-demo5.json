@@ -1,0 +1,113 @@
+{
+    "video_id": "knowledge-share-demo5",
+    "video_path": "knowledge-share-demo5.mP4",
+    "video_type": "knowledge_sharing",
+    "duration_seconds": 270,
+    "video_summary": "视频为一段面向普通观众的人工智能知识分享。一名讲解者面对镜头和白板，通过层级框架、规则教学类比、猫狗图片识别示例以及 GPT 等应用，解释人工智能、机器学习、深度学习、生成式 AI 和大语言模型之间的关系。视频以连续口播为主，结尾包含后续课程、嘉宾分享和评论区互动引导。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 20,
+            "description": "讲解者提出许多人经常听到机器学习、深度学习等人工智能术语，却容易感到一头雾水，并指出当前接触到的知识往往比较碎片化。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 20,
+            "end": 31,
+            "description": "讲解者表示将为观众建立一个整体框架，使观众以后理解相关概念以及与他人讨论人工智能时更加清晰。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 31,
+            "end": 40,
+            "description": "讲解者首先介绍人工智能这一最上层概念，说明它代表让机器具备智能能力的总体目标。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 40,
+            "end": 57,
+            "description": "讲解者以日常使用的 GPT 为例，说明它属于可以帮助人完成具体任务的弱人工智能，并将其与更高级的强人工智能目标进行区分。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 57,
+            "end": 80,
+            "description": "讲解者进入机器学习概念，通过类比说明传统方式需要人为提前设定规则、像手把手教学一样指导机器，而机器学习则是将数据提供给机器，让机器自行从数据中寻找规律。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 80,
+            "end": 113,
+            "description": "讲解者介绍深度学习，说明它是当前人工智能浪潮中的关键方法之一。讲解者以猫狗图片识别为例，描述模型如何逐层识别局部特征，并通过层层递进最终判断图片中的对象是一只猫。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 113,
+            "end": 147,
+            "description": "讲解者引出生成式 AI，说明过去的人工智能更多用于判断和识别，而生成式 AI 可以直接产生新的内容。讲解者列举当前应用示例，并提到生成文章以及新的视听内容等能力。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 147,
+            "end": 162,
+            "description": "讲解者在整体框架中进一步引出大语言模型，说明大语言模型是生成式 AI 中的重要组成部分，并指出前文提到的 GPT 属于大语言模型。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 162,
+            "end": 186,
+            "description": "讲解者解释大语言模型中“大”的含义，指出其参数规模非常庞大，并将其类比为阅读和学习了大量互联网信息的熟练人员，以此说明模型能够流畅回答问题的原因。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 186,
+            "end": 204,
+            "description": "讲解者强调这些人工智能概念之间并非相互独立，而是具有一层套一层的关系，并建议观众先理解底层框架和基础方法。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 204,
+            "end": 237,
+            "description": "讲解者结合白板完整梳理层级链条：人工智能之下包含机器学习，机器学习之下包含深度学习，随后发展出生成式 AI，而大语言模型是在语言领域落地的重要模型类型。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 237,
+            "end": 249,
+            "description": "讲解者总结掌握该框架的实际作用，表示以后再看到人工智能相关新闻时，可以判断其中的技术处于整体框架中的哪个位置，不再轻易感到困惑。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 249,
+            "end": 270,
+            "description": "讲解者介绍后续会不定期分享人工智能相关内容和系列课程，并提到邀请不同领域的实战嘉宾。结尾邀请感兴趣的观众在评论区或社区留言，表示会进行回复和解答。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

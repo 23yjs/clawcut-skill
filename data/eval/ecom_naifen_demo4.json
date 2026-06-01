@@ -1,0 +1,137 @@
+{
+    "video_id": "ecom_naifen_demo4",
+    "video_path": "ecom_naifen_demo4.mP4",
+    "video_type": "product_review",
+    "duration_seconds": 175,
+    "video_summary": "视频为一段婴幼儿配方奶粉测评类口播，围绕新版启赋未来奶粉展开。讲解者从 HMO 原料供应和品牌研发背景讲到益生元、益生菌、OPO 结构脂、铁、DHA 和钙源等配方细节，最后总结科研型头部品牌在配方奶持续迭代中的作用。结尾出现账号关注引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 10,
+            "description": "讲解者展示新版启赋未来奶粉罐，并表示自己已经连续介绍过该产品。讲解者称这版产品的益生元配置较为突出，并提到其中包含 10 种 HMO。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 10,
+            "end": 25,
+            "description": "讲解者提出疑问：市面上已有多种含 HMO 的奶粉，为什么自己仍然特别关注启赋未来。讲解者强调，原料数量本身并非核心门槛，更值得关注的是品牌为什么敢于加入较多种类的 HMO，并由此引出品牌背景。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 25,
+            "end": 33,
+            "description": "讲解者介绍 HMO 原料领域中的 Glycom 公司，并表示欧洲食品安全局较早批准的两种 HMO 由这家公司提供。画面上方出现 Glycom 标识及 HMO 原料供应相关示意信息。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 33,
+            "end": 47,
+            "description": "讲解者称雀巢早在 2011 年投资 Glycom，并成为其 HMO 的重要使用方。讲解者据此说明雀巢在 HMO 原料应用方面具有较深积累，其配方奶在 HMO 混合物使用上的资源相对充足。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 47,
+            "end": 70,
+            "description": "讲解者转向启赋所属品牌惠氏，梳理惠氏早期药企和配方奶背景，以及惠氏、辉瑞和雀巢之间的品牌沿革。讲解者认为，惠氏早期研发积累与雀巢生命营养科学研究成果的结合，是启赋产品能够采用较复杂配方组合的重要原因。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 70,
+            "end": 85,
+            "description": "讲解者说明重视益生元的公司通常也会研究益生菌，并解释两者之间的关系：益生元有助于有益菌定植，细菌分解益生元后产生的短链脂肪酸等物质也有助于营养利用。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 85,
+            "end": 99,
+            "description": "讲解者提到配方中还包含一株益生菌，并表示该菌株近期进入卫健委相关可食用菌种名单。讲解者称其能够适配多种结构的 HMO，并总结启赋未来在益生菌和 HMO 配置方面较为全面。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 99,
+            "end": 115,
+            "description": "讲解者评价配方奶赛道中具有科研积累的头部公司，表示这些公司在模拟母乳配方方面具备研发优势，但有时也可能忽视其他原料细节。随后，讲解者指出新版启赋未来在其他原料的细节配置上也表现较好。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 115,
+            "end": 118,
+            "description": "画面叠加产品营养成分表，讲解者以铁含量为例，表示其数值比国标要求高约 10%。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 118,
+            "end": 131,
+            "description": "讲解者提到配方中的棕榈油相关成分，并提醒观众无需过度担心。讲解者解释该成分属于 OPO 结构脂，并说明其原理是在棕榈油基础上定向提高二位棕榈酸含量。画面间歇叠加营养成分表和配料表。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 131,
+            "end": 138,
+            "description": "讲解者继续介绍其他原料细节，提到 DHA 使用藻油来源，并表示钙源有所更新，采用刺激性相对较小、利用率较高的钙源。画面叠加产品营养成分表和配料表。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 138,
+            "end": 142,
+            "description": "讲解者对新版启赋未来作出阶段性总结，认为该产品既有整体配方理念，也注意到了具体原料细节。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 142,
+            "end": 156,
+            "description": "讲解者转入个人感受，表示自己进行配方奶科普已有两年多，并在持续学习过程中见证了多个品牌的产品改版和新品推出。讲解者认为目前配方奶产品的平均水平已经较高。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 156,
+            "end": 164,
+            "description": "讲解者进一步指出，配方奶属于生命营养科学。若行业还要继续向前发展，不仅需要原料突破，也需要开展临床实验。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 164,
+            "end": 173,
+            "description": "讲解者总结认为，只有具备较强资金实力和长期科研积累的头部配方粉公司，才更有能力推动行业进步，并说明选择科研导向型大品牌背后的意义。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 173,
+            "end": 175,
+            "description": "正文结束，画面切换为账号关注引导页，出现人物头像及“UP：关注小厅”文字，没有新增产品信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

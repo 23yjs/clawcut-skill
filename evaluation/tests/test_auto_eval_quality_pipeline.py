@@ -6,6 +6,7 @@ from pathlib import Path
 from evaluation.ark_resolver_client import ArkResolverConfig
 from evaluation.auto_eval import AutoEvalConfig, run_auto_eval
 from evaluation.dover_quality import DoverConfig
+from evaluation.tos_uploader import TosUploadConfig
 
 
 def _write_json(path: Path, payload: dict) -> None:
@@ -177,3 +178,54 @@ def test_judge_result_keeps_old_and_new_score_fields(tmp_path, monkeypatch):
     assert result["editing_experience_score_v1"] == 80.0
     assert result["aesthetic_score_v1"] == 80.0
     assert result["final_score_v2"] is not None
+
+
+def test_auto_upload_judge_video_feeds_signed_url_to_judge_but_writes_sanitized_request(tmp_path, monkeypatch):
+    config = _prepare(tmp_path)
+    config.auto_upload_judge_video = True
+    config.tos_upload_config = TosUploadConfig(enabled=True, bucket="clawcut")
+    _patch_resolver(monkeypatch)
+    monkeypatch.setattr(
+        "evaluation.auto_eval.check_technical_quality",
+        lambda **kwargs: {"technical_quality_passed": True, "rendered_duration": 8.0},
+    )
+    monkeypatch.setattr(
+        "evaluation.auto_eval.evaluate_dover_quality",
+        lambda *args, **kwargs: {"provider": "DOVER", "status": "disabled", "dover_status": "disabled"},
+    )
+
+    def fake_upload(**kwargs):
+        return (
+            {
+                "provider": "tos",
+                "status": "success",
+                "upload_status": "success",
+                "object_key": "output/demo/instruction-abc/run1/highlight.mp4",
+                "judge_video_url_sanitized": "https://clawcut.tos-cn-beijing.volces.com/output/demo/instruction-abc/run1/highlight.mp4",
+                "judge_video_url_sha256": "hash",
+                "signed_url_present": True,
+            },
+            "https://clawcut.tos-cn-beijing.volces.com/output/demo/instruction-abc/run1/highlight.mp4?X-Tos-Signature=secret",
+        )
+
+    def fake_judge(**kwargs):
+        assert "X-Tos-Signature=secret" in kwargs["judge_video_url"]
+        return {
+            "judge_status": "scored",
+            "editing_experience_score_v1": 80.0,
+            "aesthetic_score_v1": 80.0,
+            "aesthetic_score_v1_deprecated_alias": True,
+            "judge_stability_warning": False,
+            "judge_manual_review_required": False,
+            "judge_confidence": 0.9,
+        }
+
+    monkeypatch.setattr("evaluation.auto_eval.upload_judge_video_to_tos", fake_upload)
+    monkeypatch.setattr("evaluation.auto_eval.run_aesthetic_judge", fake_judge)
+    result = run_auto_eval(config)
+    request = json.loads((config.output_dir / "aesthetic_judge_request.json").read_text(encoding="utf-8"))
+    upload = json.loads((config.output_dir / "tos_upload.json").read_text(encoding="utf-8"))
+    assert result["evaluation_status"] == "scored_complete"
+    assert result["judge_video_upload"]["upload_status"] == "success"
+    assert "X-Tos-Signature" not in str(request)
+    assert "X-Tos-Signature" not in str(upload)

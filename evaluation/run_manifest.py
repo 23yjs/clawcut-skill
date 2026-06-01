@@ -69,8 +69,10 @@ def build_run_manifest(
     highlight_video_path: Path | None,
     judge_repeats: int | None,
     judge_video_url: str | None,
+    judge_video_upload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     sanitized_judge_url = sanitize_url(judge_video_url)
+    judge_video_upload = judge_video_upload or {}
     return {
         "run_id": run_id,
         "timestamp": datetime.now().isoformat(timespec="seconds"),
@@ -100,6 +102,11 @@ def build_run_manifest(
         "judge_repeats": judge_repeats,
         "judge_video_url_sanitized": sanitized_judge_url,
         "judge_video_url_sha256": sha256_text(judge_video_url),
+        "judge_video_upload_status": judge_video_upload.get("upload_status") or judge_video_upload.get("status"),
+        "judge_video_upload_bucket": judge_video_upload.get("bucket"),
+        "judge_video_upload_object_key": judge_video_upload.get("object_key"),
+        "judge_video_upload_url_sanitized": judge_video_upload.get("judge_video_url_sanitized"),
+        "judge_video_upload_url_sha256": judge_video_upload.get("judge_video_url_sha256"),
     }
 
 

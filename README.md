@@ -185,7 +185,13 @@ final_score_v2 = 0.70 × selection_score_v1 + 0.30 × aesthetic_score_v1
 
 如果没有提供 `--judge_video_url`，系统会保留 `selection_score_v1`，但 `aesthetic_score_v1` 和 `final_score_v2` 为 `null`，状态为 `selection_scored_aesthetic_pending`。
 
-`--judge_video_url` 必须指向最终上传后的 `videos/highlight.mp4`，不要传原视频 URL。当前项目不自动上传成片到 TOS。
+`--judge_video_url` 必须指向最终上传后的 `videos/highlight.mp4`，不要传原视频 URL。也可以启用 `--auto_upload_judge_video`，评测会把本地 `highlight.mp4` 上传到 TOS 后生成 Judge 使用的临时 GET 预签名 URL。默认对象路径为：
+
+```text
+output/<video_id>/instruction-<instruction_hash>/<run_id>/highlight.mp4
+```
+
+这样同一个视频在不同用户指令或不同评测输出目录下不会互相覆盖。结果目录会写入 `tos_upload.json`，只保存去除 query string 的可读 URL 和完整签名 URL 的 sha256，不保存 AK/SK 或签名参数。
 
 `llm_free` 输出只进入 `diagnostic_only`，不产生正式 `selection_score_v1`。正式 A/B 实验建议先人工检查 `generated_case.json`，再用 `--generated_case_json` 复用同一评分标准。
 
@@ -213,6 +219,26 @@ python evaluation/run_eval.py \
   --dover_device cpu
 ```
 
+启用 TOS 自动上传并直接运行 Ark Judge：
+
+```bash
+export TOS_ACCESS_KEY="..."
+export TOS_SECRET_KEY="..."
+
+python evaluation/run_eval.py \
+  --input_video data/input/ecom_cup_demo1.MP4 \
+  --instruction "剪出这个视频的高光时刻" \
+  --skill_output_dir outputs/full_score_v2_ark/ecom_cup_demo1 \
+  --gt_dir data/eval \
+  --generated_case_json eval_outputs/ecom_cup_demo1_full_score_v2/generated_case.json \
+  --output_dir eval_outputs/ecom_cup_demo1_auto_upload_score \
+  --auto_upload_judge_video \
+  --tos_bucket clawcut \
+  --tos_region cn-beijing \
+  --tos_endpoint tos-cn-beijing.volces.com \
+  --tos_key_prefix output
+```
+
 ## 视频输入策略
 
 - 如果用户提供 `--llm_video_url`，模型优先使用该 URL。
@@ -223,12 +249,12 @@ python evaluation/run_eval.py \
 
 ## 当前限制
 
-- 当前不自动上传 preview 到 TOS。
-- 如果需要 Ark 模型读取 URL，需要用户提供可访问视频 URL。
+- 当前不自动上传 preview 到 TOS；最终 `highlight.mp4` 可通过 `--auto_upload_judge_video` 自动上传到 TOS 供 Judge 使用。
+- 如果需要 Ark 剪辑模型读取 URL，需要用户提供可访问原视频或 preview URL。
 - preview 可作为本地 data URL 输入，但是否可用取决于模型接口支持情况。
 - `video_fps` 当前默认 `1`。
 - 对体育、游戏、动作类快速视频，后续可加入更高 fps 或局部二次分析。
-- 当前不引入 ASR、抽帧、PySceneDetect、TOS SDK。
+- 当前不引入 ASR、抽帧或 PySceneDetect；TOS Python SDK 为可选依赖，只在 `--auto_upload_judge_video` 开启时使用。
 
 ## 检查
 
