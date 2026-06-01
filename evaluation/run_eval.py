@@ -20,6 +20,7 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 from ark_aesthetic_judge_client import ArkAestheticJudgeConfig  # noqa: E402
 from ark_resolver_client import ArkResolverConfig  # noqa: E402
 from auto_eval import AutoEvalConfig, run_auto_eval  # noqa: E402
+from dover_quality import build_dover_config  # noqa: E402
 from gt_loader import load_gt_dir  # noqa: E402
 from metrics import (  # noqa: E402
     compute_case_score,
@@ -730,6 +731,16 @@ def _run_auto_eval(args: argparse.Namespace) -> int:
                 timeout_seconds=int(judge_timeout_seconds),
             ),
             judge_repeats=int(args.judge_repeats),
+            dover_config=build_dover_config(
+                enabled=bool(args.enable_dover),
+                require_dover=bool(args.require_dover),
+                repo_dir=args.dover_repo_dir,
+                python=args.dover_python,
+                opt_path=args.dover_opt_path,
+                device=args.dover_device,
+                timeout_seconds=args.dover_timeout_seconds,
+            ),
+            technical_quality_config=args.technical_quality_config,
         )
     )
     print(f"自动评测完成：{args.output_dir}")
@@ -758,6 +769,14 @@ def main() -> int:
     parser.add_argument("--judge_api_key_env", default="ARK_API_KEY")
     parser.add_argument("--judge_timeout_seconds", type=int, default=None)
     parser.add_argument("--judge_repeats", type=int, default=1)
+    parser.add_argument("--enable_dover", action="store_true")
+    parser.add_argument("--require_dover", action="store_true")
+    parser.add_argument("--dover_repo_dir", type=Path)
+    parser.add_argument("--dover_python")
+    parser.add_argument("--dover_opt_path", type=Path)
+    parser.add_argument("--dover_device", default=None)
+    parser.add_argument("--dover_timeout_seconds", type=int, default=None)
+    parser.add_argument("--technical_quality_config", type=Path, default=Path("evaluation/config/default.yaml"))
 
     parser.add_argument("--cases", type=Path)
     parser.add_argument("--annotations", type=Path)

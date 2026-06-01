@@ -69,7 +69,7 @@ def test_black_frame_thresholds(tmp_path, monkeypatch):
     monkeypatch.setattr(tq, "_probe_media", lambda path, ffprobe_command="ffprobe": {"duration": 10.0, "video_stream_present": True, "has_audio": False})
 
     def fake_run(command):
-        if "blackdetect=d=0.5:pix_th=0.10" in command:
+        if any(str(part).startswith("blackdetect=") for part in command):
             return _completed(stderr="[blackdetect] black_start:0 black_end:8 black_duration:8")
         return _completed()
 

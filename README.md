@@ -161,8 +161,8 @@ python evaluation/run_eval.py \
 
 - Layer 0 `artifact_validation`：检查本轮 Skill 产物是否和当前输入、指令、时长一致，并拦截 mock fallback。
 - Layer 1 `selection_score_v1`：0-100 分，只评价“剪了什么”。
-- Layer 2 `technical_quality`：用 ffprobe/ffmpeg 检查成片是否可解码、时长是否合理、音频是否一致、黑屏和重复源区间情况。
-- Layer 3 `aesthetic_score_v1`：Ark 成片审美 Judge，只评价最终 `highlight.mp4` 的观看体验。
+- Layer 2 `technical_quality`：用 ffprobe/ffmpeg 检查成片是否可解码、时长是否合理、音频是否一致、黑屏、冻结、静音和重复源区间情况。
+- Layer 3 `editing_experience_score_v1`：Ark 剪辑体验 Judge，只评价最终 `highlight.mp4` 的剪辑体验。
 
 `selection_score_v1` 只评价：
 
@@ -171,7 +171,11 @@ python evaluation/run_eval.py \
 - 是否混入无关或明确禁止内容；
 - 是否遵循目标时长。
 
-`aesthetic_score_v1` 评价片段边界完整性、转场连贯性、节奏简洁性、音画连续性和独立可看性。它不读取 GT、`final_segments`、Resolver 输出或已有分数。
+FFmpeg / ffprobe 是硬性技术检查：判断成片能否正常播放，检测黑屏、冻结、音频流、静音和时长异常。FFmpeg 失败属于无效成片，不是低分成片。
+
+DOVER 是可选外部感知质量工具：评价画面本身的技术质量与视觉美感，仅作为辅助诊断。DOVER 不判断是否剪到了真正高光，也不判断用户指令遵循情况。DOVER 默认关闭，不加入主依赖，安装说明见 `docs/dover_setup.md`。
+
+Ark Judge 只评价剪辑体验：片段边界完整性、转场连贯性、节奏简洁性、音画连续性和独立可看性。它不读取 GT、`final_segments`、Resolver 输出或已有分数，也不重复判断画质。为兼容旧结果，`aesthetic_score_v1` 继续输出，但它是 `editing_experience_score_v1` 的 deprecated alias。
 
 当且仅当 artifact、technical、selection 和 aesthetic 全部通过时，输出：
 
@@ -192,6 +196,21 @@ python evaluation/run_batch_eval.py \
   --cases data/eval/batch_cases.jsonl \
   --gt_dir data/eval \
   --output_dir eval_outputs/batch_v1
+```
+
+启用 DOVER 的单视频评测示例：
+
+```bash
+python evaluation/run_eval.py \
+  --input_video data/input/sports_demo1.MP4 \
+  --instruction "剪出这个视频的高光时刻" \
+  --skill_output_dir outputs/sports_demo1 \
+  --gt_dir data/eval \
+  --output_dir eval_outputs/sports_demo1_quality_v1 \
+  --enable_dover \
+  --dover_repo_dir /path/to/DOVER \
+  --dover_opt_path /path/to/DOVER/dover-mobile.yml \
+  --dover_device cpu
 ```
 
 ## 视频输入策略

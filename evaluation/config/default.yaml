@@ -1,0 +1,23 @@
+technical_quality:
+  blackdetect:
+    min_duration_seconds: 0.5
+    pixel_threshold: 0.10
+    warning_ratio: 0.20
+    error_ratio: 0.80
+
+  freezedetect:
+    noise_db: -60
+    min_duration_seconds: 2.0
+    warning_ratio: 0.15
+    error_ratio: 0.50
+
+  silencedetect:
+    noise_db: -50
+    min_duration_seconds: 5.0
+    warning_ratio: 0.50
+
+  rendered_duration:
+    max_error_ratio: 0.20
+
+  duplicate_source:
+    warning_ratio: 0.10

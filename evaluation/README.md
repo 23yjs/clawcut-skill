@@ -164,7 +164,7 @@ instruction + GT.video_summary + GT.semantic_segments
 Layer 0：artifact_validation
 Layer 1：selection_score_v1
 Layer 2：technical_quality
-Layer 3：aesthetic_score_v1
+Layer 3：editing_experience_score_v1
 ```
 
 `artifact_validation` 会读取 `reports/result_summary.json`、`reports/segments.json`、`videos/highlight.mp4` 和 `logs/run.log`，确认本次产物与当前 `input_video / instruction / target_duration` 一致。正式评分要求：
@@ -176,19 +176,38 @@ fallback_used = false
 
 如果 Skill 回退到 mock，评测只进入 `diagnostic_only`，不会输出正式总分。
 
-`technical_quality` 使用 `ffprobe` 和 `ffmpeg` 检查：
+`technical_quality` 使用 `ffprobe` 和 `ffmpeg` 检查成片能否正常播放，属于硬性技术检查：
 
 - rendered_duration 与计划时长偏差；
 - 是否有视频流；
 - 原视频有音频时成片是否保留音频；
 - 是否能正常解码；
 - 黑屏比例；
+- 冻结画面比例；
+- 持续静音比例；
 - 源时间轴重复选择比例；
 - compression_ratio。
 
-`technical_quality` 是硬门槛和 warning 层，不做复杂加权。
+`technical_quality` 是硬门槛和 warning 层，不做复杂加权。FFmpeg 失败属于无效成片，不是低分成片。
 
-`aesthetic_score_v1` 是 Ark 成片审美 Judge 分数。Judge 只允许读取：
+DOVER 是可选的感知视频质量诊断工具，用于评价画面本身的技术质量和视觉美感。它不判断是否剪到了真正高光，也不判断是否符合用户指令。默认关闭：
+
+```bash
+python evaluation/run_eval.py \
+  --input_video data/input/sports_demo1.MP4 \
+  --instruction "剪出这个视频的高光时刻" \
+  --skill_output_dir outputs/sports_demo1 \
+  --gt_dir data/eval \
+  --output_dir eval_outputs/sports_demo1_quality_v1 \
+  --enable_dover \
+  --dover_repo_dir /path/to/DOVER \
+  --dover_opt_path /path/to/DOVER/dover-mobile.yml \
+  --dover_device cpu
+```
+
+如果没有安装 DOVER，默认只记录 `dover_status=unavailable`，不会阻塞其他评测。只有传入 `--require_dover` 时，DOVER 不可用才会使本次评测失败。安装说明见 [docs/dover_setup.md](../docs/dover_setup.md)。
+
+`editing_experience_score_v1` 是 Ark 剪辑体验 Judge 分数。为兼容旧结果，系统继续输出 `aesthetic_score_v1`，但它只是 deprecated alias。Judge 只允许读取：
 
 - 最终 `highlight.mp4` 的 `--judge_video_url`；
 - 用户 instruction；
@@ -196,7 +215,7 @@ fallback_used = false
 - 可选 target_duration；
 - 可选 rendered_duration。
 
-Judge 严禁读取 GT、semantic_segments、Resolver 输出、`final_segments`、Skill reason、selection_score 或原视频 URL。
+Judge 严禁读取 GT、semantic_segments、Resolver 输出、`final_segments`、Skill reason、selection_score 或原视频 URL。Judge 不判断高光命中率，也不重复判断画质；画面清晰度、压缩伪影由 DOVER 负责，黑屏、冻结、音频流缺失由 FFmpeg 负责。
 
 Judge 五项评分维度均为 0-5：
 
@@ -209,7 +228,8 @@ Judge 五项评分维度均为 0-5：
 Python 端计算：
 
 ```text
-aesthetic_score_v1 = 20 × 五项平均分
+editing_experience_score_v1 = 20 × 五项平均分
+aesthetic_score_v1 = editing_experience_score_v1  # 兼容别名
 ```
 
 最终综合分：

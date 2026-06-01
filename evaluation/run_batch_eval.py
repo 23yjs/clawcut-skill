@@ -11,10 +11,12 @@ try:
     from .ark_aesthetic_judge_client import ArkAestheticJudgeConfig
     from .ark_resolver_client import ArkResolverConfig
     from .auto_eval import AutoEvalConfig, run_auto_eval
+    from .dover_quality import build_dover_config
 except ImportError:  # pragma: no cover - script mode
     from ark_aesthetic_judge_client import ArkAestheticJudgeConfig
     from ark_resolver_client import ArkResolverConfig
     from auto_eval import AutoEvalConfig, run_auto_eval
+    from dover_quality import build_dover_config
 
 
 CSV_FIELDS = [
@@ -45,9 +47,17 @@ CSV_FIELDS = [
     "rendered_duration",
     "rendered_duration_error_ratio",
     "black_frame_ratio",
+    "freeze_frame_ratio",
+    "silence_ratio",
+    "dover_status",
+    "dover_fused_overall_score",
+    "dover_raw_technical_score",
+    "dover_raw_visual_aesthetic_score",
+    "editing_experience_score_v1",
     "decode_success",
     "audio_stream_consistent",
     "judge_confidence",
+    "manual_review_recommended",
     "judge_stability_warning",
     "elapsed_seconds",
 ]
@@ -74,6 +84,8 @@ def _row(case: dict[str, Any], result: dict[str, Any], elapsed: float) -> dict[s
     duration = result.get("duration_context") or {}
     time_metrics = result.get("time_metrics") or {}
     aesthetic = result.get("aesthetic_judge") or {}
+    perceptual = result.get("perceptual_video_quality") or {}
+    editing = result.get("editing_experience") or {}
     return {
         "case_id": case.get("case_id", ""),
         "video_id": result.get("video_id", ""),
@@ -102,9 +114,17 @@ def _row(case: dict[str, Any], result: dict[str, Any], elapsed: float) -> dict[s
         "rendered_duration": technical.get("rendered_duration"),
         "rendered_duration_error_ratio": technical.get("rendered_duration_error_ratio"),
         "black_frame_ratio": technical.get("black_frame_ratio"),
+        "freeze_frame_ratio": technical.get("freeze_frame_ratio"),
+        "silence_ratio": technical.get("silence_ratio"),
+        "dover_status": perceptual.get("dover_status") or perceptual.get("status"),
+        "dover_fused_overall_score": perceptual.get("dover_fused_overall_score"),
+        "dover_raw_technical_score": perceptual.get("dover_raw_technical_score"),
+        "dover_raw_visual_aesthetic_score": perceptual.get("dover_raw_visual_aesthetic_score"),
+        "editing_experience_score_v1": result.get("editing_experience_score_v1") or editing.get("editing_experience_score_v1"),
         "decode_success": technical.get("decode_success"),
         "audio_stream_consistent": technical.get("audio_stream_consistent"),
-        "judge_confidence": aesthetic.get("judge_confidence"),
+        "judge_confidence": aesthetic.get("judge_confidence") or editing.get("judge_confidence"),
+        "manual_review_recommended": editing.get("manual_review_recommended"),
         "judge_stability_warning": aesthetic.get("judge_stability_warning"),
         "elapsed_seconds": round(elapsed, 3),
     }
@@ -131,6 +151,14 @@ def main() -> int:
     parser.add_argument("--judge_base_url", default="https://ark.cn-beijing.volces.com/api/v3")
     parser.add_argument("--judge_api_key_env", default="ARK_API_KEY")
     parser.add_argument("--judge_repeats", type=int, default=1)
+    parser.add_argument("--enable_dover", action="store_true")
+    parser.add_argument("--require_dover", action="store_true")
+    parser.add_argument("--dover_repo_dir", type=Path)
+    parser.add_argument("--dover_python")
+    parser.add_argument("--dover_opt_path", type=Path)
+    parser.add_argument("--dover_device", default=None)
+    parser.add_argument("--dover_timeout_seconds", type=int)
+    parser.add_argument("--technical_quality_config", type=Path, default=Path("evaluation/config/default.yaml"))
     args = parser.parse_args()
 
     cases = _read_jsonl(args.cases)
@@ -163,6 +191,16 @@ def main() -> int:
                         api_key_env=args.judge_api_key_env,
                     ),
                     judge_repeats=args.judge_repeats,
+                    dover_config=build_dover_config(
+                        enabled=bool(args.enable_dover),
+                        require_dover=bool(args.require_dover),
+                        repo_dir=args.dover_repo_dir,
+                        python=args.dover_python,
+                        opt_path=args.dover_opt_path,
+                        device=args.dover_device,
+                        timeout_seconds=args.dover_timeout_seconds,
+                    ),
+                    technical_quality_config=args.technical_quality_config,
                 )
             )
         except Exception as exc:

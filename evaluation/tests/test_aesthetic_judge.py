@@ -8,20 +8,15 @@ from evaluation.ark_aesthetic_judge_client import parse_aesthetic_judge_json
 
 def _judge_payload(**overrides):
     payload = {
-        "judge_version": "aesthetic_judge_v1",
-        "judge_status": "scored",
-        "scores": {
-            "clip_boundary_completeness": 4,
-            "transition_coherence": 3,
-            "pacing_and_conciseness": 4,
-            "audio_visual_continuity": 4,
-            "standalone_watchability": 5,
-        },
-        "strengths": ["重点清楚"],
-        "issues": [],
-        "manual_review_required": False,
+        "clip_boundary_completeness": {"score": 4, "reason": "边界完整"},
+        "transition_coherence": {"score": 3, "reason": "转场略跳"},
+        "pacing_and_conciseness": {"score": 4, "reason": "节奏清楚"},
+        "audio_visual_continuity": {"score": 4, "reason": "音画连续"},
+        "standalone_watchability": {"score": 5, "reason": "可独立观看"},
+        "editing_experience_score_v1": 80,
         "judge_confidence": 0.86,
-        "overall_reason": "基本可观看。",
+        "judge_summary": "基本可观看。",
+        "manual_review_recommended": False,
     }
     payload.update(overrides)
     return payload
@@ -30,12 +25,14 @@ def _judge_payload(**overrides):
 def test_valid_judge_json_computes_aesthetic_score():
     result = validate_aesthetic_judge_result(_judge_payload())
     assert result["aesthetic_score_v1"] == 80.0
+    assert result["editing_experience_score_v1"] == 80.0
+    assert result["aesthetic_score_v1_deprecated_alias"] is True
     assert result["judge_confidence"] == 0.86
 
 
 def test_score_out_of_range_fails():
     payload = _judge_payload()
-    payload["scores"]["transition_coherence"] = 6
+    payload["transition_coherence"]["score"] = 6
     with pytest.raises(ValueError):
         validate_aesthetic_judge_result(payload)
 
@@ -47,8 +44,13 @@ def test_low_confidence_forces_manual_review_summary():
 
 
 def test_repeats_use_median_and_detect_instability():
-    low = validate_aesthetic_judge_result(_judge_payload(scores={key: 1 for key in _judge_payload()["scores"]}))
-    high = validate_aesthetic_judge_result(_judge_payload(scores={key: 5 for key in _judge_payload()["scores"]}))
+    low_payload = _judge_payload()
+    high_payload = _judge_payload()
+    for key in ["clip_boundary_completeness", "transition_coherence", "pacing_and_conciseness", "audio_visual_continuity", "standalone_watchability"]:
+        low_payload[key]["score"] = 1
+        high_payload[key]["score"] = 5
+    low = validate_aesthetic_judge_result(low_payload)
+    high = validate_aesthetic_judge_result(high_payload)
     summary = summarize_judge_runs([low, high], [{}, {}])
     assert summary["judge_score_median"] == 60.0
     assert summary["judge_score_range"] == 80.0

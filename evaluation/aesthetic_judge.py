@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 import statistics
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit
@@ -44,20 +43,25 @@ def _round(value: float | None, digits: int = 3) -> float | None:
 def validate_aesthetic_judge_result(result: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(result, dict):
         raise AestheticJudgeValidationError("Judge 结果根节点必须是 object")
-    scores = result.get("scores")
-    if not isinstance(scores, dict):
-        raise AestheticJudgeValidationError("Judge 结果缺少 scores object")
     normalized_scores: dict[str, float] = {}
+    dimension_details: dict[str, dict[str, Any]] = {}
     for key in SCORE_KEYS:
-        if key not in scores:
-            raise AestheticJudgeValidationError(f"Judge scores 缺少 {key}")
+        item = result.get(key)
+        if not isinstance(item, dict):
+            raise AestheticJudgeValidationError(f"Judge 结果缺少维度 object：{key}")
+        if "score" not in item:
+            raise AestheticJudgeValidationError(f"Judge 维度缺少 score：{key}")
         try:
-            score = float(scores[key])
+            score = float(item["score"])
         except (TypeError, ValueError) as exc:
             raise AestheticJudgeValidationError(f"Judge score 必须是数字：{key}") from exc
         if score < 0 or score > 5:
             raise AestheticJudgeValidationError(f"Judge score 超出 0-5：{key}={score}")
         normalized_scores[key] = score
+        dimension_details[key] = {
+            "score": score,
+            "reason": str(item.get("reason", "")),
+        }
     confidence = result.get("judge_confidence")
     try:
         confidence_float = float(confidence)
@@ -65,22 +69,26 @@ def validate_aesthetic_judge_result(result: dict[str, Any]) -> dict[str, Any]:
         raise AestheticJudgeValidationError("judge_confidence 必须是数字") from exc
     if confidence_float < 0 or confidence_float > 1:
         raise AestheticJudgeValidationError("judge_confidence 必须在 0-1 之间")
-    if not isinstance(result.get("issues"), list):
-        raise AestheticJudgeValidationError("issues 必须是数组")
-    aesthetic_score = 20.0 * (sum(normalized_scores.values()) / len(SCORE_KEYS))
+    manual_review = bool(result.get("manual_review_recommended", False))
+    editing_score = 20.0 * (sum(normalized_scores.values()) / len(SCORE_KEYS))
     return {
         **result,
         "judge_version": result.get("judge_version", AESTHETIC_JUDGE_PROMPT_VERSION),
         "judge_status": result.get("judge_status", "scored"),
         "scores": normalized_scores,
-        "manual_review_required": bool(result.get("manual_review_required", False)),
+        "dimension_details": dimension_details,
+        "manual_review_required": manual_review,
+        "manual_review_recommended": manual_review,
         "judge_confidence": _round(confidence_float),
-        "aesthetic_score_v1": _round(aesthetic_score),
+        "editing_experience_score_v1": _round(editing_score),
+        "aesthetic_score_v1": _round(editing_score),
+        "aesthetic_score_v1_deprecated_alias": True,
+        "judge_summary": str(result.get("judge_summary", "")),
     }
 
 
 def summarize_judge_runs(validated_results: list[dict[str, Any]], metadata: list[dict[str, Any]]) -> dict[str, Any]:
-    scores = [float(result["aesthetic_score_v1"]) for result in validated_results]
+    scores = [float(result["editing_experience_score_v1"]) for result in validated_results]
     score_range = max(scores) - min(scores) if scores else 0.0
     score_std = statistics.pstdev(scores) if len(scores) > 1 else 0.0
     median_score = statistics.median(scores) if scores else None
@@ -100,7 +108,9 @@ def summarize_judge_runs(validated_results: list[dict[str, Any]], metadata: list
         "judge_score_std": _round(score_std),
         "judge_stability_warning": stability_warning,
         "judge_manual_review_required": manual_required or low_confidence,
+        "editing_experience_score_v1": _round(median_score),
         "aesthetic_score_v1": _round(median_score),
+        "aesthetic_score_v1_deprecated_alias": True,
         "judge_confidence": _round(min(confidence_values)) if confidence_values else None,
         "judge_results": validated_results,
         "judge_metadata": metadata,

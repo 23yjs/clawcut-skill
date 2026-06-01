@@ -60,6 +60,9 @@ def test_batch_continues_after_case_failure(tmp_path, monkeypatch):
         ],
     )
     assert run_batch_eval.main() == 0
-    assert (tmp_path / "batch" / "results.csv").exists()
+    csv_text = (tmp_path / "batch" / "results.csv").read_text(encoding="utf-8")
+    assert "freeze_frame_ratio" in csv_text
+    assert "dover_status" in csv_text
+    assert "editing_experience_score_v1" in csv_text
     summary = json.loads((tmp_path / "batch" / "summary.json").read_text(encoding="utf-8"))
     assert summary["failure_count"] == 1
