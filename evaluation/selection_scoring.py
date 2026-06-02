@@ -130,6 +130,7 @@ def compute_generic_selection_score(
         if pred_total_duration > 0
         else 0.0
     )
+    generic_core_score = _compute_f1(generic_value_score, default_highlight_precision)
     avoid_intervals = [
         {"start": float(segment["start"]), "end": float(segment["end"])}
         for segment in semantic_segments
@@ -138,7 +139,7 @@ def compute_generic_selection_score(
     avoid_overlap = overlap_duration_between(pred_intervals, avoid_intervals)
     avoid_ratio = avoid_overlap / pred_total_duration if pred_total_duration > 0 else 0.0
     avoid_compliance = max(0.0, 1.0 - avoid_ratio)
-    selection_score = 100.0 * generic_value_score * avoid_compliance * float(duration_score)
+    selection_score = 100.0 * generic_core_score * avoid_compliance * float(duration_score)
     return {
         "score_type": "generic",
         "pred_total_duration": _round(pred_total_duration),
@@ -147,6 +148,7 @@ def compute_generic_selection_score(
         "generic_value_score": _round(generic_value_score),
         "default_highlight_duration": _round(default_highlight_duration),
         "default_highlight_precision": _round(default_highlight_precision),
+        "generic_core_score": _round(generic_core_score),
         "avoid_by_default_overlap_duration": _round(avoid_overlap),
         "avoid_by_default_overlap_ratio": _round(avoid_ratio),
         "default_avoid_compliance_score": _round(avoid_compliance),

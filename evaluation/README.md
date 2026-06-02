@@ -334,9 +334,15 @@ final_score_v2 = null 或综合分
 Generic 指令使用默认高光价值评分：
 
 ```text
+generic_core_score
+= harmonic_mean(
+  generic_value_score,
+  default_highlight_precision
+)
+
 selection_score_v1
 = 100
-× generic_value_score
+× generic_core_score
 × default_avoid_compliance_score
 × duration_score
 ```
@@ -362,7 +368,13 @@ default_highlight_score >= 4
 且 avoid_by_default = false
 ```
 
-`default_highlight_precision` 只作为诊断指标展示，暂不参与 `selection_score_v1` 计算。它用于暴露“已经抓到高光，但输出里混入大量普通低价值内容”的情况。
+`generic_value_score` 用于评价在当前时长预算下是否优先捕获了更高价值的默认高光。
+
+`default_highlight_precision` 用于评价输出中真正默认高光片段所占比例，防止成片混入大量普通低价值内容。
+
+`generic_core_score` 使用二者的调和平均。任何一项明显偏低，generic 内容选择分都会下降。
+
+`default_highlight_precision` 已正式参与 generic 模式的 `selection_score_v1` 计算。本轮只修改 generic 模式，specific / conflict guided 路径保持不变。
 
 Specific / conflict 指令使用 guided 评分。Resolver 会输出：
 
