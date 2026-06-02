@@ -301,6 +301,29 @@ selection_score_v1
 × duration_score
 ```
 
+Generic 时间区间级指标还会输出：
+
+```text
+default_highlight_duration
+default_highlight_precision
+```
+
+其中：
+
+```text
+default_highlight_precision
+= 输出中落入默认高光区间的时长 / 输出总时长
+```
+
+默认高光区间定义为：
+
+```text
+default_highlight_score >= 4
+且 avoid_by_default = false
+```
+
+`default_highlight_precision` 只作为诊断指标展示，暂不参与 `selection_score_v1` 计算。它用于暴露“已经抓到高光，但输出里混入大量普通低价值内容”的情况。
+
 Specific / conflict 指令使用 guided 评分。Resolver 会输出：
 
 ```text

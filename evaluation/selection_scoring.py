@@ -118,6 +118,18 @@ def compute_generic_selection_score(
     generic_value_optimal = _optimal_generic_value(semantic_segments, duration_budget)
     generic_value_actual = _actual_generic_value(pred_intervals, semantic_segments, duration_budget)
     generic_value_score = generic_value_actual / generic_value_optimal if generic_value_optimal > 0 else 0.0
+    default_highlight_intervals = [
+        {"start": float(segment["start"]), "end": float(segment["end"])}
+        for segment in semantic_segments
+        if int(segment["default_highlight_score"]) >= 4
+        and not bool(segment.get("avoid_by_default"))
+    ]
+    default_highlight_duration = overlap_duration_between(pred_intervals, default_highlight_intervals)
+    default_highlight_precision = (
+        default_highlight_duration / pred_total_duration
+        if pred_total_duration > 0
+        else 0.0
+    )
     avoid_intervals = [
         {"start": float(segment["start"]), "end": float(segment["end"])}
         for segment in semantic_segments
@@ -133,6 +145,8 @@ def compute_generic_selection_score(
         "generic_value_actual": _round(generic_value_actual),
         "generic_value_optimal": _round(generic_value_optimal),
         "generic_value_score": _round(generic_value_score),
+        "default_highlight_duration": _round(default_highlight_duration),
+        "default_highlight_precision": _round(default_highlight_precision),
         "avoid_by_default_overlap_duration": _round(avoid_overlap),
         "avoid_by_default_overlap_ratio": _round(avoid_ratio),
         "default_avoid_compliance_score": _round(avoid_compliance),
