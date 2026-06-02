@@ -25,6 +25,17 @@ REQUIRED_FIELDS = {
 INSTRUCTION_MODES = {"generic", "specific", "conflict", "unresolved"}
 SELECTION_SCOPES = {"not_applicable", "preferential", "exclusive", "unknown"}
 RESOLUTION_STATUSES = {"resolved", "partial", "unresolved", "failed"}
+DURATION_STATUSES = {"resolved", "not_specified", "unresolved"}
+DURATION_SOURCES = {"instruction", "target_duration_argument", "none"}
+
+
+LEGACY_DURATION_CONSTRAINT = {
+    "status": "not_specified",
+    "min_seconds": None,
+    "max_seconds": None,
+    "source": "none",
+    "reason": "legacy generated_case 未包含 duration_constraint。",
+}
 
 
 def _string_list(value: Any, field: str) -> list[str]:
@@ -36,6 +47,58 @@ def _string_list(value: Any, field: str) -> list[str]:
 def _reject_duplicates(values: list[str], field: str) -> None:
     if len(values) != len(set(values)):
         raise ResolverValidationError(f"{field} 不能包含重复 segment_id")
+
+
+def _validate_seconds(value: Any, field: str) -> float | int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ResolverValidationError(f"duration_constraint.{field} 必须是非负 number 或 null")
+    if value < 0:
+        raise ResolverValidationError(f"duration_constraint.{field} 不能为负数")
+    return value
+
+
+def _validate_duration_constraint(value: Any) -> dict[str, Any]:
+    if value is None:
+        value = LEGACY_DURATION_CONSTRAINT
+    if not isinstance(value, dict):
+        raise ResolverValidationError("duration_constraint 必须是 dict")
+    required = {"status", "min_seconds", "max_seconds", "source", "reason"}
+    missing = sorted(required - set(value.keys()))
+    if missing:
+        raise ResolverValidationError(f"duration_constraint 缺少字段：{', '.join(missing)}")
+
+    status = value["status"]
+    source = value["source"]
+    reason = value["reason"]
+    min_seconds = _validate_seconds(value["min_seconds"], "min_seconds")
+    max_seconds = _validate_seconds(value["max_seconds"], "max_seconds")
+
+    if status not in DURATION_STATUSES:
+        raise ResolverValidationError(f"duration_constraint.status 不合法：{status}")
+    if source not in DURATION_SOURCES:
+        raise ResolverValidationError(f"duration_constraint.source 不合法：{source}")
+    if not isinstance(reason, str) or not reason.strip():
+        raise ResolverValidationError("duration_constraint.reason 必须是非空字符串")
+    if min_seconds is not None and max_seconds is not None and min_seconds > max_seconds:
+        raise ResolverValidationError("duration_constraint 必须满足 min_seconds <= max_seconds")
+
+    if status == "resolved" and min_seconds is None and max_seconds is None:
+        raise ResolverValidationError("duration_constraint.status=resolved 时至少需要一个时长边界")
+    if status == "not_specified":
+        if min_seconds is not None or max_seconds is not None or source != "none":
+            raise ResolverValidationError("duration_constraint.status=not_specified 时边界必须为 null 且 source=none")
+    if status == "unresolved" and (min_seconds is not None or max_seconds is not None):
+        raise ResolverValidationError("duration_constraint.status=unresolved 时边界必须为 null")
+
+    return {
+        "status": status,
+        "min_seconds": min_seconds,
+        "max_seconds": max_seconds,
+        "source": source,
+        "reason": reason.strip(),
+    }
 
 
 def validate_resolver_result(
@@ -55,6 +118,7 @@ def validate_resolver_result(
     relevant_segment_ids = _string_list(result["relevant_segment_ids"], "relevant_segment_ids")
     forbidden_segment_ids = _string_list(result["forbidden_segment_ids"], "forbidden_segment_ids")
     unresolved_requirements = _string_list(result["unresolved_requirements"], "unresolved_requirements")
+    duration_constraint = _validate_duration_constraint(result.get("duration_constraint"))
     resolver_reason = result["resolver_reason"]
 
     if instruction_mode not in INSTRUCTION_MODES:
@@ -117,6 +181,7 @@ def validate_resolver_result(
         "use_default_highlights": use_default_highlights,
         "relevant_segment_ids": relevant_segment_ids,
         "forbidden_segment_ids": forbidden_segment_ids,
+        "duration_constraint": duration_constraint,
         "unresolved_requirements": unresolved_requirements,
         "resolver_reason": resolver_reason.strip(),
     }

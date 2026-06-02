@@ -126,8 +126,48 @@ llm:
 Resolver 的职责是把用户自然语言指令解析为 GT 片段 ID：
 
 ```text
-instruction + GT.video_summary + GT.semantic_segments
-→ relevant_segment_ids / forbidden_segment_ids
+instruction + 可选 target_duration + GT.video_summary + GT.semantic_segments
+→ relevant_segment_ids / forbidden_segment_ids / duration_constraint
+```
+
+`duration_constraint` 只负责将自然语言时长要求转换为统一的可接受时长区间：
+
+```text
+[min_seconds, max_seconds]
+```
+
+`duration_constraint` 会接管 `duration_score` 的时长合规计算，但不改变 `duration_budget`、内容选择公式、`selection_score_v1` 权重或 `final_score_v2` 权重。
+
+常见示例：
+
+```text
+30 秒        → [27, 33]
+30 秒左右    → [24, 36]
+30 秒以内    → [0, 30]
+至少 30 秒   → [30, null]
+30 到 45 秒  → [30, 45]
+未指定时长    → [null, null]
+```
+
+时长评分规则：
+
+- `status=resolved` 时，成片时长落在 `[min_seconds, max_seconds]` 区间内，`duration_score=1.0`。
+- 低于下限或超过上限时，按照偏离最近边界的比例扣分。
+- `status=not_specified` 时，继续使用当前默认时长策略，`duration_score_method=legacy_default_policy`。
+- `status=unresolved` 时，不擅自量化，`duration_score=null`，进入 `manual_review_required`。
+
+示例：
+
+```text
+控制在 30 秒以内
+→ [0, 30]
+→ 实际 20 秒：duration_score=1.0
+→ 实际 45 秒：duration_score=0.5
+
+剪成 30 秒左右
+→ [24, 36]
+→ 实际 30 秒：duration_score=1.0
+→ 实际 45 秒：duration_score=0.75
 ```
 
 重要边界：

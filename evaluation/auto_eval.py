@@ -159,6 +159,7 @@ def _resolver_fields_from_generated_case(generated_case: dict[str, Any]) -> dict
         "use_default_highlights": generated_case.get("use_default_highlights"),
         "relevant_segment_ids": generated_case.get("relevant_segment_ids"),
         "forbidden_segment_ids": generated_case.get("forbidden_segment_ids"),
+        "duration_constraint": generated_case.get("duration_constraint"),
         "unresolved_requirements": generated_case.get("unresolved_requirements"),
         "resolver_reason": generated_case.get("resolver_reason"),
     }
@@ -218,11 +219,71 @@ def _sum_segment_duration(final_segments: list[dict[str, Any]]) -> float:
     return round(sum(max(0.0, float(segment["end"]) - float(segment["start"])) for segment in final_segments), 3)
 
 
+def _duration_score_from_constraint(
+    *,
+    final_total: float,
+    duration_constraint: dict[str, Any] | None,
+) -> dict[str, Any]:
+    duration_constraint = duration_constraint or {}
+    status = str(duration_constraint.get("status") or "not_specified")
+    min_seconds = duration_constraint.get("min_seconds")
+    max_seconds = duration_constraint.get("max_seconds")
+    if status == "unresolved":
+        return {
+            "duration_score_method": "unresolved_constraint",
+            "duration_constraint_status": status,
+            "duration_constraint_min_seconds": min_seconds,
+            "duration_constraint_max_seconds": max_seconds,
+            "duration_delta": None,
+            "duration_error_ratio": None,
+            "duration_score": None,
+        }
+    if status != "resolved":
+        return {
+            "duration_score_method": "legacy_default_policy",
+            "duration_constraint_status": status,
+            "duration_constraint_min_seconds": min_seconds,
+            "duration_constraint_max_seconds": max_seconds,
+            "duration_delta": None,
+            "duration_error_ratio": None,
+            "duration_score": None,
+        }
+
+    final_total = float(final_total)
+    lower = float(min_seconds) if min_seconds is not None else None
+    upper = float(max_seconds) if max_seconds is not None else None
+    duration_delta = 0.0
+    duration_error_ratio = 0.0
+    duration_score = 1.0
+    if lower is not None and final_total < lower:
+        duration_delta = lower - final_total
+        duration_error_ratio = duration_delta / lower if lower > 0 else 0.0
+        duration_score = max(0.0, 1.0 - duration_error_ratio)
+    elif upper is not None and final_total > upper:
+        duration_delta = final_total - upper
+        if upper > 0:
+            duration_error_ratio = duration_delta / upper
+            duration_score = max(0.0, 1.0 - duration_error_ratio)
+        else:
+            duration_error_ratio = None
+            duration_score = 0.0
+    return {
+        "duration_score_method": "constraint_interval",
+        "duration_constraint_status": status,
+        "duration_constraint_min_seconds": min_seconds,
+        "duration_constraint_max_seconds": max_seconds,
+        "duration_delta": duration_delta,
+        "duration_error_ratio": duration_error_ratio,
+        "duration_score": duration_score,
+    }
+
+
 def _duration_context(
     *,
     result_summary: dict[str, Any],
     gt_annotation: dict[str, Any],
     final_segments: list[dict[str, Any]],
+    duration_constraint: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     policy = result_summary.get("duration_policy") if isinstance(result_summary.get("duration_policy"), dict) else {}
     mode = str(policy.get("duration_policy_mode", "bounded_auto") or "bounded_auto")
@@ -239,13 +300,18 @@ def _duration_context(
         duration_budget = selected_target
     else:
         duration_budget = None
-    duration_delta = None
-    duration_error_ratio = None
-    duration_score = None
-    if duration_budget is not None and float(duration_budget) > 0:
-        duration_delta = abs(float(final_total) - float(duration_budget))
-        duration_error_ratio = duration_delta / float(duration_budget)
-        duration_score = max(0.0, 1.0 - duration_error_ratio)
+    score_context = _duration_score_from_constraint(
+        final_total=float(final_total),
+        duration_constraint=duration_constraint,
+    )
+    duration_delta = score_context["duration_delta"]
+    duration_error_ratio = score_context["duration_error_ratio"]
+    duration_score = score_context["duration_score"]
+    if score_context["duration_score_method"] == "legacy_default_policy":
+        if duration_budget is not None and float(duration_budget) > 0:
+            duration_delta = abs(float(final_total) - float(duration_budget))
+            duration_error_ratio = duration_delta / float(duration_budget)
+            duration_score = max(0.0, 1.0 - duration_error_ratio)
     return {
         "duration_policy_mode": mode,
         "video_duration": round(video_duration, 3),
@@ -258,6 +324,10 @@ def _duration_context(
         "duration_delta": round(duration_delta, 3) if duration_delta is not None else None,
         "duration_error_ratio": round(duration_error_ratio, 3) if duration_error_ratio is not None else None,
         "duration_score": round(duration_score, 3) if duration_score is not None else None,
+        "duration_score_method": score_context["duration_score_method"],
+        "duration_constraint_status": score_context["duration_constraint_status"],
+        "duration_constraint_min_seconds": score_context["duration_constraint_min_seconds"],
+        "duration_constraint_max_seconds": score_context["duration_constraint_max_seconds"],
     }
 
 
@@ -359,6 +429,7 @@ def _write_report(path: Path, result: dict[str, Any]) -> None:
         f"- use_default_highlights: `{generated_case.get('use_default_highlights')}`",
         f"- relevant_segment_ids: `{generated_case.get('relevant_segment_ids')}`",
         f"- forbidden_segment_ids: `{generated_case.get('forbidden_segment_ids')}`",
+        f"- duration_constraint: `{generated_case.get('duration_constraint')}`",
         f"- unresolved_requirements: `{generated_case.get('unresolved_requirements')}`",
         f"- resolver_reason: {generated_case.get('resolver_reason', '')}",
         "",
@@ -661,6 +732,12 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
         _write_json(config.output_dir / "generated_case.json", generated_case)
         if resolver_metadata:
             _write_json(config.output_dir / "resolver_metadata.json", resolver_metadata)
+        duration_context = _duration_context(
+            result_summary=result_summary,
+            gt_annotation=gt_annotation,
+            final_segments=final_segments,
+            duration_constraint=resolver_result.get("duration_constraint"),
+        )
         legacy_metrics = _legacy_metrics(
             resolver_result=resolver_result,
             final_segments=final_segments,

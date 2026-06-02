@@ -1,0 +1,129 @@
+{
+    "video_id": "sports_demo2",
+    "video_path": "sports_demo2.mP4",
+    "video_type": "sports",
+    "duration_seconds": 34,
+    "video_summary": "视频为一段篮球比赛高光混剪，包含多次突破、篮下终结、扣篮以及不同机位的慢动作回放。大部分片段围绕明确得分或强势篮下终结展开，其中一段进攻在画面切换前无法可靠确认最终是否命中。视频没有长时间暂停或场边内容，但结尾包含对同一次扣篮的较长重复慢动作展示。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 1,
+            "description": "深色球衣持球队员从外线启动突破，连续摆脱白色球衣防守队员并切入禁区，形成明确的篮下进攻机会。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 1,
+            "end": 3,
+            "description": "深色球衣持球队员在篮下完成近距离终结，画面显示本次突破已经进入得分结果确认阶段。片段末尾出现极短的闪光转场。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 3,
+            "end": 5,
+            "description": "白色球衣持球队员面对深色球衣防守，从弧顶区域持续运球突破并向篮下推进，逐步制造终结空间。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 5,
+            "end": 7,
+            "description": "白色球衣持球队员突破至篮下，在多名防守队员干扰下完成近距离上篮终结，画面显示篮球进入篮筐，确认本次进攻成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 7,
+            "end": 9,
+            "description": "新的比赛片段开始。白色球衣队在前场推进，持球队员突破红色球衣防线并将进攻带入篮下区域，形成明显威胁。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 9,
+            "end": 11,
+            "description": "白色球衣队员在篮下起跳完成强势近筐终结，动作完成后落地，画面随即切换至下一段比赛。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 11,
+            "end": 13,
+            "description": "白色球衣队在外线发起进攻，持球队员运球吸引防守并向禁区方向推进，为后续篮下终结创造机会。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 13,
+            "end": 15,
+            "description": "白色球衣队员切入篮下，在深色球衣防守队员之间完成高难度近筐终结，画面显示进攻进入明确结果阶段。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 15,
+            "end": 19,
+            "description": "画面切换为俯视机位慢动作回放，从更清晰的角度重复展示上一段白色球衣队员切入篮下、起跳并完成终结的过程。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 19,
+            "end": 21,
+            "description": "新的比赛片段开始。白色球衣持球队员在进攻时间接近结束时从外线启动，面对深色球衣防守队员运球向禁区推进。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 21,
+            "end": 23,
+            "description": "白色球衣持球队员在多人防守下冲击篮下并尝试完成近距离终结，但画面在闪光转场前未清晰展示篮球是否进入篮筐，无法可靠确认本次进攻结果。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 23,
+            "end": 26,
+            "description": "新的比赛片段开始。白色球衣队面对红色球衣防守推进至前场，持球队员运球吸引多人收缩，并将进攻机会传导至篮下。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 26,
+            "end": 28,
+            "description": "白色球衣队员在篮下接应后起跳，将篮球直接扣入篮筐，确认完成一次具有明显视觉冲击力的成功扣篮得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 28,
+            "end": 30,
+            "description": "画面切换为近距离慢动作回放，清晰展示白色球衣队员腾空后将篮球扣入篮筐的核心瞬间，篮下球员和观众反应同时出现在画面中。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 30,
+            "end": 34,
+            "description": "视频继续以慢动作和接近定格的方式重复展示同一次扣篮画面，没有出现新的进攻过程或新增比赛结果。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        }
+    ]
+}

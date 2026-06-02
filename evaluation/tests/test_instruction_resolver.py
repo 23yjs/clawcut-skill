@@ -117,6 +117,125 @@ class InstructionResolverValidationTests(unittest.TestCase):
         )
         self.assertEqual(result["selection_scope"], "preferential")
 
+    def test_duration_constraint_max_bound_is_valid(self) -> None:
+        result = validate_resolver_result(
+            _result(
+                duration_constraint={
+                    "status": "resolved",
+                    "min_seconds": 0,
+                    "max_seconds": 30,
+                    "source": "instruction",
+                    "reason": "用户要求不超过 30 秒。",
+                }
+            ),
+            GT,
+        )
+        self.assertEqual(result["duration_constraint"]["max_seconds"], 30)
+
+    def test_duration_constraint_min_bound_is_valid(self) -> None:
+        result = validate_resolver_result(
+            _result(
+                duration_constraint={
+                    "status": "resolved",
+                    "min_seconds": 30,
+                    "max_seconds": None,
+                    "source": "instruction",
+                    "reason": "用户要求至少 30 秒。",
+                }
+            ),
+            GT,
+        )
+        self.assertEqual(result["duration_constraint"]["min_seconds"], 30)
+
+    def test_duration_constraint_range_is_valid(self) -> None:
+        result = validate_resolver_result(
+            _result(
+                duration_constraint={
+                    "status": "resolved",
+                    "min_seconds": 30,
+                    "max_seconds": 45,
+                    "source": "instruction",
+                    "reason": "用户要求 30–45 秒。",
+                }
+            ),
+            GT,
+        )
+        self.assertEqual(result["duration_constraint"]["min_seconds"], 30)
+        self.assertEqual(result["duration_constraint"]["max_seconds"], 45)
+
+    def test_duration_constraint_not_specified_is_valid(self) -> None:
+        result = validate_resolver_result(
+            _result(
+                duration_constraint={
+                    "status": "not_specified",
+                    "min_seconds": None,
+                    "max_seconds": None,
+                    "source": "none",
+                    "reason": "未指定时长。",
+                }
+            ),
+            GT,
+        )
+        self.assertEqual(result["duration_constraint"]["status"], "not_specified")
+
+    def test_duration_constraint_unresolved_is_valid(self) -> None:
+        result = validate_resolver_result(
+            _result(
+                duration_constraint={
+                    "status": "unresolved",
+                    "min_seconds": None,
+                    "max_seconds": None,
+                    "source": "instruction",
+                    "reason": "用户仅要求尽量短，无法量化。",
+                }
+            ),
+            GT,
+        )
+        self.assertEqual(result["duration_constraint"]["status"], "unresolved")
+
+    def test_duration_constraint_reversed_bounds_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(
+                    duration_constraint={
+                        "status": "resolved",
+                        "min_seconds": 45,
+                        "max_seconds": 30,
+                        "source": "instruction",
+                        "reason": "非法区间。",
+                    }
+                ),
+                GT,
+            )
+
+    def test_duration_constraint_resolved_without_bounds_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(
+                    duration_constraint={
+                        "status": "resolved",
+                        "min_seconds": None,
+                        "max_seconds": None,
+                        "source": "instruction",
+                        "reason": "非法。",
+                    }
+                ),
+                GT,
+            )
+
+    def test_legacy_result_without_duration_constraint_gets_default(self) -> None:
+        result = validate_resolver_result(_result(), GT)
+        self.assertEqual(
+            result["duration_constraint"],
+            {
+                "status": "not_specified",
+                "min_seconds": None,
+                "max_seconds": None,
+                "source": "none",
+                "reason": "legacy generated_case 未包含 duration_constraint。",
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

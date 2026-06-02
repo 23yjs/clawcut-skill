@@ -1,12 +1,19 @@
 from __future__ import annotations
 
 import json
+import unittest
 from pathlib import Path
 
 import pytest
 
 from evaluation.ark_resolver_client import ArkResolverConfig, ArkResolverError
-from evaluation.auto_eval import AutoEvalConfig, run_auto_eval
+from evaluation.auto_eval import (
+    AutoEvalConfig,
+    _duration_context,
+    _duration_score_from_constraint,
+    _resolver_fields_from_generated_case,
+    run_auto_eval,
+)
 
 
 def _write_json(path: Path, payload: dict) -> None:
@@ -124,6 +131,37 @@ def _resolver_result(**overrides) -> dict:
     return result
 
 
+def _duration_constraint(**overrides) -> dict:
+    result = {
+        "status": "resolved",
+        "min_seconds": 0,
+        "max_seconds": 30,
+        "source": "instruction",
+        "reason": "用户要求成片控制在 30 秒以内。",
+    }
+    result.update(overrides)
+    return result
+
+
+def _duration_context_for_test(final_total: float, duration_constraint: dict | None) -> dict:
+    return _duration_context(
+        result_summary={
+            "duration_policy": {
+                "duration_policy_mode": "bounded_auto",
+                "user_specified_duration": False,
+                "user_target_duration": None,
+                "recommended_duration": 18.0,
+                "selected_target_duration": 18.0,
+            },
+            "selected_target_duration": 18.0,
+            "final_total_duration": final_total,
+        },
+        gt_annotation={"duration_seconds": 120},
+        final_segments=[],
+        duration_constraint=duration_constraint,
+    )
+
+
 def _metadata() -> dict:
     return {
         "resolver_model": "test-model",
@@ -170,6 +208,125 @@ def _patch_technical(monkeypatch) -> None:
     monkeypatch.setattr("evaluation.auto_eval.check_technical_quality", fake_check_technical_quality)
 
 
+class AutoEvalUnittestCompatibilityTests(unittest.TestCase):
+    def test_resolver_fields_from_generated_case_includes_duration_constraint_slot(self) -> None:
+        fields = _resolver_fields_from_generated_case(_resolver_result())
+        self.assertIn("duration_constraint", fields)
+        self.assertIsNone(fields["duration_constraint"])
+
+
+def test_duration_constraint_upper_bound_allows_shorter_output() -> None:
+    result = _duration_score_from_constraint(
+        final_total=20,
+        duration_constraint=_duration_constraint(min_seconds=0, max_seconds=30),
+    )
+    assert result["duration_score"] == 1.0
+    assert result["duration_delta"] == 0.0
+    assert result["duration_error_ratio"] == 0.0
+    assert result["duration_score_method"] == "constraint_interval"
+
+
+def test_duration_constraint_upper_bound_penalizes_excess() -> None:
+    result = _duration_score_from_constraint(
+        final_total=45,
+        duration_constraint=_duration_constraint(min_seconds=0, max_seconds=30),
+    )
+    assert result["duration_score"] == 0.5
+    assert result["duration_delta"] == 15.0
+    assert result["duration_error_ratio"] == 0.5
+
+
+def test_duration_constraint_range_allows_inside_interval() -> None:
+    result = _duration_score_from_constraint(
+        final_total=30,
+        duration_constraint=_duration_constraint(min_seconds=24, max_seconds=36),
+    )
+    assert result["duration_score"] == 1.0
+    assert result["duration_delta"] == 0.0
+
+
+def test_duration_constraint_range_penalizes_below_interval() -> None:
+    result = _duration_score_from_constraint(
+        final_total=18,
+        duration_constraint=_duration_constraint(min_seconds=24, max_seconds=36),
+    )
+    assert result["duration_delta"] == 6.0
+    assert result["duration_error_ratio"] == 0.25
+    assert result["duration_score"] == 0.75
+
+
+def test_duration_constraint_range_penalizes_above_interval() -> None:
+    result = _duration_score_from_constraint(
+        final_total=45,
+        duration_constraint=_duration_constraint(min_seconds=24, max_seconds=36),
+    )
+    assert result["duration_delta"] == 9.0
+    assert result["duration_error_ratio"] == 0.25
+    assert result["duration_score"] == 0.75
+
+
+def test_duration_constraint_lower_bound_allows_longer_output() -> None:
+    result = _duration_score_from_constraint(
+        final_total=45,
+        duration_constraint=_duration_constraint(min_seconds=30, max_seconds=None),
+    )
+    assert result["duration_score"] == 1.0
+    assert result["duration_delta"] == 0.0
+
+
+def test_duration_constraint_lower_bound_penalizes_shorter_output() -> None:
+    result = _duration_score_from_constraint(
+        final_total=15,
+        duration_constraint=_duration_constraint(min_seconds=30, max_seconds=None),
+    )
+    assert result["duration_score"] == 0.5
+    assert result["duration_delta"] == 15.0
+    assert result["duration_error_ratio"] == 0.5
+
+
+def test_duration_constraint_not_specified_uses_legacy_default_policy() -> None:
+    result = _duration_context_for_test(
+        15,
+        {
+            "status": "not_specified",
+            "min_seconds": None,
+            "max_seconds": None,
+            "source": "none",
+            "reason": "未指定时长。",
+        },
+    )
+    assert result["duration_score_method"] == "legacy_default_policy"
+    assert result["duration_budget"] == 18.0
+    assert result["duration_delta"] == 3.0
+    assert result["duration_error_ratio"] == 0.167
+    assert result["duration_score"] == 0.833
+
+
+def test_duration_constraint_unresolved_disables_duration_score() -> None:
+    result = _duration_context_for_test(
+        15,
+        _duration_constraint(
+            status="unresolved",
+            min_seconds=None,
+            max_seconds=None,
+            reason="用户仅要求尽量短，无法量化。",
+        ),
+    )
+    assert result["duration_score_method"] == "unresolved_constraint"
+    assert result["duration_score"] is None
+
+
+def test_duration_constraint_zero_upper_bound_penalizes_positive_duration() -> None:
+    result = _duration_score_from_constraint(
+        final_total=1,
+        duration_constraint=_duration_constraint(min_seconds=0, max_seconds=0),
+    )
+    assert result["duration_score_method"] == "constraint_interval"
+    assert result["duration_delta"] == 1.0
+    assert result["duration_error_ratio"] is None
+    assert result["duration_score"] == 0.0
+
+
 def _assert_common_outputs(output_dir: Path) -> None:
     assert (output_dir / "resolver_request.json").exists()
     assert (output_dir / "resolver_response.json").exists()
@@ -197,6 +354,16 @@ def test_auto_eval_generic_scores_and_writes_files(tmp_path, monkeypatch):
     assert result["evaluation_scope"] == "official"
     assert result["selection_score_v1"] is not None
     assert "default_highlight_f1" in result["legacy_metrics"]
+
+
+def test_auto_eval_generated_case_keeps_duration_constraint(tmp_path, monkeypatch):
+    config = _prepare_files(tmp_path)
+    duration_constraint = _duration_constraint()
+    _patch_resolver(monkeypatch, _resolver_result(duration_constraint=duration_constraint))
+    result = run_auto_eval(config)
+    generated_case = json.loads((config.output_dir / "generated_case.json").read_text(encoding="utf-8"))
+    assert generated_case["duration_constraint"] == duration_constraint
+    assert result["generated_case"]["duration_constraint"] == duration_constraint
 
 
 def test_auto_eval_specific_scores_reference_metrics(tmp_path, monkeypatch):
@@ -245,6 +412,27 @@ def test_auto_eval_unresolved_requires_manual_review(tmp_path, monkeypatch):
     assert result["evaluation_status"] == "manual_review_required"
     assert result["legacy_metrics"] is None
     assert result["final_score"] is None
+
+
+def test_auto_eval_unresolved_duration_constraint_requires_manual_review(tmp_path, monkeypatch):
+    config = _prepare_files(tmp_path)
+    _patch_resolver(
+        monkeypatch,
+        _resolver_result(
+            duration_constraint=_duration_constraint(
+                status="unresolved",
+                min_seconds=None,
+                max_seconds=None,
+                reason="用户仅要求尽量短，无法量化。",
+            )
+        ),
+    )
+    result = run_auto_eval(config)
+    _assert_common_outputs(config.output_dir)
+    assert result["evaluation_status"] == "manual_review_required"
+    assert result["duration_context"]["duration_score_method"] == "unresolved_constraint"
+    assert result["duration_context"]["duration_score"] is None
+    assert result["time_metrics"] == {}
 
 
 def test_auto_eval_resolver_failure_writes_failure_result(tmp_path, monkeypatch):
@@ -375,6 +563,45 @@ def test_auto_eval_uses_frozen_generated_case_without_resolver(tmp_path, monkeyp
     assert result["evaluation_status"] == "selection_scored_aesthetic_pending"
     assert result["resolver_metadata"]["resolver_backend"] == "frozen"
     assert (config.output_dir / "generated_case.json").exists()
+    generated_case = json.loads((config.output_dir / "generated_case.json").read_text(encoding="utf-8"))
+    assert generated_case["duration_constraint"] == {
+        "status": "not_specified",
+        "min_seconds": None,
+        "max_seconds": None,
+        "source": "none",
+        "reason": "legacy generated_case 未包含 duration_constraint。",
+    }
+    assert result["duration_context"]["duration_score_method"] == "legacy_default_policy"
+    assert result["duration_context"]["duration_score"] == 0.833
+
+
+def test_frozen_generated_case_keeps_duration_constraint(tmp_path, monkeypatch):
+    config = _prepare_files(tmp_path)
+    duration_constraint = _duration_constraint(min_seconds=30, max_seconds=45, reason="用户要求 30–45 秒。")
+    frozen_case = {
+        "case_id": "frozen_demo",
+        "video_id": "demo",
+        "instruction": "测试指令",
+        "target_duration": None,
+        **_resolver_result(relevant_segment_ids=["seg_001"], duration_constraint=duration_constraint),
+        "resolver_backend": "ark",
+        "resolver_prompt_version": "resolver_v3_duration_constraint",
+    }
+    frozen_path = tmp_path / "frozen_with_duration.json"
+    _write_json(frozen_path, frozen_case)
+    config.generated_case_json = frozen_path
+
+    def fail_resolver(**kwargs):
+        raise AssertionError("不应调用 Ark Resolver")
+
+    monkeypatch.setattr("evaluation.auto_eval.resolve_instruction_with_ark", fail_resolver)
+    _patch_technical(monkeypatch)
+    result = run_auto_eval(config)
+    generated_case = json.loads((config.output_dir / "generated_case.json").read_text(encoding="utf-8"))
+    assert result["generated_case"]["duration_constraint"] == duration_constraint
+    assert generated_case["duration_constraint"] == duration_constraint
+    assert result["duration_context"]["duration_score_method"] == "constraint_interval"
+    assert result["duration_context"]["duration_score"] == 0.5
 
 
 def test_auto_eval_with_judge_video_url_outputs_final_score_v2(tmp_path, monkeypatch):

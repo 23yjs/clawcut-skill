@@ -1,0 +1,449 @@
+{
+    "video_id": "sports_demo3",
+    "video_path": "sports_demo3.mP4",
+    "video_type": "sports",
+    "duration_seconds": 422,
+    "video_summary": "视频为一段法国队与阿根廷队足球比赛的竖屏复盘视频，包含开场预告、普通组织进攻、定位球、快速反击、犯规判罚、多个明确进球、庆祝画面、多角度慢动作回放以及终场阶段。视频中既有格列兹曼点球、迪马利亚远射、阿根廷队门前折射、帕瓦尔凌空射门、姆巴佩连续得分和阿圭罗头球等明确成功事件，也包含未形成进球的射门、普通推进、死球等待和重复回放，需要分开标注。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 9,
+            "description": "开场预告画面中，法国队从前场快速推进，持球队员切入阿根廷队禁区并与防守队员发生对抗，形成具有威胁的进攻场面。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 9,
+            "end": 14,
+            "description": "预告继续展示禁区附近的进攻和门前处理，阿根廷队门将与后卫参与防守，但该段画面没有完整呈现一次新的明确得分结果。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 14,
+            "end": 21,
+            "description": "预告画面切换至法国队再次冲击禁区，并展示法国队前锋姆巴佩完成进攻后激动庆祝的镜头。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 21,
+            "end": 31,
+            "description": "画面依次展示球场全景、法国队和阿根廷队球员赛前或赛后互动，以及姆巴佩和阿根廷队核心球员的近景，为正式比赛复盘作过渡。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 31,
+            "end": 40,
+            "description": "正式比赛复盘开始。阿根廷队在中前场进行普通传递和推进，法国队保持防守阵型，尚未出现明确射门或进球结果。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 40,
+            "end": 47,
+            "description": "法国队获得前场定位球机会，主罚球员直接射门，皮球击中门框附近后未形成进球，阿根廷队暂时化解威胁。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 47,
+            "end": 55,
+            "description": "定位球结束后双方重新展开攻防，法国队在中场附近重新获得球权并迅速向前推进。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 55,
+            "end": 61,
+            "description": "法国队前锋姆巴佩从中后场高速带球突破，连续甩开防守队员后冲入禁区，并在与阿根廷队防守球员对抗时被放倒。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 61,
+            "end": 65,
+            "description": "主裁判在姆巴佩倒地后指向点球点，确认法国队获得点球。阿根廷队球员围绕判罚进行短暂反应。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 65,
+            "end": 74,
+            "description": "画面通过远景和跟随镜头回放姆巴佩高速突破以及禁区内被放倒的过程，进一步确认点球判罚的来源。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 74,
+            "end": 80,
+            "description": "法国队球员格列兹曼主罚点球，将球射入阿根廷队球门，确认法国队取得进球。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 80,
+            "end": 84,
+            "description": "点球得分后，格列兹曼与法国队队友拥抱庆祝，画面集中展示法国队球员的情绪反馈。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 84,
+            "end": 90,
+            "description": "比赛重新开始，双方在中场附近进行普通推进，随后画面短暂切换至阿根廷队球员近景。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 90,
+            "end": 97,
+            "description": "法国队再次形成快速推进，进攻球员沿中路向禁区方向带球，阿根廷队防守队员回追并通过身体对抗阻止进攻。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 97,
+            "end": 101,
+            "description": "进攻被犯规中断后，主裁判作出判罚手势，双方球员短暂交流和等待重新开球。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 101,
+            "end": 111,
+            "description": "法国队将定位球送入禁区，双方球员在门前争抢，阿根廷队防守球员和门将将威胁化解，没有出现新的进球。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 111,
+            "end": 124,
+            "description": "比赛进入连续转换阶段，双方在中场和边路进行普通推进与防守落位，暂未形成明确得分结果。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 124,
+            "end": 141,
+            "description": "阿根廷队在前场连续组织进攻，通过中路和边路传递逐步推进至法国队禁区附近，法国队防线持续回撤。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 141,
+            "end": 155,
+            "description": "阿根廷队继续在禁区外围寻找机会，法国队通过多人防守和身体对抗暂时打断推进。画面随后使用近景回放局部对抗过程。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 155,
+            "end": 162,
+            "description": "阿根廷队在禁区外围重新控制球权，并将球转移至远射区域，为后续射门创造空间。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 162,
+            "end": 165,
+            "description": "阿根廷队球员迪马利亚在禁区外完成远距离射门，皮球飞入法国队球门，确认阿根廷队取得进球。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 165,
+            "end": 171,
+            "description": "迪马利亚进球后沿场边奔跑庆祝，并向看台方向表达激动情绪。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 171,
+            "end": 182,
+            "description": "画面从不同机位回放迪马利亚禁区外远射的全过程，展示皮球越过防守球员并飞入球门的轨迹。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 182,
+            "end": 189,
+            "description": "看台上的阿根廷队球迷在进球后挥臂欢呼并相互庆祝，画面集中展示观众情绪反馈。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 189,
+            "end": 196,
+            "description": "阿根廷队重新向法国队禁区推进，进攻球员在多人防守之间控球并将球送入具有威胁的区域。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 196,
+            "end": 205,
+            "description": "阿根廷队在法国队禁区前沿完成射门，皮球在门前发生折射并改变方向后进入球门，确认阿根廷队再次得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 205,
+            "end": 210,
+            "description": "折射进球后，阿根廷队球员在场边聚集并拥抱庆祝。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_028",
+            "start": 210,
+            "end": 224,
+            "description": "画面从球门后方和侧面机位回放阿根廷队射门发生折射并入网的过程，展示法国队门将来不及调整扑救方向。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_029",
+            "start": 224,
+            "end": 229,
+            "description": "法国队从边路发起进攻，持球队员将球送向禁区外围，阿根廷队防线回收后未能及时封堵外围区域。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_030",
+            "start": 229,
+            "end": 233,
+            "description": "法国队球员帕瓦尔在禁区外迎球完成凌空射门，皮球飞入阿根廷队球门，确认法国队取得一粒具有明显视觉冲击力的进球。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_031",
+            "start": 233,
+            "end": 239,
+            "description": "帕瓦尔进球后张开双臂奔跑庆祝，法国队队友随后围拢并共同庆祝。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_032",
+            "start": 239,
+            "end": 249,
+            "description": "画面首次从较完整角度回放法国队边路传球、外围接应以及帕瓦尔凌空射门入网的过程。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_033",
+            "start": 249,
+            "end": 270,
+            "description": "视频继续使用多个慢动作机位重复展示帕瓦尔凌空射门的触球动作、皮球飞行轨迹和门将扑救过程，没有出现新的比赛事件。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_034",
+            "start": 270,
+            "end": 273,
+            "description": "看台观众在帕瓦尔进球后起立欢呼，画面展示短暂的球迷反应。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_035",
+            "start": 273,
+            "end": 279,
+            "description": "法国队再次推进至阿根廷队禁区，边路传球和门前混战使阿根廷队防线出现空当。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_036",
+            "start": 279,
+            "end": 284,
+            "description": "姆巴佩在禁区内获得球权后迅速调整并完成低射，皮球进入阿根廷队球门，确认法国队成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_037",
+            "start": 284,
+            "end": 288,
+            "description": "姆巴佩在进球后滑跪庆祝，法国队替补和队友从场边赶来回应。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_038",
+            "start": 288,
+            "end": 305,
+            "description": "画面通过远景、门后和近景机位回放姆巴佩在禁区内获得机会并低射入网的过程，后半段为重复慢动作展示。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_039",
+            "start": 305,
+            "end": 312,
+            "description": "法国队在中后场获得球权后迅速发动反击，通过连续向前传递将进攻推进至阿根廷队禁区前沿。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_040",
+            "start": 312,
+            "end": 317,
+            "description": "姆巴佩在反击中接球后进入禁区，面对门将完成射门，皮球进入球门，确认法国队再次得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_041",
+            "start": 317,
+            "end": 321,
+            "description": "姆巴佩连续取得进球后与法国队队友奔跑庆祝，法国队球员在场边聚集。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_042",
+            "start": 321,
+            "end": 344,
+            "description": "视频多次回放法国队快速反击、姆巴佩接球冲入禁区以及射门得分的过程，并穿插阿根廷队球员近景反应。该段后半部分属于重复展示。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_043",
+            "start": 344,
+            "end": 350,
+            "description": "比赛重新进行后，法国队从中场再次发动快速推进，持球队员沿边路和中路衔接向前，形成新的进攻机会。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_044",
+            "start": 350,
+            "end": 357,
+            "description": "法国队将进攻推进至阿根廷队禁区并完成射门，阿根廷队门将倒地扑救并化解威胁，没有出现新的进球。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_045",
+            "start": 357,
+            "end": 365,
+            "description": "阿根廷队在前场通过定位球和禁区外传递尝试继续进攻，法国队防守球员将第一波威胁解围。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_046",
+            "start": 365,
+            "end": 370,
+            "description": "法国队在解围后获得快速反击机会，法国队进攻球员高速带球越过中场并向阿根廷队禁区推进。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_047",
+            "start": 370,
+            "end": 375,
+            "description": "法国队反击继续向前发展，进攻球员将球送入禁区附近，但最终处理被阿根廷队门将控制，没有形成新的得分。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_048",
+            "start": 375,
+            "end": 380,
+            "description": "阿根廷队在比赛末段重新组织进攻，通过中场推进和边路传递将球送向法国队禁区。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_049",
+            "start": 380,
+            "end": 384,
+            "description": "阿根廷队球员阿圭罗在禁区内接应传中并完成头球攻门，皮球进入法国队球门，确认阿根廷队在末段取得进球。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_050",
+            "start": 384,
+            "end": 391,
+            "description": "阿圭罗头球得分后迅速从球门附近离开，双方准备尽快恢复比赛。画面同时切换至法国队球员调整和换人相关近景。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_051",
+            "start": 391,
+            "end": 399,
+            "description": "阿根廷队继续在前场施压，并将球送入法国队禁区。法国队门将和防守球员在门前完成处理，没有出现新的进球。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_052",
+            "start": 399,
+            "end": 408,
+            "description": "比赛进入最后阶段，阿根廷队重新开球并通过长传和中场传递再次推进，法国队整体回收防守。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_053",
+            "start": 408,
+            "end": 414,
+            "description": "阿根廷队将最后阶段的定位球或传中送入法国队禁区，双方球员在门前争抢，但未形成扳平比分的进球。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_054",
+            "start": 414,
+            "end": 417,
+            "description": "主裁判查看时间并结束比赛，场上球员停止争抢，正式比赛进入终场状态。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_055",
+            "start": 417,
+            "end": 422,
+            "description": "终场后画面展示阿根廷队球员近景以及法国队球员在场边相互庆祝和交流，视频随即结束。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        }
+    ]
+}
