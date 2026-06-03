@@ -1,0 +1,145 @@
+{
+    "video_id": "game_demo2",
+    "video_path": "game_demo2.mP4",
+    "video_type": "game",
+    "duration_seconds": 68,
+    "video_summary": "视频为一段第一人称射击游戏完整回合高光。玩家前半段在地图中架枪观察、转点并跟随队友推进，随后穿过烟雾进入目标区域，在短时间内连续完成多次明确击杀，并通过快速位移寻找最后一名敌人。最终交火结束后画面出现“力克千钧”战果提示，结尾为平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 12,
+            "description": "玩家手持步枪在室外通道和墙体掩体附近缓慢移动，多次架枪观察前方入口和转角。画面中没有出现敌人，也没有发生交火。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 12,
+            "end": 15,
+            "description": "玩家转身离开原本的架枪位置，切换为近战武器并开始转点。画面短暂打开记分板后继续移动，没有出现新的战斗事件。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 15,
+            "end": 22,
+            "description": "玩家手持近战武器跟随蓝色衣着的队友穿过庭院、台阶和室内入口，快速向目标区域推进。该段以跑图和转点为主，没有发生交火。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 22,
+            "end": 30,
+            "description": "玩家重新切换为步枪，进入室内走廊并逐步清查门口、墙角和相邻房间。画面中没有出现可见敌人，击杀栏中的部分变化来自其他玩家。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 30,
+            "end": 34,
+            "description": "玩家沿狭窄通道向目标区域入口推进，并在出口附近架枪观察。入口处已经存在大面积烟雾，视野受到遮挡。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 34,
+            "end": 37,
+            "description": "玩家持枪进入烟雾区域，画面大部分被彩色烟雾遮挡。玩家继续向前移动并准备从烟雾中进入目标区域。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 37,
+            "end": 39,
+            "description": "玩家从烟雾边缘进入目标区域后发现第一名敌人，立即使用步枪射击。敌人被命中后倒地，画面出现明确击杀反馈，确认完成一次击杀。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 39,
+            "end": 41,
+            "description": "首次击杀后，玩家迅速移动至绿色箱体附近作为掩体，并调整位置观察另一侧入口，为后续交火作准备。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 41,
+            "end": 42,
+            "description": "第二名敌人从正前方通道出现。玩家在箱体侧面探出后快速射击，敌人被击倒，画面出现明确击杀反馈。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 42,
+            "end": 43,
+            "description": "第二次击杀后，玩家短暂回到掩体附近并转动视角，继续扫描目标区域中的其他方向。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 43,
+            "end": 44,
+            "description": "第三名敌人从左侧入口附近出现。玩家立即开枪并在短距离交火中将其击倒，画面出现明确击杀反馈。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 44,
+            "end": 46,
+            "description": "上一名敌人倒地后，另一名敌人紧接着从箱体附近进入视野。玩家在受到少量伤害的情况下继续射击，并再次完成明确击杀。连续交火结束后，玩家切换为近战武器。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 46,
+            "end": 50,
+            "description": "完成连续击杀后，玩家使用快速位移和跳跃动作离开原位置，从较高处越过目标区域并向另一条通道移动，寻找剩余敌人。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 50,
+            "end": 54,
+            "description": "玩家重新切换为仅剩少量弹药的步枪，沿墙体和台阶附近谨慎推进，并持续瞄准前方转角。该段为最终交火前的寻找和等待过程。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 54,
+            "end": 55,
+            "description": "最后一名敌人从转角位置出现。玩家在受到伤害的情况下使用剩余弹药完成射击，敌人倒地，画面出现明确击杀反馈，并叠加“力克千钧”战果提示。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 55,
+            "end": 65,
+            "description": "最终击杀结束后，玩家切换为近战武器并停留在原地。画面持续显示“力克千钧”战果提示，没有出现新的移动、交火或击杀事件。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 65,
+            "end": 68,
+            "description": "正文结束，画面切换为平台账号搜索引导页，出现账号头像、搜索框、二维码和平台标识，没有新增游戏内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

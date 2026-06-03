@@ -24,6 +24,20 @@ SCORE_KEYS = [
     "standalone_watchability",
 ]
 
+ISSUE_TYPES = {
+    "action_truncation",
+    "speech_truncation",
+    "abrupt_transition",
+    "severe_fragmentation",
+    "redundancy",
+    "pacing_too_slow",
+    "pacing_too_fast",
+    "audio_cut_abrupt",
+    "missing_context",
+    "not_standalone_watchable",
+}
+ISSUE_SEVERITIES = {"low", "medium", "high"}
+
 
 class AestheticJudgeValidationError(ValueError):
     pass
@@ -38,6 +52,34 @@ def _round(value: float | None, digits: int = 3) -> float | None:
     if value is None:
         return None
     return round(float(value), digits)
+
+
+def _validate_issues(value: Any) -> list[dict[str, str]]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise AestheticJudgeValidationError("issues 必须是数组")
+    normalized_issues: list[dict[str, str]] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, dict):
+            raise AestheticJudgeValidationError(f"issues[{index}] 必须是 object")
+        issue_type = str(item.get("issue_type", "")).strip()
+        severity = str(item.get("severity", "")).strip()
+        description = str(item.get("description", "")).strip()
+        if issue_type not in ISSUE_TYPES:
+            raise AestheticJudgeValidationError(f"非法 issue_type：{issue_type}")
+        if severity not in ISSUE_SEVERITIES:
+            raise AestheticJudgeValidationError(f"非法 issue severity：{severity}")
+        if not description:
+            raise AestheticJudgeValidationError("issue description 必须是非空字符串")
+        normalized_issues.append(
+            {
+                "issue_type": issue_type,
+                "severity": severity,
+                "description": description,
+            }
+        )
+    return normalized_issues
 
 
 def validate_aesthetic_judge_result(result: dict[str, Any]) -> dict[str, Any]:
@@ -71,6 +113,7 @@ def validate_aesthetic_judge_result(result: dict[str, Any]) -> dict[str, Any]:
         raise AestheticJudgeValidationError("judge_confidence 必须在 0-1 之间")
     manual_review = bool(result.get("manual_review_recommended", False))
     editing_score = 20.0 * (sum(normalized_scores.values()) / len(SCORE_KEYS))
+    normalized_issues = _validate_issues(result.get("issues"))
     return {
         **result,
         "judge_version": result.get("judge_version", AESTHETIC_JUDGE_PROMPT_VERSION),
@@ -84,6 +127,7 @@ def validate_aesthetic_judge_result(result: dict[str, Any]) -> dict[str, Any]:
         "aesthetic_score_v1": _round(editing_score),
         "aesthetic_score_v1_deprecated_alias": True,
         "judge_summary": str(result.get("judge_summary", "")),
+        "issues": normalized_issues,
     }
 
 
@@ -96,6 +140,11 @@ def summarize_judge_runs(validated_results: list[dict[str, Any]], metadata: list
     manual_required = any(bool(result.get("manual_review_required")) for result in validated_results)
     low_confidence = any(value < 0.50 for value in confidence_values)
     stability_warning = bool(score_range >= 20.0)
+    issue_counts: dict[str, int] = {}
+    for result in validated_results:
+        for issue in result.get("issues", []):
+            issue_type = str(issue.get("issue_type"))
+            issue_counts[issue_type] = issue_counts.get(issue_type, 0) + 1
     return {
         "judge_status": "scored",
         "judge_version": AESTHETIC_JUDGE_PROMPT_VERSION,
@@ -108,6 +157,7 @@ def summarize_judge_runs(validated_results: list[dict[str, Any]], metadata: list
         "judge_score_std": _round(score_std),
         "judge_stability_warning": stability_warning,
         "judge_manual_review_required": manual_required or low_confidence,
+        "judge_issue_counts": dict(sorted(issue_counts.items())),
         "editing_experience_score_v1": _round(median_score),
         "aesthetic_score_v1": _round(median_score),
         "aesthetic_score_v1_deprecated_alias": True,

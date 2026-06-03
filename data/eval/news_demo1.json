@@ -1,0 +1,449 @@
+{
+    "video_id": "news_demo1",
+    "video_path": "news_demo1.mP4",
+    "video_type": "news_report",
+    "duration_seconds": 204,
+    "video_summary": "视频为一段按地区和月份梳理的 2025 年全球热点事件回顾，重点集中在国际军事、安全与地缘政治动态。内容依次涉及中东局势、俄乌冲突、南亚与东南亚边境冲突、朝鲜半岛、日本、南海、欧洲军备动向、美国军费与航母事故、委内瑞拉局势以及非洲安全事件。视频以新闻素材、地图动画和字幕卡为主，包含多个低信息量地区切换画面，结尾出现栏目标题页和平台搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 6,
+            "description": "视频以“2025”和“全球热点事件”文字动画开场，使用快速切换的新闻画面建立年度热点回顾主题，没有进入具体新闻事件。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 6,
+            "end": 9,
+            "description": "画面使用地球和区域地图动画定位中东地区，并标注以色列和巴勒斯坦，为后续中东局势新闻作过渡。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 9,
+            "end": 14,
+            "description": "画面展示车辆、人员和人群素材。字幕称，1 月停火协议第一阶段生效，以色列和哈马斯分别交换被扣押人员。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 14,
+            "end": 20,
+            "description": "画面展示以色列方面发言、建筑附近爆炸和空袭素材。字幕称，3 月以色列恢复对加沙的军事行动，联合国呼吁停火协议重新生效。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 20,
+            "end": 25,
+            "description": "画面展示胡塞武装人员、发言画面以及夜间发射素材。字幕称，3 月也门胡塞武装表示袭击美国“杜鲁门”号航母，并使用高超音速导弹打击以色列机场。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 25,
+            "end": 29,
+            "description": "画面展示夜间导弹发射、军事行动路线图和飞行器素材。字幕称，6 月以色列发动“崛起的雄狮”行动，美国发动“午夜之锤”行动，相关冲突爆发。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 29,
+            "end": 33,
+            "description": "画面展示城市区域上空和远处爆炸烟雾。字幕称，9 月以色列“突袭”卡塔尔，针对哈马斯高层实施“精准打击”。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 33,
+            "end": 37,
+            "description": "画面展示国际会议现场、巴勒斯坦席位附近的鼓掌人群以及多国国旗。字幕称，9 月英国、法国、加拿大、澳大利亚、葡萄牙、德国等多个西方国家宣布承认巴勒斯坦国。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 37,
+            "end": 40,
+            "description": "画面展示联合国标识车辆和维和人员。字幕称，11 月联合国表示，以色列在 3 个月内 3 次袭击联黎部队维和官兵。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 40,
+            "end": 43,
+            "description": "画面切换为欧洲区域地图，标注俄罗斯和乌克兰，为俄乌冲突相关新闻作过渡。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 43,
+            "end": 46,
+            "description": "画面展示火炮发射和战场素材。字幕称，在俄乌冲突三周年之际，俄罗斯与乌克兰相互承诺 30 天内不攻击能源基础设施目标。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 46,
+            "end": 49,
+            "description": "画面展示身着作战装备的人员和建筑废墟。字幕称，4 月朝鲜首次证实向俄罗斯派兵参战，协助收复库尔斯克地区。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 49,
+            "end": 52,
+            "description": "画面展示无人机视角和目标跟踪画面。字幕称，俄乌双方大量使用无人机袭击对方战略目标。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 52,
+            "end": 55,
+            "description": "画面展示普京和特朗普在机场会面。字幕称，8 月普京和特朗普在美国会谈，未就最重要议题达成协议。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 55,
+            "end": 59,
+            "description": "画面展示泽连斯基、特朗普及相关人员在白宫会面的素材。字幕称，泽连斯基当年 3 次访问美国白宫，俄乌停火仍未取得结果。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 59,
+            "end": 62,
+            "description": "画面展示欧洲多国领导人合影和欧盟旗帜。字幕称，12 月欧洲多国提议组建“多国部队”支持乌克兰。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 62,
+            "end": 65,
+            "description": "画面使用地图动画定位印度、巴基斯坦、泰国和柬埔寨，为南亚与东南亚冲突新闻作过渡。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 65,
+            "end": 69,
+            "description": "画面展示夜间爆炸和战机残骸。字幕称，5 月印度与巴基斯坦爆发冲突，巴基斯坦表示击落多架印度战机。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 69,
+            "end": 74,
+            "description": "画面展示装甲车辆、边境地区爆炸素材以及多方会谈合影。字幕称，7 月柬埔寨与泰国边境冲突升级，经过马来西亚斡旋达成停火协议。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 74,
+            "end": 80,
+            "description": "画面展示树林中的军事活动、武器画面以及柬埔寨和泰国代表签署文件。字幕称，12 月柬泰争议区域再次爆发激烈武装冲突，动用战机、火箭炮等重型武器；冲突发生近三周后，双方就停火问题签署联合声明。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 80,
+            "end": 83,
+            "description": "画面使用地图动画定位朝鲜半岛，为韩国与朝鲜相关新闻作过渡。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 83,
+            "end": 87,
+            "description": "画面展示尹锡悦进入相关机构的新闻素材。字幕称，1 月尹锡悦成为韩国历史上首位被拘留的现任总统。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 87,
+            "end": 90,
+            "description": "画面展示尹锡悦在听证或庭审场景中的素材。字幕称，韩方表示尹锡悦涉嫌妨碍逮捕，相关案件预计次年 1 月判决。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 90,
+            "end": 94,
+            "description": "画面展示朝鲜舰艇下水现场和发生倾斜的舰体。字幕称，5 月朝鲜“崔贤”级二号舰在下水仪式中发生“重大事故”。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 94,
+            "end": 96,
+            "description": "画面展示完成修复后的朝鲜舰艇。字幕称，6 月修复后的“崔贤”级二号舰重新下水。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 96,
+            "end": 100,
+            "description": "画面展示阅兵中的大型导弹运输车辆。字幕称，10 月朝鲜阅兵公开“火星-20”洲际导弹，展现核威慑能力。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 100,
+            "end": 101,
+            "description": "画面使用地图动画定位日本，作为日本相关新闻的短暂过渡。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_028",
+            "start": 101,
+            "end": 104,
+            "description": "画面展示高市早苗在公开场合行走。字幕称，10 月高市早苗当选，成为日本历史上首位女性首相。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_029",
+            "start": 104,
+            "end": 108,
+            "description": "画面展示高市早苗在议会场景中的素材以及抗议人群。字幕称，11 月高市早苗发表涉台错误言论，引发地区局势紧张。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_030",
+            "start": 108,
+            "end": 114,
+            "description": "画面展示示意路线图和中国国防部新闻发布会。字幕称，12 月日方战机干扰中方正常训练，事后炒作抹黑中方，中方公布事件完整过程。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_031",
+            "start": 114,
+            "end": 118,
+            "description": "画面展示日本战机素材。字幕称，12 月日本国会通过补充预算案，防卫开支预计占日本国内生产总值约 2%。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_032",
+            "start": 118,
+            "end": 120,
+            "description": "画面使用地图动画定位菲律宾，为南海相关新闻作过渡。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_033",
+            "start": 120,
+            "end": 128,
+            "description": "画面展示船只近距离航行和海上喷水等素材。字幕称，菲律宾在南海挑衅升级，舰机多次侵闯南沙群岛附近海空域。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_034",
+            "start": 128,
+            "end": 132,
+            "description": "画面展示多国舰艇在海上航行。字幕称，10 月菲律宾拉拢美国、澳大利亚和新西兰组织“联合巡航”，搅局南海。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_035",
+            "start": 132,
+            "end": 134,
+            "description": "画面使用欧洲区域地图动画，为欧洲军备相关新闻作过渡。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_036",
+            "start": 134,
+            "end": 138,
+            "description": "画面展示欧盟官员发言和欧盟旗帜。字幕称，3 月欧盟宣布实施规模约 8000 亿欧元的“重新武装欧洲”计划。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_037",
+            "start": 138,
+            "end": 141,
+            "description": "画面展示无人机和冬季环境中的军事设备。字幕称，10 月芬兰、瑞典、挪威和丹麦四国决定联合采购无人机及相关技术。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_038",
+            "start": 141,
+            "end": 145,
+            "description": "画面展示冬季环境中的装甲车辆和英文训练说明。字幕称，11 月至 12 月芬兰举行系列联合演习，部分区域靠近俄罗斯边境。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_039",
+            "start": 145,
+            "end": 149,
+            "description": "画面展示多种防空系统装备。字幕称，11 月瑞典和丹麦相继采购新型防空系统。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_040",
+            "start": 149,
+            "end": 151,
+            "description": "画面展示海上舰艇和潜艇。字幕称，12 月挪威计划购买远程打击武器，并增购潜艇。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_041",
+            "start": 151,
+            "end": 153,
+            "description": "画面展示街头人群。字幕称，12 月波兰众议院通过新的预算法草案，国防开支创下新高。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_042",
+            "start": 153,
+            "end": 156,
+            "description": "画面使用地球动画定位美国，为美国相关新闻作过渡。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_043",
+            "start": 156,
+            "end": 160,
+            "description": "画面展示特朗普签署文件。字幕称，12 月美国总统特朗普签署 2026 财年国防授权法案，金额约 9010 亿美元，刷新历史最高纪录。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_044",
+            "start": 160,
+            "end": 165,
+            "description": "画面展示航母起飞的战机。字幕称，12 月美国海军公布“杜鲁门”号航母多起事故调查结果，3 架“超级大黄蜂”战机均未找回。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_045",
+            "start": 165,
+            "end": 168,
+            "description": "画面使用地图动画定位美国和委内瑞拉，为加勒比地区相关新闻作过渡。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_046",
+            "start": 168,
+            "end": 171,
+            "description": "画面展示多艘军舰在海上航行。字幕称，8 月美国以“打击贩毒”为由在加勒比地区进行大规模军事集结，矛头直指委内瑞拉。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_047",
+            "start": 171,
+            "end": 174,
+            "description": "画面展示海上目标遭到打击的素材。字幕称，9 月美军在委内瑞拉附近海域打击所谓“贩毒船只”。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_048",
+            "start": 174,
+            "end": 179,
+            "description": "画面展示航线示意图、军舰、直升机和委内瑞拉国旗。字幕称，12 月美方闯入委内瑞拉领空，多次扣押搭载委内瑞拉石油的油轮；委内瑞拉方面表示不接受美国的“海盗行径”。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_049",
+            "start": 179,
+            "end": 181,
+            "description": "画面展示特朗普人物剪影和军用直升机。字幕称，12 月特朗普将委内瑞拉现政府列为“外国恐怖组织”。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_050",
+            "start": 181,
+            "end": 183,
+            "description": "画面使用地图动画定位尼日利亚和苏丹，为非洲安全相关新闻作过渡。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_051",
+            "start": 183,
+            "end": 187,
+            "description": "画面展示特朗普人物剪影和建筑背景。字幕称，11 月特朗普针对尼日利亚安全局势发表武力干预相关言论，并提出借反恐升级非洲军事部署。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_052",
+            "start": 187,
+            "end": 192,
+            "description": "画面展示夜间导弹发射和爆炸烟雾。字幕称，12 月美国表示对尼日利亚境内“伊斯兰国”目标发动“强大且致命”的打击，尼日利亚政府予以证实。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_053",
+            "start": 192,
+            "end": 197,
+            "description": "画面展示浓烟背景和联合国秘书长古特雷斯人物剪影。字幕称，12 月联合国维和部队在苏丹遭袭击，古特雷斯表示袭击维和人员不可饶恕。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_054",
+            "start": 197,
+            "end": 200,
+            "description": "画面重新出现“全球热点事件”栏目标题动画，用于结束年度热点事件回顾，没有新增新闻内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_055",
+            "start": 200,
+            "end": 204,
+            "description": "正文结束，画面切换为抖音与今日头条的平台搜索引导页，出现“来抖音 关注热点事件”和“回顾2025全球热点事件”等文字，没有新增新闻信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

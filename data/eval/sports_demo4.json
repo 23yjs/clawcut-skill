@@ -1,0 +1,385 @@
+{
+    "video_id": "sports_demo4",
+    "video_path": "sports_demo4.mP4",
+    "video_type": "sports",
+    "duration_seconds": 194,
+    "video_summary": "视频为一段围绕巴西队10号球员制作的足球高光混剪，包含个人突破、定位球、快速反击、门前终结、明确进球、庆祝动作以及多角度回放。视频以多个不同比赛片段连续拼接而成，既包含高价值进球和精彩过人，也包含重复回放、无明确结果的个人盘带、开场人物展示、片尾标题页和账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 10,
+            "description": "视频开场以人物特写和比赛庆祝画面组成蒙太奇，连续展示巴西队10号球员的正面肖像、奔跑庆祝、指向看台和做出互动手势等镜头，没有呈现一段完整的新比赛事件。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 10,
+            "end": 17,
+            "description": "巴西队10号球员在禁区附近持球面对红色球衣防守队员，连续变向、摆脱并向底线附近推进。该片段突出个人盘带技巧，但画面切换前没有明确展示最终射门或进球结果。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 17,
+            "end": 22,
+            "description": "巴西队获得前场定位球机会，10号球员完成助跑并直接射门，皮球越过人墙向球门方向飞行。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 22,
+            "end": 25,
+            "description": "定位球射门进入球门，画面随后以较近机位再次展示皮球越过防守球员并入网的结果，确认本次定位球成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 25,
+            "end": 29,
+            "description": "新的比赛片段开始。巴西队10号球员从前场中路获得球权，面对多名红色球衣防守队员快速推进至禁区附近。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 29,
+            "end": 33,
+            "description": "巴西队10号球员在禁区内完成摆脱后射门，皮球进入球门。画面使用近距离回放确认本次个人突破以成功进球结束。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 33,
+            "end": 35,
+            "description": "进球后，巴西队10号球员转身奔跑并做出庆祝动作，画面集中展示得分后的情绪反馈。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 35,
+            "end": 42,
+            "description": "巴西队再次获得前场定位球机会。10号球员站在球前完成准备、助跑和直接射门，皮球飞向对方球门。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 42,
+            "end": 46,
+            "description": "定位球越过防守人墙后进入球门，门将未能完成扑救。画面确认巴西队10号球员再次通过直接任意球得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 46,
+            "end": 49,
+            "description": "巴西队10号球员在定位球得分后与队友一起庆祝，画面短暂展示球员的奔跑和抬腿动作。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 49,
+            "end": 64,
+            "description": "新的比赛片段开始。巴西队从边路和中路连续推进，10号球员在多人防守下向禁区移动，队友通过传递将球送至门前区域，进攻逐渐形成明显威胁。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 64,
+            "end": 66,
+            "description": "巴西队在门前完成近距离终结，皮球越过门将进入球门，确认本次连续推进转化为成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 66,
+            "end": 69,
+            "description": "画面以近距离慢动作回放门前对抗和倒地过程，重复展示进球发生时多名球员在禁区内争抢的场面，没有出现新的比赛结果。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 69,
+            "end": 71,
+            "description": "进球后，巴西队10号球员张开双臂奔跑庆祝。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 71,
+            "end": 75,
+            "description": "新的比赛片段开始。巴西队在前场组织进攻，将球送入对方禁区，防守球员集中回撤，门前形成争抢机会。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 75,
+            "end": 79,
+            "description": "巴西队在门前完成终结，皮球进入球门。画面显示防守球员和门将未能阻止得分，确认本次进攻成功。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 79,
+            "end": 81,
+            "description": "进球后，巴西队10号球员与队友冲向场边庆祝，球员面部表情和肢体动作较为强烈。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 81,
+            "end": 87,
+            "description": "画面从球门后方和侧面机位重复回放上一粒进球的门前处理过程，展示皮球进入球门的轨迹，没有新增比赛事件。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 87,
+            "end": 93,
+            "description": "新的比赛片段开始。巴西队10号球员从边路切入禁区，在防守球员干扰下完成射门，皮球进入球门，确认一次成功进球。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 93,
+            "end": 102,
+            "description": "画面使用多个角度回放上一段边路切入和射门入网过程，包括禁区远景、射门瞬间和门将扑救画面，没有出现新的进攻事件。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 102,
+            "end": 105,
+            "description": "新的比赛片段开始。巴西队在禁区前沿获得进攻机会，10号球员接球后调整身体方向并准备完成射门。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 105,
+            "end": 108,
+            "description": "巴西队10号球员完成射门，皮球进入球门。画面随即以更近角度展示射门和入网结果，确认本次进攻成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 108,
+            "end": 110,
+            "description": "得分后，巴西队10号球员张开双臂庆祝，画面快速切换至下一段比赛。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 110,
+            "end": 113,
+            "description": "巴西队获得前场定位球机会，10号球员完成直接射门，皮球越过防守人墙进入球门，确认再次通过定位球成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 113,
+            "end": 118,
+            "description": "新的比赛片段开始。巴西队从中场快速反击，进攻球员沿边路向前推进并将球送至禁区内，逐步形成门前机会。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 118,
+            "end": 121,
+            "description": "巴西队在禁区内完成近距离射门，皮球越过门将进入球门，确认快速反击以成功得分结束。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 121,
+            "end": 123,
+            "description": "进球后，巴西队10号球员面向镜头大声庆祝，画面突出球员的情绪反馈。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_028",
+            "start": 123,
+            "end": 127,
+            "description": "新的比赛片段开始。巴西队10号球员在边路面对两名防守队员连续盘带，通过变向和身体对抗突破至禁区附近。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_029",
+            "start": 127,
+            "end": 132,
+            "description": "巴西队10号球员在完成突破后进入禁区并近距离射门，皮球进入球门，确认一次个人能力突出的成功进球。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_030",
+            "start": 132,
+            "end": 135,
+            "description": "进球后，巴西队10号球员在场边做出庆祝动作，随后画面切换至下一场比赛。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_031",
+            "start": 135,
+            "end": 140,
+            "description": "蓝色球衣10号球员在角旗区附近面对两名白色球衣防守队员，连续使用脚下动作摆脱并沿边线推进。片段结束前没有明确展示射门或进球结果。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_032",
+            "start": 140,
+            "end": 144,
+            "description": "新的比赛片段开始。黄色球衣进攻球员获得单刀机会，带球越过出击门将并将球送向空门。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_033",
+            "start": 144,
+            "end": 148,
+            "description": "皮球滚入空门，确认本次单刀进攻成功得分。画面随后从更近角度重复展示进攻球员摆脱门将和完成射门的过程。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_034",
+            "start": 148,
+            "end": 150,
+            "description": "得分后，黄色球衣进攻球员张开双臂庆祝，画面集中展示球员的情绪反馈。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_035",
+            "start": 150,
+            "end": 154,
+            "description": "新的比赛片段开始。蓝色球衣进攻方在禁区左侧组织进攻，持球队员面对多名白色球衣防守队员连续调整并创造射门空间。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_036",
+            "start": 154,
+            "end": 156,
+            "description": "蓝色球衣进攻球员在禁区内完成近距离射门，皮球进入球门，确认本次进攻成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_037",
+            "start": 156,
+            "end": 159,
+            "description": "画面从远景机位重复回放上一段进攻，展示球员切入禁区、完成射门和皮球入网的过程，没有出现新的比赛结果。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_038",
+            "start": 159,
+            "end": 165,
+            "description": "新的比赛片段开始。巴西队从中场连续向前推进，10号球员参与反击并将进攻带入禁区，防守队员回撤但未能及时阻止射门机会形成。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_039",
+            "start": 165,
+            "end": 166,
+            "description": "巴西队完成禁区内射门，皮球进入球门，确认本次反击成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_040",
+            "start": 166,
+            "end": 169,
+            "description": "进球后，巴西队10号球员转身奔跑并举手庆祝，画面突出得分后的动作反馈。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_041",
+            "start": 169,
+            "end": 173,
+            "description": "画面切换至另一场比赛。巴西队在前场推进并获得定位球机会，球员陆续站位，红色球衣防守队员组成防守人墙。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_042",
+            "start": 173,
+            "end": 179,
+            "description": "巴西队10号球员站在定位球前完成准备和助跑，随后直接射门，皮球越过红色球衣防守人墙并飞向球门。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_043",
+            "start": 179,
+            "end": 183,
+            "description": "定位球进入球门，门将未能完成扑救。画面从正面和近距离角度确认本次直接任意球成功得分。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_044",
+            "start": 183,
+            "end": 185,
+            "description": "进球后，巴西队10号球员面对镜头做出带有互动性质的庆祝手势，队友出现在身后。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_045",
+            "start": 185,
+            "end": 188,
+            "description": "画面切换为巴西队10号球员的连续近景特写，球员先遮挡额头观察远处，随后向镜头方向送出飞吻。该段没有新的比赛动作。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_046",
+            "start": 188,
+            "end": 190,
+            "description": "画面转为黑色背景片尾标题页，出现英文标题“THE LAST DANCE”和中文文字“最后一舞”，没有新增比赛内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_047",
+            "start": 190,
+            "end": 194,
+            "description": "视频结尾为平台账号搜索引导页，黑色背景上出现账号头像、账号编号、搜索框和平台标识，没有新增比赛信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

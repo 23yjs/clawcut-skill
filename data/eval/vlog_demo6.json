@@ -1,0 +1,177 @@
+{
+    "video_id": "vlog_demo6",
+    "video_path": "vlog_demo6.mP4",
+    "video_type": "cooking_tutorial",
+    "duration_seconds": 162,
+    "video_summary": "视频为一段番茄炒蛋制作教程，使用俯拍视角展示食材准备、洗手、打蛋、搅拌、切番茄、炒鸡蛋、炒番茄、调味和混合翻炒等步骤。视频中包含一次发现并取出蛋壳碎片的小插曲，结尾展示完成后的番茄炒蛋成品，并出现平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 5,
+            "description": "视频开场使用分屏蒙太奇快速展示番茄炒蛋成品、翻炒过程、打蛋和食材准备画面，并叠加“Welcome to my cooking Vlog”文字。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 5,
+            "end": 12,
+            "description": "镜头切换至厨房台面，展示鸡蛋、番茄、食用油、碗和其他工具。字幕说明本次将制作番茄炒蛋，并引导观众查看示例图片。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 12,
+            "end": 15,
+            "description": "画面近距离展示已经完成的番茄炒蛋成品，盘中可以看到鸡蛋块和番茄汤汁，字幕表达食物闻起来很好。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 15,
+            "end": 29,
+            "description": "镜头回到厨房台面，继续展示本次教程需要使用的食材和工具。字幕依次说明需要四个鸡蛋、两个番茄、食用油、碗和其他基础用品。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 29,
+            "end": 38,
+            "description": "制作者在开始处理食材前洗手，并在镜头前展示清洗后的双手，完成烹饪前的准备步骤。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 38,
+            "end": 50,
+            "description": "制作者拿起鸡蛋并将鸡蛋敲开，把蛋液倒入碗中。镜头持续展示打蛋操作。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 50,
+            "end": 57,
+            "description": "制作者发现碗中落入蛋壳碎片，字幕出现惊讶提示。制作者随后用手将蛋壳碎片从蛋液中取出。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 57,
+            "end": 64,
+            "description": "制作者继续将剩余鸡蛋逐个敲开并倒入碗中，完成打蛋步骤。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 64,
+            "end": 70,
+            "description": "制作者将装有多个鸡蛋的碗举到镜头前进行展示，确认鸡蛋已经全部准备完成。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 70,
+            "end": 78,
+            "description": "制作者使用筷子持续搅拌碗中的鸡蛋，将蛋黄和蛋清混合成较为均匀的蛋液。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 78,
+            "end": 87,
+            "description": "制作者使用菜刀将番茄切成较小块状，并在切好后将装有番茄块的盘子举到镜头前展示。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 87,
+            "end": 94,
+            "description": "制作者将炒锅放到灶台上加热并加入食用油，随后把搅拌好的蛋液倒入锅中。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 94,
+            "end": 109,
+            "description": "制作者使用锅铲持续翻炒鸡蛋，将逐渐凝固的蛋液打散为较小的鸡蛋块，直至鸡蛋基本炒熟。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 109,
+            "end": 115,
+            "description": "鸡蛋炒熟后，制作者将锅倾斜，并把炒好的鸡蛋盛出放入盘中，暂时腾空炒锅。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 115,
+            "end": 127,
+            "description": "制作者将切好的番茄块倒入锅中，并使用锅铲持续翻炒，使番茄逐渐变软并释放汤汁。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 127,
+            "end": 140,
+            "description": "番茄变软后，制作者依次向锅中加入盐和生抽，并展示调味品瓶身和实际倒入锅中的过程。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 140,
+            "end": 144,
+            "description": "制作者使用锅铲继续翻炒已经调味的番茄，使调味料、番茄块和汤汁进一步混合。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 144,
+            "end": 150,
+            "description": "制作者将此前盛出的鸡蛋重新倒入锅中，并使用锅铲将鸡蛋块与番茄充分混合翻炒。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 150,
+            "end": 155,
+            "description": "锅中的番茄炒蛋已经完成，镜头停留在成品上方展示鸡蛋块、番茄和汤汁混合后的效果。字幕强调制作过程简单。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 155,
+            "end": 159,
+            "description": "画面切换为盛入盘中的番茄炒蛋成品近景，制作者使用食物搭配成品进行展示。字幕表达食物美味并向观众告别。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 159,
+            "end": 162,
+            "description": "正文结束，画面切换为平台账号搜索引导页，出现账号头像、账号名称、搜索框和平台标识，没有新增烹饪信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

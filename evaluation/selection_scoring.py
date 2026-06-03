@@ -89,6 +89,16 @@ def _optimal_generic_value(
     return _top_weighted_value(pieces, duration_budget)
 
 
+def _total_generic_value(semantic_segments: list[dict[str, Any]]) -> float:
+    value = 0.0
+    for segment in semantic_segments:
+        weight = 0.0 if bool(segment.get("avoid_by_default")) else DEFAULT_HIGHLIGHT_VALUE_WEIGHTS.get(int(segment["default_highlight_score"]), 0.0)
+        duration = float(segment["end"]) - float(segment["start"])
+        if duration > 0 and weight > 0:
+            value += duration * weight
+    return value
+
+
 def _actual_generic_value(
     pred_intervals: list[dict[str, float]],
     semantic_segments: list[dict[str, Any]],
@@ -109,14 +119,20 @@ def compute_generic_selection_score(
     pred_segments: list[dict[str, Any]],
     semantic_segments: list[dict[str, Any]],
     *,
-    duration_budget: float,
+    duration_budget: float | None,
     duration_score: float,
 ) -> dict[str, Any]:
     pred_intervals = _pred_intervals(pred_segments)
     pred_total_duration = intervals_duration(pred_intervals)
-    duration_budget = float(duration_budget)
-    generic_value_optimal = _optimal_generic_value(semantic_segments, duration_budget)
-    generic_value_actual = _actual_generic_value(pred_intervals, semantic_segments, duration_budget)
+    if duration_budget is None:
+        generic_value_mode = "full_gt"
+        generic_value_optimal = _total_generic_value(semantic_segments)
+        generic_value_actual = _weighted_value_for_intervals(pred_intervals, semantic_segments)
+    else:
+        generic_value_mode = "budgeted"
+        duration_budget = float(duration_budget)
+        generic_value_optimal = _optimal_generic_value(semantic_segments, duration_budget)
+        generic_value_actual = _actual_generic_value(pred_intervals, semantic_segments, duration_budget)
     generic_value_score = generic_value_actual / generic_value_optimal if generic_value_optimal > 0 else 0.0
     default_highlight_intervals = [
         {"start": float(segment["start"]), "end": float(segment["end"])}
@@ -146,6 +162,7 @@ def compute_generic_selection_score(
         "generic_value_actual": _round(generic_value_actual),
         "generic_value_optimal": _round(generic_value_optimal),
         "generic_value_score": _round(generic_value_score),
+        "generic_value_mode": generic_value_mode,
         "default_highlight_duration": _round(default_highlight_duration),
         "default_highlight_precision": _round(default_highlight_precision),
         "generic_core_score": _round(generic_core_score),
@@ -164,7 +181,7 @@ def compute_guided_selection_score(
     relevant_segment_ids: list[str],
     forbidden_segment_ids: list[str],
     selection_scope: str,
-    duration_budget: float,
+    duration_budget: float | None,
     duration_score: float,
 ) -> dict[str, Any]:
     pred_intervals = _pred_intervals(pred_segments)
@@ -174,7 +191,12 @@ def compute_guided_selection_score(
     relevant_gt_total_duration = intervals_duration(relevant_intervals)
     matched_relevant_duration = overlap_duration_between(pred_intervals, relevant_intervals)
     precision = matched_relevant_duration / pred_total_duration if pred_total_duration > 0 else 0.0
-    coverage_denominator = min(relevant_gt_total_duration, float(duration_budget))
+    if duration_budget is None:
+        coverage_mode = "full_gt"
+        coverage_denominator = relevant_gt_total_duration
+    else:
+        coverage_mode = "budgeted"
+        coverage_denominator = min(relevant_gt_total_duration, float(duration_budget))
     coverage = min(matched_relevant_duration, coverage_denominator) / coverage_denominator if coverage_denominator > 0 else 0.0
     f1 = _compute_f1(precision, coverage)
     non_relevant_duration = max(0.0, pred_total_duration - matched_relevant_duration)
@@ -196,6 +218,7 @@ def compute_guided_selection_score(
         "relevant_duration_precision": _round(precision),
         "relevant_duration_coverage": _round(coverage),
         "relevant_duration_f1": _round(f1),
+        "coverage_mode": coverage_mode,
         "non_relevant_duration": _round(non_relevant_duration),
         "non_relevant_duration_ratio": _round(non_relevant_ratio),
         "forbidden_overlap_duration": _round(forbidden_overlap),

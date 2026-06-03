@@ -1,0 +1,177 @@
+{
+    "video_id": "vlog_demo3",
+    "video_path": "vlog_demo3.mP4",
+    "video_type": "travel",
+    "duration_seconds": 156,
+    "video_summary": "视频为一段冬季赛里木湖旅行与酒店体验短片，使用大量风景镜头、人物互动和酒店设施展示构成氛围化叙事。内容包括湖面与冰瀑、雪山日落、天鹅、雪地玩耍、仙女棒、骑马、客房休息、咖啡和健身泳池等设施体验。结尾出现平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 5,
+            "description": "视频以狐狸、室内阅读人物、湖面和天鹅等快速切换镜头开场，画面叠加“赛里木湖”标题，用于建立冬季旅行主题。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 5,
+            "end": 11,
+            "description": "画面展示女性人物在偏冷色调光影中的近景，以及她在湖边手持灯具的冬季造型。该段以人物氛围展示为主。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 11,
+            "end": 18,
+            "description": "镜头切换至蓝色冰瀑和冰墙景观，女性人物在冰雪地貌前行走和停留。随后出现雪山在晨昏光线中的远景。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 18,
+            "end": 27,
+            "description": "两名人物在冰墙附近互动、行走和牵手，镜头穿插冰瀑细节、人物全景以及冰雪地貌的远景展示。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 27,
+            "end": 32,
+            "description": "画面展示湖面上的天鹅、女性人物背对镜头眺望湖面，以及冰蓝色湖岸和远处雪山构成的开阔景观。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 32,
+            "end": 40,
+            "description": "两名人物在雪地中牵手奔跑和追逐，镜头先展示脚步近景，再切换为雪山背景下的远景，突出轻松活跃的旅行互动。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 40,
+            "end": 46,
+            "description": "画面短暂展示雪地狐狸，随后切换至两名人物在湖岸附近步行，以及湖面反光和天鹅活动的俯拍画面。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 46,
+            "end": 54,
+            "description": "镜头连续展示湖边天鹅群、近距离天鹅画面以及女性人物站在湖岸石块附近观赏天鹅的场景。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 54,
+            "end": 61,
+            "description": "画面切换至日落和粉色天空下的雪山湖泊，两名人物在结冰湖面或雪地边缘缓慢行走，形成较强的冬季旅行氛围。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 61,
+            "end": 67,
+            "description": "夜色中，两名人物手持仙女棒互动并面向镜头展示烟花火花。该段以夜间娱乐和情绪氛围为主。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 67,
+            "end": 72,
+            "description": "镜头展示 UrCove 逸扉酒店夜间外立面、入口招牌和建筑群俯拍画面，用于从户外旅行切换至酒店住宿体验。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 72,
+            "end": 82,
+            "description": "画面展示酒店公共区域，包括以壁炉为中心的休息空间、落地窗外的湖景、餐厅或休闲区域，以及酒店建筑夜景。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 82,
+            "end": 93,
+            "description": "镜头继续展示酒店内部设计，包括客房或套房、公共休息区、装饰画、墙面陈设和面向户外景观的用餐空间。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 93,
+            "end": 101,
+            "description": "女性人物在酒店休息区域和窗边放松，镜头展示座椅、床铺、室内陈设以及窗外的湖泊和雪地景观。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 101,
+            "end": 107,
+            "description": "两名人物在酒店周边雪地和山景背景下骑马，镜头包含近景、侧面跟随和较远距离的全景展示。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 107,
+            "end": 115,
+            "description": "画面回到酒店客房，展示房间入口、茶具、零食饮品、胶囊咖啡机、洗漱区域和吹风机等客房配套细节。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 115,
+            "end": 123,
+            "description": "镜头展示女性人物在客房中休息和眺望窗外，穿插房间整体空间、窗外湖景、山景以及人物拍照互动。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 123,
+            "end": 131,
+            "description": "画面展示酒店更多设施体验，包括咖啡制作和饮用、洗衣房、健身区域以及室内泳池。该段以酒店配套功能展示为主。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 131,
+            "end": 140,
+            "description": "视频重新切回湖边旅行场景，展示天鹅、人物在湖岸停留、两人坐在湖边互动、雪地玩耍以及女性人物迎风行走的画面。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 140,
+            "end": 152,
+            "description": "结尾蒙太奇再次展示酒店餐厅、酒店夜间外立面、两名人物在入口附近手持仙女棒、女性人物饮用热饮、酒店窗景和壁炉公共区域。该段主要用于汇总旅行与住宿氛围。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 152,
+            "end": 156,
+            "description": "正文结束，画面切换为平台账号搜索引导页，出现账号头像、账号名称、搜索框和平台标识，没有新增旅行或酒店信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

@@ -1,0 +1,305 @@
+{
+    "video_id": "vlog_demo4",
+    "video_path": "vlog_demo4.MP4",
+    "video_type": "vlog",
+    "duration_seconds": 272,
+    "video_summary": "视频为一段记录日常生活的个人 Vlog。内容包括公园开场蒙太奇、宿舍起床和洗漱、健身房力量训练、宿舍用餐、午休、超市购物、公园散步和口播、再次用餐、剪辑视频以及睡前收尾。视频中既有适合保留的户外氛围画面、健身过程和生活节点，也包含低信息量的黑暗起床画面、普通整理、重复口播、长时间剪辑展示和片尾引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 7,
+            "description": "视频开场，讲解者背着红色双肩包在秋季公园步道上走向镜头，并以近距离互动方式介绍本期 Vlog。画面叠加个人 Vlog 标题。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 7,
+            "end": 13,
+            "description": "画面切换为仰拍树木、蓝天和道路远景，叠加醒目的英文文字。该段以公园环境和车辆经过的氛围镜头为主，用于建立日常 Vlog 的开场节奏。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 13,
+            "end": 25,
+            "description": "视频使用快速蒙太奇预告当天内容，依次展示健身房训练、讲解者坐在湖边休息、骑自行车经过树林以及沿湖边木栈道行走等画面。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 25,
+            "end": 28,
+            "description": "画面切换为黑色背景时间卡，显示“9:42AM”，用于进入当天早晨的正式记录。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 28,
+            "end": 35,
+            "description": "镜头位于光线较暗的宿舍床铺附近，讲解者从床上起身并整理自己。该段主要表现刚刚起床的状态，画面较暗且信息量较低。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 35,
+            "end": 38,
+            "description": "讲解者来到水池附近，使用杯子和水龙头进行简单清洗或准备洗漱用品。画面以水池和手部操作为主。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 38,
+            "end": 44,
+            "description": "讲解者穿着居家短裤和拖鞋，在宿舍楼公共区域中移动，并调整相机位置。该段主要为前往洗漱区域的普通过渡。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 44,
+            "end": 48,
+            "description": "讲解者在公共洗漱区域刷牙，并将杯子放回水池附近，完成早晨洗漱步骤。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 48,
+            "end": 59,
+            "description": "讲解者回到楼梯附近的公共区域，展开一张折叠椅并坐下。该段以搬动椅子、调整位置和坐下准备口播为主。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 59,
+            "end": 67,
+            "description": "讲解者坐在折叠椅上面对镜头口播，并举起一件蓝白色包装的日常用品进行展示和说明。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 67,
+            "end": 74,
+            "description": "讲解者在宿舍中整理红色双肩包、穿上外套并离开房间。画面随后切换至健身房，完成从宿舍到训练场景的过渡。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 74,
+            "end": 78,
+            "description": "讲解者在健身房更衣柜附近面对镜头进行简短口播，随后进入器械区域准备开始当天的力量训练。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 78,
+            "end": 95,
+            "description": "讲解者躺在卧推凳上进行多组杠铃卧推训练。画面通过连续剪辑展示不同重量阶段，并叠加 20KG、30KG、40KG、50KG 和 60KG 等重量文字。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 95,
+            "end": 100,
+            "description": "讲解者切换至其他上肢训练器械，在坐姿和站姿状态下完成辅助力量动作。该段用于展示卧推以外的训练内容。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 100,
+            "end": 102,
+            "description": "讲解者站在绳索器械前完成直臂下压类动作，双臂沿身体前方向下发力。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 102,
+            "end": 105,
+            "description": "讲解者跪在绳索器械前完成龙门架卷腹训练，通过上身向下收缩进行核心练习。画面叠加动作名称提示。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 105,
+            "end": 116,
+            "description": "训练结束后，讲解者在更衣柜附近面对镜头总结刚才的锻炼，并表示准备返回学校或宿舍吃饭。片段末尾用手遮挡镜头完成转场。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 116,
+            "end": 117,
+            "description": "画面被手掌完全遮挡，形成极短的黑色转场，没有新增内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 117,
+            "end": 131,
+            "description": "讲解者回到宿舍，在桌前食用包含肉类、蔬菜和主食的餐盒，并多次将食物夹到镜头前展示。讲解者一边进食一边进行简短口播。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 131,
+            "end": 133,
+            "description": "讲解者躺在床上休息，画面叠加“Zzzzz”文字，用于表示午休或短暂睡眠。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 133,
+            "end": 140,
+            "description": "讲解者来到超市，在零食和饮料货架之间移动，将多件商品放入购物篮，并在收银区域完成选购。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 140,
+            "end": 143,
+            "description": "购物结束后，讲解者提着装有商品的塑料袋乘坐电动车或共享车辆离开超市，随后来到湖边公园。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 143,
+            "end": 158,
+            "description": "讲解者坐在湖边公园的座椅上面对镜头口播，谈论当天购物、饮食或后续安排。期间多次使用手势并指向公园中的其他区域。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 158,
+            "end": 170,
+            "description": "视频切换为公园环境蒙太奇，展示湖面倒影、树木、步道、低角度草地和花朵，以及讲解者背着红色双肩包沿道路和木栈道行走的画面。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 170,
+            "end": 175,
+            "description": "讲解者坐在湖边座椅上短暂休息，并低头查看手机。该段主要为散步过程中的普通停留。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 175,
+            "end": 184,
+            "description": "讲解者重新站在湖边面对镜头口播，表示准备返回宿舍，并提到回去之后继续吃饭或处理后续事项。片段末尾用手遮挡镜头转场。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 184,
+            "end": 185,
+            "description": "画面短暂变黑，完成从公园返回宿舍的转场。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_028",
+            "start": 185,
+            "end": 194,
+            "description": "讲解者回到宿舍继续用餐，使用筷子夹起大块肉类和其他食物，并饮用瓶装饮料。镜头持续展示餐盒和进食过程。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_029",
+            "start": 194,
+            "end": 206,
+            "description": "用餐结束后，讲解者坐在宿舍桌前面对镜头口播，使用手势总结当天的饮食、训练或接下来的安排。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_030",
+            "start": 206,
+            "end": 221,
+            "description": "讲解者坐在电脑前剪辑视频。镜头展示笔记本电脑上的视频剪辑软件界面、时间线、预览画面和字幕轨道，并穿插讲解者操作键盘和查看屏幕的画面。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_031",
+            "start": 221,
+            "end": 225,
+            "description": "讲解者回到镜头前，说明视频剪辑工作已经取得进展或完成一部分，并用手势继续讲述当前状态。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_032",
+            "start": 225,
+            "end": 232,
+            "description": "镜头再次聚焦电脑屏幕，继续展示剪辑软件中的预览画面、时间线、字幕和片段调整过程。该段与此前的剪辑工作内容相近。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_033",
+            "start": 232,
+            "end": 246,
+            "description": "讲解者坐在宿舍桌前进行当天最后一段口播，并将手机屏幕举到镜头前展示当前时间。随后继续简短总结当天内容，并用手掌遮挡镜头。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_034",
+            "start": 246,
+            "end": 261,
+            "description": "镜头切换至光线昏暗的床铺。讲解者躺在床上休息，手机屏幕短暂照亮面部，并再次展示手机时间。片段末尾向镜头挥手，完成睡前告别。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_035",
+            "start": 261,
+            "end": 264,
+            "description": "画面逐渐转为黑色，没有新增日常内容，用于衔接片尾。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_036",
+            "start": 264,
+            "end": 268,
+            "description": "黑色背景上出现“祝你天天开心 感谢你能看完”文字，属于感谢观看的片尾标题页。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_037",
+            "start": 268,
+            "end": 272,
+            "description": "视频结尾为平台账号搜索引导页，出现抖音标识、账号搜索框和二维码，没有新增 Vlog 内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

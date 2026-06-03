@@ -1,0 +1,169 @@
+{
+    "video_id": "vlog_demo5",
+    "video_path": "vlog_demo5.mP4",
+    "video_type": "travel",
+    "duration_seconds": 78,
+    "video_summary": "视频为一段新疆旅行氛围混剪，开头通过车票、飞机和机场画面交代出发过程，随后展示乌鲁木齐市区、集市、美食和建筑，并进入以草原、湖泊、雪山、峡谷、森林、牧场和溪流为主的自然风光段落。视频穿插女性人物旅行写真、同行者互动、抱小羊、荡秋千、草地奔跑和户外用餐等生活化画面，结尾出现平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 3,
+            "description": "视频以出发过程开场，依次展示手中的身份证件和车票或登机凭证、飞机舷窗外的机翼、女性人物在交通工具上佩戴颈枕休息，以及机场通道画面。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 3,
+            "end": 7,
+            "description": "画面通过“乌鲁木齐”文字标识进入城市段落，随后展示商业街中的装饰摆件、挂钟、手工艺品和集市摊位，快速建立当地文化氛围。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 7,
+            "end": 12,
+            "description": "城市预览蒙太奇继续展示街头舞蹈人物、烤串摊位、餐桌上的菜肴、街边表演者、特色建筑塔楼、水果摊以及装饰华丽的室内空间。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 12,
+            "end": 14,
+            "description": "镜头短暂切换为人物低头拍摄脚下移动通道或步道的画面，随后过渡到绿色草地。该段主要承担场景转换作用，没有新增旅行事件。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 14,
+            "end": 21,
+            "description": "视频进入自然风光主段落，草原、林荫公路、山坡和蓝色湖泊依次出现，画面持续叠加“新疆”标题，用于明确旅行目的地并建立整体景观基调。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 21,
+            "end": 27,
+            "description": "镜头连续展示草地上休息的狗、迎风摆动的野花、女性人物在山坡行走、碧绿色峡谷湖泊、针叶林和开阔水面，构成多种自然景观的快速蒙太奇。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 27,
+            "end": 31,
+            "description": "女性人物先后在湖边、裸露地貌和草原木栈道附近停留和行走，镜头通过不同地点的旅行写真衔接山水景观。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 31,
+            "end": 35,
+            "description": "女性人物在开阔草坡前张开双臂，随后靠近围栏与动物互动。画面切换至草原野花特写，突出牧场环境和自然氛围。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 35,
+            "end": 39,
+            "description": "镜头展示野花、女性人物站在高大树木之间摆姿势，以及佩戴帽子的女性人物自拍近景。该段以人物写真和森林氛围为主。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 39,
+            "end": 42,
+            "description": "女性人物坐在户外餐桌前，面对镜头展示并品尝桌上的食物。该段从自然风光短暂切换至旅行中的用餐体验。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 42,
+            "end": 47,
+            "description": "女性人物在湖边野花之间轻快奔跑，随后站在开阔峡谷地貌前眺望远处。镜头切换至树荫下的草地和山坡，继续展示旅行写真与自然景观。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 47,
+            "end": 50,
+            "description": "女性人物在草地中自拍并摆动身体，随后抱起一只小羊面对镜头微笑。片段末尾切换至草原秋千附近。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 50,
+            "end": 54,
+            "description": "画面展示草原秋千、连绵绿色山坡、从车辆内部望向窗外的阳光和森林，以及远处湖泊和山地景观。该段以行程途中连续变化的风景为主。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 54,
+            "end": 57,
+            "description": "多名同行者在草地上牵手向前奔跑，随后继续跑向有牲畜活动的开阔牧场。画面突出群体旅行中的轻松互动。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 57,
+            "end": 62,
+            "description": "女性人物在雪山和草坡背景下旋转摆姿势，随后在树荫和草地之间奔跑。镜头穿插牧场牲畜、山谷远景以及同行者集体举手欢呼的画面。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 62,
+            "end": 65,
+            "description": "女性人物先在雪山山谷前停留，随后站在湖岸边迎风转身。镜头切换至阳光穿过针叶林以及雪山远景。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 65,
+            "end": 70,
+            "description": "镜头依次展示山间溪流、草原上的简易建筑、岩石前的黑色牲畜、峡谷地貌以及女性人物站在开阔山谷草地中的远景，继续呈现新疆自然环境的多样性。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 70,
+            "end": 73,
+            "description": "画面从车辆内部展示山间道路和前方绿色丘陵，随后切换为高处俯瞰的山谷全景，以及女性人物站在草坡前回望镜头的旅行写真。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 73,
+            "end": 75,
+            "description": "正文结束前，视频通过逐渐收窄的横向画幅快速回顾湖泊、草坡和牧场等风景，作为片尾转场，没有新增旅行内容。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 75,
+            "end": 78,
+            "description": "画面切换为平台账号搜索引导页，出现账号头像、账号编号、搜索框和平台标识，没有新增旅行信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

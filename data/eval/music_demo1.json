@@ -1,0 +1,105 @@
+{
+    "video_id": "music_demo1",
+    "video_path": "music_demo1.mP4",
+    "video_type": "music_performance",
+    "duration_seconds": 89,
+    "video_summary": "视频为一段大型现场演出的舞台实录。一名身穿红色连帽外套的男性表演者在舞台前方持续演唱，并通过抬手、指向观众、走动和靠近舞台边缘等动作调动现场气氛。视频穿插观众近景、全场灯光与手机灯海、舞台大屏和低光过渡画面，结尾出现平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 4,
+            "description": "男性表演者身穿红色连帽外套，手持麦克风坐在舞台前方进行近距离演唱。背景大屏持续播放人物画面，镜头以表演者面部和上半身特写为主。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 4,
+            "end": 9,
+            "description": "画面切换至观众席近景，多名观众跟随演出欢呼、挥手和跟唱，部分观众面部情绪较为激动。该段用于展示现场反应。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 9,
+            "end": 25,
+            "description": "镜头回到舞台前方。表演者继续手持麦克风演唱，期间多次抬起手臂、向观众方向示意并配合节奏做出手势。背景大屏持续播放与演出相关的人物画面。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 25,
+            "end": 35,
+            "description": "镜头切换为从舞台后方向观众席拍摄的广角画面。表演者位于舞台前方，观众席中出现大量手机灯光，现场形成大面积灯海。该段重点展示演出规模和现场氛围。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 35,
+            "end": 42,
+            "description": "画面回到表演者近景。表演者从原位置起身并面向观众，连续挥动手臂、指向远处观众席并做出带动互动的动作，现场灯光较暗，观众手机灯光持续可见。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 42,
+            "end": 47,
+            "description": "表演者拉起红色外套的帽子，继续使用麦克风近距离演唱。镜头集中展示表演者面部、帽子和麦克风，画面具有较强的舞台特写效果。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 47,
+            "end": 58,
+            "description": "表演者背对或侧对镜头沿舞台前方移动，持续向观众挥动手臂并做出大幅度互动动作。观众席手机灯光和舞台大屏出现在背景中，演出气氛保持活跃。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 58,
+            "end": 66,
+            "description": "表演者移动至舞台一侧的桌台或设备附近，弯腰停留并调整衣帽和手部动作。该段仍处于演出现场，但演唱和观众互动强度相对降低。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 66,
+            "end": 71,
+            "description": "表演者在舞台设备附近继续停留并随节奏活动，背景大屏播放人物和舞蹈相关画面。镜头以中近景展示表演者的动作和舞台视觉效果。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 71,
+            "end": 74,
+            "description": "画面短暂切换至观众席近景和低光过渡画面，多名观众面向舞台欢呼和拍摄。片段末尾重新切回表演者。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 74,
+            "end": 86,
+            "description": "表演者靠近舞台边缘，以较低姿态面对镜头和前排观众，手持麦克风继续演唱或进行现场互动，并多次使用手势回应观众。背景可以看到舞台灯光和大屏画面。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 86,
+            "end": 89,
+            "description": "正文结束，画面切换为平台账号搜索引导页，出现账号头像、账号名称、搜索框和平台标识，没有新增演出内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

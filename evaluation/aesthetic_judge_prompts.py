@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 
-AESTHETIC_JUDGE_PROMPT_VERSION = "aesthetic_judge_v1"
+AESTHETIC_JUDGE_PROMPT_VERSION = "aesthetic_judge_v2_issue_taxonomy"
 
 AESTHETIC_JUDGE_SYSTEM_PROMPT = """你是视频成片剪辑体验评测 Judge。
 
@@ -45,7 +45,24 @@ def build_aesthetic_judge_text_prompt(
             "不要评价画面清晰度、压缩伪影、亮度或构图，这由 DOVER 负责。",
             "不要评价黑屏、冻结画面、音频流缺失或解码错误，这由 FFmpeg 技术检查负责。",
             "严重黑屏由 FFmpeg 处理；画面模糊由 DOVER 处理；动作在投篮入框前突然结束才由 clip_boundary_completeness 处理；高光之间无解释跳转才由 transition_coherence 处理。",
+            "issues 只记录剪辑体验问题，不记录高光遗漏、指令不满足、画质、黑屏、冻结或音频流缺失。",
+            "issue_type 必须从给定枚举中选择，不允许自由发挥；没有明显问题时 issues 必须返回 []。",
         ],
+        "issue_taxonomy": {
+            "allowed_issue_types": [
+                "action_truncation",
+                "speech_truncation",
+                "abrupt_transition",
+                "severe_fragmentation",
+                "redundancy",
+                "pacing_too_slow",
+                "pacing_too_fast",
+                "audio_cut_abrupt",
+                "missing_context",
+                "not_standalone_watchable",
+            ],
+            "allowed_severities": ["low", "medium", "high"],
+        },
         "score_dimensions": {
             "clip_boundary_completeness": "0-5：片段开头和结尾是否完整，口播、动作、关键结果是否被截断。",
             "transition_coherence": "0-5：片段之间是否自然，顺序是否合理，是否出现令人困惑的跳切。",
@@ -78,6 +95,13 @@ def build_aesthetic_judge_text_prompt(
             "judge_confidence": 0.8,
             "judge_summary": "...",
             "manual_review_recommended": False,
+            "issues": [
+                {
+                    "issue_type": "action_truncation",
+                    "severity": "high",
+                    "description": "投篮动作尚未完成，片段已经结束。",
+                }
+            ],
         },
     }
     return json.dumps(payload, ensure_ascii=False, indent=2)

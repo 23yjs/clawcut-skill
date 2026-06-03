@@ -1,0 +1,129 @@
+{
+    "video_id": "cooking_demo1",
+    "video_path": "cooking_demo1.mP4",
+    "video_type": "cooking_tutorial",
+    "duration_seconds": 53,
+    "video_summary": "视频为一段台式三杯鸡制作教程，使用近距离竖屏镜头展示成品预览、鸡肉腌制、煸香姜蒜、煎制鸡肉、加入调味汁、砂锅炒香洋葱、转入砂锅焖煮以及成品展示等步骤。视频开头和结尾均突出酱汁浓郁的鸡肉成品，正文结束后出现平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 6,
+            "description": "视频开场展示已经完成的台式三杯鸡。镜头打开砂锅盖，近距离呈现带有酱汁、蒜瓣和绿色香草的鸡肉，并使用筷子夹起一块鸡肉展示成品色泽和质感。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 6,
+            "end": 8,
+            "description": "制作过程开始。制作者将切好的鸡肉块放入大碗中，并在画面中展示作为主要食材的鸡肉。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 8,
+            "end": 11,
+            "description": "制作者依次向鸡肉中加入盐、胡椒粉、酱油和淀粉等腌制调料，画面叠加调料用量说明。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 11,
+            "end": 14,
+            "description": "制作者戴手套抓拌鸡肉，使调味料均匀覆盖鸡肉块，并将处理好的鸡肉静置腌制。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 14,
+            "end": 16,
+            "description": "制作者向炒锅中倒入食用油，为后续煸香姜片和蒜瓣做准备。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 16,
+            "end": 21,
+            "description": "制作者将姜片和蒜瓣放入油锅中，以中小火持续翻动，直至表面呈现金黄色。随后将煸香后的姜片和蒜瓣捞出备用。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 21,
+            "end": 23,
+            "description": "制作者将已经腌制好的鸡肉倒入保留底油的炒锅中，开始煎制鸡肉。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 23,
+            "end": 27,
+            "description": "制作者持续翻动锅中的鸡肉，使鸡肉块表面逐渐煎至金黄并产生焦香色泽。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 27,
+            "end": 31,
+            "description": "鸡肉煎至上色后，制作者向锅中倒入由米酒、酱油和其他调料组成的调味汁，使鸡肉在酱汁中继续加热。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 31,
+            "end": 35,
+            "description": "制作者将此前煸香的姜片和蒜瓣重新倒回锅中，与鸡肉和酱汁一起翻炒，并持续收汁，使酱汁逐渐变得浓稠。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 35,
+            "end": 38,
+            "description": "镜头切换至砂锅。制作者在砂锅中加入油和洋葱丝，并持续翻动，将洋葱炒出香味。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 38,
+            "end": 42,
+            "description": "制作者将已经收汁的鸡肉、姜片和蒜瓣转入砂锅，并加入较多绿色香草，使鸡肉、洋葱和香草在砂锅中组合完成。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 42,
+            "end": 46,
+            "description": "制作者盖上砂锅盖，并沿锅盖周边倒入液体继续焖煮，使香气和酱汁进一步融合。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 46,
+            "end": 50,
+            "description": "制作者打开砂锅盖，近距离展示焖煮完成后的台式三杯鸡。镜头停留在色泽浓郁的鸡肉、蒜瓣和绿色香草上，并再次使用筷子夹起鸡肉展示成品。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 50,
+            "end": 53,
+            "description": "正文结束，画面切换为平台账号搜索引导页，出现平台标识、账号关注提示和搜索框，没有新增烹饪信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

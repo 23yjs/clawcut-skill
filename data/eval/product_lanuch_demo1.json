@@ -1,0 +1,281 @@
+{
+    "video_id": "product_lanuch_demo1",
+    "video_path": "product_lanuch_demo1.mP4",
+    "video_type": "product_launch",
+    "duration_seconds": 229,
+    "video_summary": "视频为一段 vivo 新品发布会重点内容混剪，前半段集中介绍 vivo X300 Ultra 的影像能力，包括蔡司大师镜头群、14mm 超广角、35mm 人文焦段、85mm 人像焦段、超长焦、追焦防抖、高规格视频拍摄、电影感风格和 vivo 色彩科学。后半段展示手机影像套装和价格信息，并进一步介绍 vivo Pad6 Pro 平板的 4K 屏幕、综合功能和价格。视频结尾包含主持人收尾、品牌页以及平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 8,
+            "description": "视频以电影制作现场的灯光、摄影设备、场记板和拍摄监看画面开场，展示使用手机参与影视拍摄的幕后场景，为后续影像产品发布内容建立氛围。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 8,
+            "end": 16,
+            "description": "发布会舞台正式出现。大屏幕展示 vivo X300 Ultra，并使用“V单”“影像新物种”等文字强调该产品希望融合手机便携性和专业影像能力。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 16,
+            "end": 20,
+            "description": "舞台画面展示由多支镜头组成的“蔡司大师镜头群”，用于概括 vivo X300 Ultra 覆盖多个焦段的影像系统。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 20,
+            "end": 28,
+            "description": "发布会介绍 14mm 超广角镜头，画面展示镜头模组、较大尺寸感光元件信息以及山川湖泊风景样张，突出宽广视野和自然景观拍摄能力。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 28,
+            "end": 38,
+            "description": "发布会转入 35mm 人文焦段介绍，画面展示镜头结构、大尺寸感光元件和光学结构示意，并通过人物样张强调适合人像与日常纪实拍摄。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 38,
+            "end": 42,
+            "description": "舞台大屏集中展示多组不同主题的摄影样张，并通过连续图片墙表达使用镜头记录日常生活和故事场景的用途。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 42,
+            "end": 52,
+            "description": "发布会介绍 85mm 人像焦段及其镜头结构，画面展示感光元件、光学组件和防抖结构示意，并出现 CIPA 7.0 等稳定性相关信息。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 52,
+            "end": 62,
+            "description": "视频连续展示同一野生动物场景在不同焦段下的取景效果，从较宽视野逐步推进至远距离特写，最终展示 800mm 超远距离拍摄和连续抓拍样张。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 62,
+            "end": 70,
+            "description": "舞台画面强调“追得准、拍得稳”，随后通过手机镜头结构动画和外接长焦组件展示超远距离拍摄方案。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 70,
+            "end": 75,
+            "description": "发布会使用大象样张展示长焦拍摄效果，并叠加约 17.4 倍远摄能力相关说明，突出远距离主体仍然具有较清晰的细节。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 75,
+            "end": 85,
+            "description": "大屏幕展示由旅行、体育、野生动物和人物题材组成的摄影作品墙，并依次呈现网球运动员、鸟类和野生动物等超长焦使用场景。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 85,
+            "end": 91,
+            "description": "画面再次停留在“蔡司大师镜头群”汇总页，重复展示多支镜头组成的影像系统，没有引入新的焦段或功能信息。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 91,
+            "end": 98,
+            "description": "发布会介绍全焦段高像素输出能力，屏幕出现约 2400 万和 2500 万像素相关数字，并展示不同题材摄影样张，强调用户可以自行完成高质量创作。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 98,
+            "end": 103,
+            "description": "发布会从静态摄影转入视频拍摄能力，舞台大屏展示“影视规格一定要拉满”和“全焦段高规格视频”等概括性文字。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 103,
+            "end": 111,
+            "description": "画面通过鸟类、大象和海滩奔跑等样片介绍全焦段 4K 120fps 以及 10bit Log 等视频能力，展示运动主体和风景场景中的视频拍摄效果。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 111,
+            "end": 116,
+            "description": "舞台大屏展示口袋摄影机式的完整视频创作界面，包含防抖、焦段和多种拍摄功能模块，强调从拍摄到创作的专业视频能力。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 116,
+            "end": 123,
+            "description": "画面切换至影视制作幕后，展示手机安装在专业拍摄设备和机械装置上的实际使用过程，用于说明手机能够参与更复杂的制作流程。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 123,
+            "end": 128,
+            "description": "发布会展示 400mm 超长焦视频拍摄能力，并播放网球比赛样片，突出远距离运动主体的跟踪和记录效果。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 128,
+            "end": 136,
+            "description": "发布会展示“经典电影 Film Style”和“现代电影 Film Look”等视频风格示例，通过人物剪影、街景人物和不同色调画面强调电影感表达。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 136,
+            "end": 141,
+            "description": "舞台画面以风景背景和手机外接镜头示意强调轻量化创作理念，表达将专业影像能力装入口袋、提升视频创作自由度的产品定位。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 141,
+            "end": 146,
+            "description": "发布会进入 vivo 色彩科学部分，画面通过冰川、雪山和蓝色景观展示品牌对自然色彩和蓝色调还原能力的强调。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 146,
+            "end": 154,
+            "description": "视频通过夜间人物样片、森林人物样片、草原和山谷等画面展示不同光线与自然环境下的色彩表现，并强调蓝色调和肤色呈现。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 154,
+            "end": 163,
+            "description": "舞台继续展示蓝色调色盘、人物照片和“vivo 色彩科学”总结页，概括更准、更美和更好玩的色彩体验。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 163,
+            "end": 174,
+            "description": "视频展示 vivo X300 Ultra 的不同机身配色、外接镜头和专业影像手柄套装，并通过旅行拍摄、配件摆放和实际持机拍摄画面说明套装使用方式。片段末尾出现创作样片蒙太奇。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 174,
+            "end": 182,
+            "description": "画面长时间停留在 vivo X300 Ultra 影像能力汇总信息图，通过密集模块集中回顾镜头群、长焦、视频、色彩和相关功能。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 182,
+            "end": 188,
+            "description": "发布会展示 vivo X300 Ultra 不同存储版本的价格信息，画面中出现 6999 元、7499 元、7999 元和 8999 元等价格，并展示不同机身颜色。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 188,
+            "end": 194,
+            "description": "画面展示 vivo X300 Ultra 专业影像手柄套装、增距镜和完整摄影套装的价格信息，并以配件组合图呈现套装内容。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_028",
+            "start": 194,
+            "end": 201,
+            "description": "发布会切换至 vivo Pad6 Pro 平板新品，画面展示多种机身配色、平板外观以及“4K 超清 实力尽显”等核心卖点文字。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_029",
+            "start": 201,
+            "end": 214,
+            "description": "舞台大屏和信息图集中展示 vivo Pad6 Pro 的 4K 屏幕、系统、办公学习、影音娱乐、续航和其他综合功能，多个功能模块在同一页面中汇总呈现。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_030",
+            "start": 214,
+            "end": 217,
+            "description": "画面展示 vivo Pad6 Pro 不同存储版本和配置的价格信息，并标注首销期间等购买相关说明。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_031",
+            "start": 217,
+            "end": 222,
+            "description": "画面回到发布会主持人。主持人站在舞台中央进行收尾发言，并邀请观众进一步了解产品。该段没有新增具体功能或价格信息。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_032",
+            "start": 222,
+            "end": 224,
+            "description": "视频以白色背景产品页再次展示 vivo X300 Ultra 及外接长焦组件，并出现“用 V 单拍出电影感”等总结性宣传文字。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_033",
+            "start": 224,
+            "end": 226,
+            "description": "画面切换为黑色背景的 vivo 品牌标识页，没有新增产品信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_034",
+            "start": 226,
+            "end": 229,
+            "description": "视频结尾为平台账号搜索引导页，出现 vivo 账号头像、账号名称、搜索框和平台标识，没有新增产品内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

@@ -1,0 +1,225 @@
+{
+    "video_id": "vlog_demo2",
+    "video_path": "vlog_demo2.mP4",
+    "video_type": "food_vlog",
+    "duration_seconds": 267,
+    "video_summary": "视频为一段澳门早餐探店 Vlog。讲解者与两位同行长辈走访老街中的多家早餐摊档，依次体验传统手冲咖啡和猪扒包、肠粉与烧卖，以及面食、鱼丸和水饺，并穿插街景、店铺历史、价格和口味交流。视频既包含具有视觉吸引力的食物制作与试吃片段，也包含普通步行、点单、等待和结尾玩笑。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 5,
+            "description": "讲解者在澳门老街中面对镜头开场，说明自己将以美食探店博主的方式体验澳门早餐。两位同行长辈出现在身后并与镜头互动。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 5,
+            "end": 10,
+            "description": "视频快速展示本次探店中即将出现的多种早餐，包括肠粉、面食、烧卖和猪扒包等食物特写，构成开场预告蒙太奇。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 10,
+            "end": 13,
+            "description": "画面切换为澳门街景、交通信号灯和街市建筑外观，用于交代探店地点。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 13,
+            "end": 32,
+            "description": "讲解者重新面对镜头并与两位同行长辈进行轻松互动，同行者依次向镜头打招呼和介绍自己，现场出现多次笑声。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 32,
+            "end": 42,
+            "description": "镜头沿老街向前移动，展示街市周边的摊档、街巷环境和建筑。讲解者表示来到一条老街，认为这里更能感受到澳门本地风情。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 42,
+            "end": 51,
+            "description": "讲解者与同行长辈在街巷中商量先去哪一家店，并围绕同行长辈佩戴墨镜开玩笑。该段以步行和闲聊为主，尚未进入具体食物展示。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 51,
+            "end": 74,
+            "description": "讲解者进入第一家早餐摊档，与店主沟通点单。讲解者询问有哪些食物，点了三个猪扒包，并询问可以搭配咖啡还是奶茶。店主强调在这里应该喝咖啡，现场交流具有生活化和幽默感。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 74,
+            "end": 87,
+            "description": "店主现场演示传统咖啡制作方式：将咖啡倒入杯中，并使用布袋式滤具和壶具冲制。讲解者注意到这种手冲方式并与店主交流。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 87,
+            "end": 94,
+            "description": "店主准备猪扒包，将烤过的面包切开并加入馅料。镜头近距离展示猪扒包外观和制作细节。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 94,
+            "end": 102,
+            "description": "讲解者首次试吃猪扒包，咬下一口后评价面包外层酥脆、烤制程度合适，并展示猪扒包切面和馅料。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 102,
+            "end": 114,
+            "description": "讲解者品尝店内咖啡，表示咖啡入口带有明显焦香，并将这种味道与平时饮用咖啡的体验进行比较。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 114,
+            "end": 125,
+            "description": "讲解者继续试吃猪扒包并补充评价，随后喝水结束第一家摊档的体验。该段主要为重复品尝和收尾。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 125,
+            "end": 128,
+            "description": "画面切换为镜面反射构图，讲解者与同行者短暂停留和合影，作为前往下一家摊档的过渡。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 128,
+            "end": 137,
+            "description": "讲解者进入第二家摊档并点了三份肠粉。摊主现场切分肠粉、装盘并加入酱汁，镜头近距离展示制作过程。画面中还出现烧卖。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 137,
+            "end": 153,
+            "description": "讲解者品尝肠粉和烧卖，并询问店铺经营年限。镜头展示肠粉表面的花生酱、辣椒酱和芝麻油，以及烧卖淋上酱汁后的外观。讲解者评价食物香味明显。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 153,
+            "end": 159,
+            "description": "讲解者继续试吃并询问本次消费金额，店家回答价格为 68。该段以结账和离店前的简短交流为主。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 159,
+            "end": 167,
+            "description": "讲解者与同行者离开摊档，经过一处颜色鲜艳的阶梯。同行者认为这里适合拍照，并在阶梯前短暂停留合影。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 167,
+            "end": 180,
+            "description": "讲解者和同行者来到下一家摊档，查看手写菜单并询问特色食物。同行者点选面食，其中包括大肠面等餐品，摊主开始准备订单。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 180,
+            "end": 188,
+            "description": "摊主在锅中煮制面条和配料，将面条、鱼丸和其他配菜装入碗中。镜头连续展示沸腾汤锅、捞面和成品摆盘过程。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 188,
+            "end": 195,
+            "description": "讲解者开始试吃面条，连续夹起面条入口，并展示碗中的面条、鱼丸和配料。讲解者表示面条口感较有韧性。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 195,
+            "end": 210,
+            "description": "讲解者一边继续吃面，一边与摊主讨论面条风格和汤底。讲解者提到自己熟悉的阳春面、泡面和其他面食，摊主说明汤底中加入了咖喱。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 210,
+            "end": 218,
+            "description": "讲解者夹起并品尝鱼丸，评价其口感较为滑嫩，并将其与自己熟悉的福鼎肉片进行类比。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 218,
+            "end": 242,
+            "description": "讲解者与摊主围绕老街店铺经营年限进行交流，提到周边不少店铺已经经营数十年。摊主补充说明部分店铺的经营时间和情况，并送给讲解者一只水饺试吃。讲解者注意到水饺馅料中包含木耳，并讨论不同地区水饺皮厚度的差异。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 242,
+            "end": 248,
+            "description": "讲解者继续吃面并喝汤，作为第三家摊档体验的收尾。该段没有新增食物类型或新的核心观点。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 248,
+            "end": 253,
+            "description": "讲解者与同行长辈离开摊档并沿街步行，同行长辈表示已经吃不下了。该段以离店后的闲聊为主。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 253,
+            "end": 260,
+            "description": "讲解者在街边面对镜头总结本次早餐探店消费，并展示手机上的付款或账单页面。画面和字幕显示本次早餐总花费为 212 澳门币，讲解者感叹一顿早餐花费超过 200 元。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 260,
+            "end": 267,
+            "description": "讲解者围绕探店花费与同行长辈开玩笑，同行长辈多次提出让讲解者报销，并与镜头进行轻松互动。视频在笑声和重复玩笑中结束。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        }
+    ]
+}

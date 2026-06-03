@@ -284,7 +284,7 @@ def test_duration_constraint_lower_bound_penalizes_shorter_output() -> None:
     assert result["duration_error_ratio"] == 0.5
 
 
-def test_duration_constraint_not_specified_uses_legacy_default_policy() -> None:
+def test_duration_constraint_not_specified_is_not_applicable() -> None:
     result = _duration_context_for_test(
         15,
         {
@@ -295,11 +295,12 @@ def test_duration_constraint_not_specified_uses_legacy_default_policy() -> None:
             "reason": "未指定时长。",
         },
     )
-    assert result["duration_score_method"] == "legacy_default_policy"
-    assert result["duration_budget"] == 18.0
-    assert result["duration_delta"] == 3.0
-    assert result["duration_error_ratio"] == 0.167
-    assert result["duration_score"] == 0.833
+    assert result["duration_score_method"] == "not_applicable"
+    assert result["duration_budget"] is None
+    assert result["selected_target_duration"] == 18.0
+    assert result["duration_delta"] is None
+    assert result["duration_error_ratio"] is None
+    assert result["duration_score"] == 1.0
 
 
 def test_duration_constraint_unresolved_disables_duration_score() -> None:
@@ -353,6 +354,9 @@ def test_auto_eval_generic_scores_and_writes_files(tmp_path, monkeypatch):
     assert result["evaluation_status"] == "selection_scored_aesthetic_pending"
     assert result["evaluation_scope"] == "official"
     assert result["selection_score_v1"] is not None
+    assert result["duration_context"]["duration_score_method"] == "not_applicable"
+    assert result["duration_context"]["duration_budget"] is None
+    assert result["time_metrics"]["generic_value_mode"] == "full_gt"
     assert "default_highlight_f1" in result["legacy_metrics"]
 
 
@@ -373,6 +377,7 @@ def test_auto_eval_specific_scores_reference_metrics(tmp_path, monkeypatch):
     _assert_common_outputs(config.output_dir)
     assert result["evaluation_status"] == "selection_scored_aesthetic_pending"
     assert result["evaluation_scope"] == "official"
+    assert result["time_metrics"]["coverage_mode"] == "full_gt"
     assert result["time_metrics"]["relevant_duration_coverage"] == 0.778
 
 
@@ -510,7 +515,7 @@ def test_find_nested_skill_output(tmp_path, monkeypatch):
     assert result["segments_json"].endswith("outputs/demo/reports/segments.json")
 
 
-def test_auto_eval_llm_free_is_diagnostic_only(tmp_path, monkeypatch):
+def test_auto_eval_llm_free_without_duration_still_scores(tmp_path, monkeypatch):
     config = _prepare_files(tmp_path)
     summary_path = config.skill_output_dir / "reports" / "result_summary.json"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
@@ -534,9 +539,11 @@ def test_auto_eval_llm_free_is_diagnostic_only(tmp_path, monkeypatch):
         ),
     )
     result = run_auto_eval(config)
-    assert result["evaluation_status"] == "diagnostic_only"
-    assert result["evaluation_scope"] == "diagnostic_only"
-    assert result["selection_score_v1"] is None
+    assert result["evaluation_status"] == "selection_scored_aesthetic_pending"
+    assert result["evaluation_scope"] == "official"
+    assert result["duration_context"]["duration_score_method"] == "not_applicable"
+    assert result["duration_context"]["duration_budget"] is None
+    assert result["selection_score_v1"] is not None
 
 
 def test_auto_eval_uses_frozen_generated_case_without_resolver(tmp_path, monkeypatch):
@@ -571,8 +578,9 @@ def test_auto_eval_uses_frozen_generated_case_without_resolver(tmp_path, monkeyp
         "source": "none",
         "reason": "legacy generated_case 未包含 duration_constraint。",
     }
-    assert result["duration_context"]["duration_score_method"] == "legacy_default_policy"
-    assert result["duration_context"]["duration_score"] == 0.833
+    assert result["duration_context"]["duration_score_method"] == "not_applicable"
+    assert result["duration_context"]["duration_budget"] is None
+    assert result["duration_context"]["duration_score"] == 1.0
 
 
 def test_frozen_generated_case_keeps_duration_constraint(tmp_path, monkeypatch):

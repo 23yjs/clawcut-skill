@@ -28,11 +28,61 @@ def test_valid_judge_json_computes_aesthetic_score():
     assert result["editing_experience_score_v1"] == 80.0
     assert result["aesthetic_score_v1_deprecated_alias"] is True
     assert result["judge_confidence"] == 0.86
+    assert result["issues"] == []
+
+
+def test_valid_judge_issues_pass():
+    result = validate_aesthetic_judge_result(
+        _judge_payload(
+            issues=[
+                {
+                    "issue_type": "action_truncation",
+                    "severity": "high",
+                    "description": "投篮动作尚未完成，片段已经结束。",
+                }
+            ]
+        )
+    )
+    assert result["issues"] == [
+        {
+            "issue_type": "action_truncation",
+            "severity": "high",
+            "description": "投篮动作尚未完成，片段已经结束。",
+        }
+    ]
 
 
 def test_score_out_of_range_fails():
     payload = _judge_payload()
     payload["transition_coherence"]["score"] = 6
+    with pytest.raises(ValueError):
+        validate_aesthetic_judge_result(payload)
+
+
+def test_invalid_issue_type_fails():
+    payload = _judge_payload(
+        issues=[
+            {
+                "issue_type": "bad_type",
+                "severity": "high",
+                "description": "非法类型。",
+            }
+        ]
+    )
+    with pytest.raises(ValueError):
+        validate_aesthetic_judge_result(payload)
+
+
+def test_invalid_issue_severity_fails():
+    payload = _judge_payload(
+        issues=[
+            {
+                "issue_type": "abrupt_transition",
+                "severity": "critical",
+                "description": "非法等级。",
+            }
+        ]
+    )
     with pytest.raises(ValueError):
         validate_aesthetic_judge_result(payload)
 
@@ -55,6 +105,41 @@ def test_repeats_use_median_and_detect_instability():
     assert summary["judge_score_median"] == 60.0
     assert summary["judge_score_range"] == 80.0
     assert summary["judge_stability_warning"] is True
+
+
+def test_summary_counts_issue_types():
+    first = validate_aesthetic_judge_result(
+        _judge_payload(
+            issues=[
+                {
+                    "issue_type": "action_truncation",
+                    "severity": "high",
+                    "description": "动作截断。",
+                },
+                {
+                    "issue_type": "abrupt_transition",
+                    "severity": "medium",
+                    "description": "转场突兀。",
+                },
+            ]
+        )
+    )
+    second = validate_aesthetic_judge_result(
+        _judge_payload(
+            issues=[
+                {
+                    "issue_type": "abrupt_transition",
+                    "severity": "low",
+                    "description": "另一次转场突兀。",
+                }
+            ]
+        )
+    )
+    summary = summarize_judge_runs([first, second], [{}, {}])
+    assert summary["judge_issue_counts"] == {
+        "abrupt_transition": 2,
+        "action_truncation": 1,
+    }
 
 
 def test_parse_json_code_block():

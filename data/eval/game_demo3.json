@@ -1,0 +1,121 @@
+{
+    "video_id": "game_demo3",
+    "video_path": "game_demo3.mP4",
+    "video_type": "game",
+    "duration_seconds": 39,
+    "video_summary": "视频为一段第一人称射击游戏高光混剪，由多个独立回合中的连续击杀片段组成。玩家多次借助烟雾或技能效果遮挡视野，在短时间内完成探点、出枪、击杀和快速转移，并穿插回合胜利提示、战绩面板和文字特效。结尾出现平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 4,
+            "description": "视频从黑屏转入第一段游戏画面。玩家手持步枪停留在紫色烟雾或技能遮挡范围内，观察前方通道，并短暂使用带有紫色视觉效果的技能。该段以架枪、等待和技能准备为主，尚未出现明确击杀结果。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 4,
+            "end": 8,
+            "description": "玩家从烟雾边缘探出，朝走廊中的敌人连续射击，并在交火过程中反复使用技能效果和调整站位。画面出现击杀反馈和连续战果提示，确认玩家在该段完成击杀。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 8,
+            "end": 10,
+            "description": "新的游戏片段开始。玩家在室外区域靠近箱体和球形烟雾架枪，使用带瞄准镜的武器向烟雾边缘或通道附近的敌人射击。画面出现命中和击杀反馈，确认完成一次击杀。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 10,
+            "end": 11,
+            "description": "交火结束后，画面显示“获胜”提示和技能特效，确认该回合结束。该段主要为结果确认，没有新的交火。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 11,
+            "end": 13,
+            "description": "新的回合片段开始。玩家在球形烟雾附近短暂架枪，随后快速触发带有强烈亮光和冲击效果的攻击或技能。画面很快出现“获胜”提示，确认该段以回合胜利结束。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 13,
+            "end": 15,
+            "description": "新的室外通道片段开始。玩家手持步枪沿开阔通道向前观察，并朝前方敌人快速射击。画面出现明确击杀反馈，确认完成一次击杀。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 15,
+            "end": 18,
+            "description": "玩家在受到伤害后退至墙角，切换武器并短暂调整位置。画面叠加用于强化剪辑节奏的中文文字特效，随后转入下一段比赛。该段没有新增可可靠确认的击杀结果。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 18,
+            "end": 20,
+            "description": "新的回合片段开始。玩家在室外拐角使用步枪瞄准前方敌人并开枪射击，随后触发蓝色和紫色视觉效果。画面出现击杀反馈，确认完成一次击杀。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 20,
+            "end": 22,
+            "description": "新的通道交火开始。玩家从墙角探出，发现前方敌人后立即使用步枪射击。敌人被命中后画面出现明确击杀标识，确认完成一次击杀。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 22,
+            "end": 24,
+            "description": "首次击杀后，玩家快速切换技能或投掷物，并在通道入口附近制造大面积彩色烟雾或屏障效果。该段主要用于掩护后续推进，没有新增明确击杀结果。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 24,
+            "end": 26,
+            "description": "玩家从烟雾或屏障边缘重新探出，面对通道中的多名敌人连续射击。画面密集出现击杀反馈、战果标识和受击效果，确认玩家在短时间内完成连续击杀。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 26,
+            "end": 35,
+            "description": "连续交火结束后，画面停留在战斗现场，并长时间显示战绩面板、击杀结果和角色手部动作。该段主要用于展示上一轮连续击杀后的结果，没有新增移动、交火或击杀事件。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 35,
+            "end": 36,
+            "description": "画面逐渐转为黑屏，并出现短暂发光转场效果，没有新增游戏内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 36,
+            "end": 39,
+            "description": "正文结束，画面切换为平台账号搜索引导页，出现账号搜索框、二维码和平台标识，没有新增游戏信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

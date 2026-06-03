@@ -47,6 +47,7 @@ class SelectionScoringTests(unittest.TestCase):
         self.assertEqual(result["generic_value_optimal"], 10.0)
         self.assertEqual(result["generic_value_actual"], 10.0)
         self.assertEqual(result["generic_value_score"], 1.0)
+        self.assertEqual(result["generic_value_mode"], "budgeted")
         self.assertEqual(result["default_highlight_precision"], 1.0)
         self.assertEqual(result["generic_core_score"], 1.0)
         self.assertEqual(result["selection_score_v1"], 100.0)
@@ -60,7 +61,38 @@ class SelectionScoringTests(unittest.TestCase):
         )
         self.assertEqual(result["generic_value_actual"], 10.0)
         self.assertEqual(result["generic_value_score"], 1.0)
+        self.assertEqual(result["generic_value_mode"], "budgeted")
         self.assertEqual(result["generic_core_score"], 1.0)
+
+    def test_generic_without_duration_budget_uses_full_gt_value_denominator(self) -> None:
+        semantic = [
+            {
+                "segment_id": "seg_001",
+                "start": 0,
+                "end": 10,
+                "description": "高光 1",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_002",
+                "start": 10,
+                "end": 20,
+                "description": "高光 2",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+        ]
+        result = compute_generic_selection_score(
+            [{"start": 0, "end": 10}],
+            semantic,
+            duration_budget=None,
+            duration_score=1.0,
+        )
+        self.assertEqual(result["generic_value_mode"], "full_gt")
+        self.assertEqual(result["generic_value_optimal"], 20.0)
+        self.assertEqual(result["generic_value_actual"], 10.0)
+        self.assertEqual(result["generic_value_score"], 0.5)
 
     def test_generic_default_highlight_precision_all_highlight(self) -> None:
         result = compute_generic_selection_score(
@@ -239,8 +271,75 @@ class SelectionScoringTests(unittest.TestCase):
         self.assertEqual(result["relevant_duration_precision"], 0.5)
         self.assertEqual(result["relevant_duration_coverage"], 0.5)
         self.assertEqual(result["relevant_duration_f1"], 0.5)
+        self.assertEqual(result["coverage_mode"], "budgeted")
         self.assertEqual(result["guided_core_score"], 0.5)
         self.assertEqual(result["selection_score_v1"], 50.0)
+
+    def test_guided_without_duration_budget_uses_full_relevant_gt_coverage(self) -> None:
+        semantic = [
+            {
+                "segment_id": "seg_001",
+                "start": 0,
+                "end": 10,
+                "description": "目标 1",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_002",
+                "start": 10,
+                "end": 20,
+                "description": "目标 2",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+        ]
+        result = compute_guided_selection_score(
+            [{"start": 0, "end": 10}],
+            semantic,
+            relevant_segment_ids=["seg_001", "seg_002"],
+            forbidden_segment_ids=[],
+            selection_scope="preferential",
+            duration_budget=None,
+            duration_score=1.0,
+        )
+        self.assertEqual(result["coverage_mode"], "full_gt")
+        self.assertEqual(result["relevant_gt_total_duration"], 20.0)
+        self.assertEqual(result["matched_relevant_duration"], 10.0)
+        self.assertEqual(result["relevant_duration_coverage"], 0.5)
+
+    def test_guided_with_duration_budget_keeps_budgeted_coverage(self) -> None:
+        semantic = [
+            {
+                "segment_id": "seg_001",
+                "start": 0,
+                "end": 10,
+                "description": "目标 1",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_002",
+                "start": 10,
+                "end": 20,
+                "description": "目标 2",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+        ]
+        result = compute_guided_selection_score(
+            [{"start": 0, "end": 10}],
+            semantic,
+            relevant_segment_ids=["seg_001", "seg_002"],
+            forbidden_segment_ids=[],
+            selection_scope="preferential",
+            duration_budget=10,
+            duration_score=1.0,
+        )
+        self.assertEqual(result["coverage_mode"], "budgeted")
+        self.assertEqual(result["relevant_gt_total_duration"], 20.0)
+        self.assertEqual(result["matched_relevant_duration"], 10.0)
+        self.assertEqual(result["relevant_duration_coverage"], 1.0)
 
     def test_forbidden_duration_penalty(self) -> None:
         result = compute_guided_selection_score(

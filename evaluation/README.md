@@ -136,7 +136,7 @@ instruction + 可选 target_duration + GT.video_summary + GT.semantic_segments
 [min_seconds, max_seconds]
 ```
 
-`duration_constraint` 会接管 `duration_score` 的时长合规计算，但不改变 `duration_budget`、内容选择公式、`selection_score_v1` 权重或 `final_score_v2` 权重。
+`duration_constraint` 会接管 `duration_score` 的时长合规计算；当用户未指定可量化时长时，评测会与 Skill 默认目标时长解耦。`selection_score_v1` 和 `final_score_v2` 的权重公式保持不变。
 
 常见示例：
 
@@ -153,8 +153,15 @@ instruction + 可选 target_duration + GT.video_summary + GT.semantic_segments
 
 - `status=resolved` 时，成片时长落在 `[min_seconds, max_seconds]` 区间内，`duration_score=1.0`。
 - 低于下限或超过上限时，按照偏离最近边界的比例扣分。
-- `status=not_specified` 时，继续使用当前默认时长策略，`duration_score_method=legacy_default_policy`。
+- `status=not_specified` 时，不评价成片时长是否符合要求，`duration_score=1.0`，`duration_score_method=not_applicable`。
 - `status=unresolved` 时，不擅自量化，`duration_score=null`，进入 `manual_review_required`。
+
+用户没有提出可量化时长要求时：
+
+- 不使用 Skill 自己的默认 `selected_target_duration` 作为评分分母。
+- `recommended_duration`、`selected_target_duration` 和 `compression_ratio` 仍保留在报告中，仅作为运行记录。
+- generic 使用 GT 全部加权价值作为 `generic_value_score` 分母。
+- specific / conflict 使用全部 relevant GT 时长作为 Coverage 分母。
 
 示例：
 
@@ -272,6 +279,8 @@ editing_experience_score_v1 = 20 × 五项平均分
 aesthetic_score_v1 = editing_experience_score_v1  # 兼容别名
 ```
 
+Judge 还会输出标准化 `issues` 列表，用于记录动作截断、口播截断、突兀转场、冗余、节奏问题、音频切断、缺少上下文或独立观看性不足等剪辑体验问题。`issues` 不参与 `editing_experience_score_v1`，只用于失败原因统计、人工校准和典型案例分析；它不记录高光遗漏、指令不满足、画质、黑屏、冻结或音频流缺失。
+
 最终综合分：
 
 ```text
@@ -370,6 +379,8 @@ default_highlight_score >= 4
 
 `generic_value_score` 用于评价在当前时长预算下是否优先捕获了更高价值的默认高光。
 
+当用户没有明确指定剪辑时长时，generic 不使用 Skill 默认目标时长，而是使用 GT 全部默认候选片段的加权价值作为分母，输出 `generic_value_mode=full_gt`。
+
 `default_highlight_precision` 用于评价输出中真正默认高光片段所占比例，防止成片混入大量普通低价值内容。
 
 `generic_core_score` 使用二者的调和平均。任何一项明显偏低，generic 内容选择分都会下降。
@@ -389,6 +400,8 @@ selection_scope:
 ```text
 guided_core_score = 0.70 × relevant_duration_coverage + 0.30 × relevant_duration_precision
 ```
+
+当用户没有明确指定剪辑时长时，guided coverage 使用全部 relevant GT 时长作为分母，输出 `coverage_mode=full_gt`；有明确时长预算时仍使用 `coverage_mode=budgeted`。
 
 `exclusive`：
 

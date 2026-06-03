@@ -1,0 +1,297 @@
+{
+    "video_id": "game_demo1",
+    "video_path": "game_demo1.mP4",
+    "video_type": "game",
+    "duration_seconds": 179,
+    "video_summary": "视频为一段第一人称射击游戏高光混剪，包含室内走位、架枪观察、快速转点、近距离交火、远距离瞄准、多个敌人倒地反馈、玩家被击倒后的静止画面以及回合间转场。视频中既有具有明确结果的击杀片段，也有仅完成交火但无法可靠确认结果的战斗、长时间守点和无新增事件的等待画面。结尾出现平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 14,
+            "description": "玩家手持枪械在灰白色室内走廊中持续移动，经过箱体、门口和窗边区域，多次探查转角并短暂切换武器。该段以普通跑图和寻找敌人为主，没有出现明确交火。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 14,
+            "end": 16,
+            "description": "玩家在走廊门口发现一名敌人，迅速举枪射击。敌人在连续命中后倒地，画面确认本次近距离交火形成击杀结果。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 16,
+            "end": 20,
+            "description": "玩家继续向相邻房间推进，并与门口附近的另一名敌人持续交火。双方互相射击，玩家受到伤害，最终自身视角明显失去稳定，未能确认击杀对方。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 20,
+            "end": 28,
+            "description": "玩家被击倒后，第一人称视角倒向地面并停留在室内门口区域。画面中出现静止的倒地状态和叠加卡片，随后进入黑屏转场，没有新的战斗事件。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 28,
+            "end": 33,
+            "description": "新的游戏片段开始。玩家在橙色灯光的室内大厅中持枪架点，朝远处通道方向瞄准并进行短暂射击，但画面不足以确认是否击倒敌人。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 33,
+            "end": 37,
+            "description": "玩家切换投掷物和近战武器，快速穿过大厅和相邻房间，进入带有绿色墙面的走廊。该段为转点和寻找目标过程。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 37,
+            "end": 41,
+            "description": "玩家在绿色走廊和箱体附近发现敌人，立即开枪射击。敌人在持续命中后倒地，地面出现倒下的角色，确认形成一次击杀。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 41,
+            "end": 47,
+            "description": "玩家继续沿窗边通道推进，与另一名敌人发生短距离交火，并在受到伤害后调整站位和武器。画面出现击杀反馈，但交火过程较快，无法可靠确认全部敌人的具体数量。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 47,
+            "end": 52,
+            "description": "交火结束后，玩家手持近战武器停留在窗边走廊，画面出现绿色提示效果。随后逐渐进入黑屏转场，没有新的敌人或战斗结果。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 52,
+            "end": 55,
+            "description": "新的片段开始。玩家使用粉色枪械在室内楼梯附近架枪观察，持续瞄准前方区域，但没有发现明确目标。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 55,
+            "end": 60,
+            "description": "玩家切换武器后从室内快速移动至室外广场，沿建筑、台阶和掩体前进，寻找敌人位置。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 60,
+            "end": 65,
+            "description": "玩家在室外台阶和树木附近发现敌人，连续举枪射击并围绕掩体移动。部分敌人倒地或离开画面，但由于镜头快速切换，无法可靠确认完整击杀数量。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 65,
+            "end": 67,
+            "description": "室外交火结束后，玩家切换近战武器并快速返回建筑内部，随后画面切换至新的室内区域。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 67,
+            "end": 69,
+            "description": "新的游戏片段开始。玩家在蓝灰色室内楼梯间快速移动，向上方楼梯冲刺并接近敌人可能出现的位置。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 69,
+            "end": 75,
+            "description": "玩家在楼梯拐角与多名敌人发生连续近距离交火，快速开枪并反复调整站位。画面出现敌人倒地和击杀反馈，确认至少完成一次击杀。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 75,
+            "end": 81,
+            "description": "楼梯间交火结束后，玩家停留在楼梯下方观察上方通道。画面持续较长时间没有出现新的敌人，随后进入黑屏转场。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 81,
+            "end": 84,
+            "description": "新的片段开始。玩家在室内楼梯附近使用带瞄准镜的枪械观察上方区域，并短暂调整位置，没有出现明确交火结果。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 84,
+            "end": 91,
+            "description": "玩家沿楼梯向上推进，经过狭长走廊并多次举枪瞄准前方，持续寻找敌人。该段以普通移动和架点观察为主。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 91,
+            "end": 98,
+            "description": "玩家进入带有绿色墙面和家具的房间后发现敌人，连续开枪射击。画面出现明显枪口火光和近距离对抗，但无法可靠确认最终击杀数量。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 98,
+            "end": 103,
+            "description": "玩家切换近战武器并快速穿过房间，向楼梯和窗边区域移动。画面出现受击提示，但没有形成新的可确认战斗结果。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 103,
+            "end": 111,
+            "description": "玩家在楼梯附近遭遇敌人并进行连续近距离交火，画面出现强烈受击效果、快速切枪和多次射击。部分敌人出现在楼梯上方和房间内，但镜头混乱，无法可靠确认全部结果。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 111,
+            "end": 112,
+            "description": "上一段战斗结束后，画面快速切换至新的室内场景，属于极短转场。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 112,
+            "end": 116,
+            "description": "新的片段开始。玩家在白色墙面和蓝色装饰的室内区域中移动，经过箱体和门口并举枪探查通道，尚未发现明确目标。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 116,
+            "end": 120,
+            "description": "玩家在走廊尽头发现敌人并举枪射击，随后快速向外侧通道移动。画面不足以确认该次射击是否直接形成击杀。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 120,
+            "end": 124,
+            "description": "玩家进入室外走廊，在金属货架和箱体附近发现敌人并持续射击。交火结束后敌人倒下或离开视野，画面出现明确战斗结果反馈。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 124,
+            "end": 128,
+            "description": "玩家沿室外通道继续移动，经过窗边和建筑外墙并重新寻找目标，没有新的明确交火。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 128,
+            "end": 132,
+            "description": "玩家重新进入绿色走廊，在门口附近发现敌人并立即射击。地面出现倒下角色，确认形成一次近距离击杀。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_028",
+            "start": 132,
+            "end": 136,
+            "description": "玩家转向室外通道后继续与远处敌人交火，在持续射击过程中受到明显伤害。画面没有可靠展示是否成功击倒对方。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_029",
+            "start": 136,
+            "end": 141,
+            "description": "玩家被击倒后，视角停留在室外通道地面附近，画面长时间保持静止并逐渐进入黑屏转场，没有新的战斗内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_030",
+            "start": 141,
+            "end": 152,
+            "description": "新的室外片段开始。玩家在大型圆柱形装置和建筑外墙附近使用狙击镜观察远处目标，随后切换枪械并朝开阔区域射击。敌人位置较远，无法可靠确认是否完成击杀。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_031",
+            "start": 152,
+            "end": 156,
+            "description": "画面切换至新的室内区域。玩家沿楼梯下方和橙色栏杆附近移动，在房间内发现敌人后立即举枪射击。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_032",
+            "start": 156,
+            "end": 158,
+            "description": "玩家短暂换弹并调整位置，重新进入带有栏杆和窗户的室内空间，准备继续观察前方门口。",
+            "default_highlight_score": 2,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_033",
+            "start": 158,
+            "end": 163,
+            "description": "玩家使用瞄准镜持续观察远处门口，一名敌人进入准星范围。玩家保持瞄准并进行射击，但画面在结果明确前进入风格化转场，无法可靠确认是否击杀。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_034",
+            "start": 163,
+            "end": 164,
+            "description": "画面使用黑色遮幅和快速模糊效果完成转场，没有新增游戏事件。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_035",
+            "start": 164,
+            "end": 176,
+            "description": "转场后，画面长时间停留在室内梯子和设备附近。玩家没有继续移动或交火，场景基本静止，没有新增战斗信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_036",
+            "start": 176,
+            "end": 179,
+            "description": "正文结束，画面切换为平台账号搜索引导页，出现账号头像、搜索框、二维码和平台标识，没有新增游戏内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

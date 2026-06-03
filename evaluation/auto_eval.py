@@ -238,15 +238,25 @@ def _duration_score_from_constraint(
             "duration_error_ratio": None,
             "duration_score": None,
         }
+    if status == "not_specified":
+        return {
+            "duration_score_method": "not_applicable",
+            "duration_constraint_status": status,
+            "duration_constraint_min_seconds": None,
+            "duration_constraint_max_seconds": None,
+            "duration_delta": None,
+            "duration_error_ratio": None,
+            "duration_score": 1.0,
+        }
     if status != "resolved":
         return {
-            "duration_score_method": "legacy_default_policy",
+            "duration_score_method": "not_applicable",
             "duration_constraint_status": status,
             "duration_constraint_min_seconds": min_seconds,
             "duration_constraint_max_seconds": max_seconds,
             "duration_delta": None,
             "duration_error_ratio": None,
-            "duration_score": None,
+            "duration_score": 1.0,
         }
 
     final_total = float(final_total)
@@ -307,11 +317,8 @@ def _duration_context(
     duration_delta = score_context["duration_delta"]
     duration_error_ratio = score_context["duration_error_ratio"]
     duration_score = score_context["duration_score"]
-    if score_context["duration_score_method"] == "legacy_default_policy":
-        if duration_budget is not None and float(duration_budget) > 0:
-            duration_delta = abs(float(final_total) - float(duration_budget))
-            duration_error_ratio = duration_delta / float(duration_budget)
-            duration_score = max(0.0, 1.0 - duration_error_ratio)
+    if score_context["duration_score_method"] == "not_applicable":
+        duration_budget = None
     return {
         "duration_policy_mode": mode,
         "video_duration": round(video_duration, 3),
@@ -340,17 +347,17 @@ def _selection_score(
 ) -> tuple[str, str, dict[str, Any] | None, dict[str, Any]]:
     if resolver_result["resolution_status"] != "resolved":
         return "manual_review_required", "manual_review", None, {}
-    if duration_context.get("duration_policy_mode") == "llm_free" and duration_context.get("user_target_duration") is None:
-        return "diagnostic_only", "diagnostic_only", None, {}
     duration_budget = duration_context.get("duration_budget")
     duration_score = duration_context.get("duration_score")
-    if duration_budget is None or float(duration_budget) <= 0 or duration_score is None:
+    if duration_score is None:
+        return "manual_review_required", "manual_review", None, {}
+    if duration_budget is not None and float(duration_budget) <= 0:
         return "manual_review_required", "manual_review", None, {}
     if resolver_result["use_default_highlights"]:
         time_metrics = compute_generic_selection_score(
             final_segments,
             gt_annotation.get("semantic_segments", []),
-            duration_budget=float(duration_budget),
+            duration_budget=float(duration_budget) if duration_budget is not None else None,
             duration_score=float(duration_score),
         )
     else:
@@ -360,7 +367,7 @@ def _selection_score(
             relevant_segment_ids=resolver_result.get("relevant_segment_ids", []),
             forbidden_segment_ids=resolver_result.get("forbidden_segment_ids", []),
             selection_scope=resolver_result.get("selection_scope", "preferential"),
-            duration_budget=float(duration_budget),
+            duration_budget=float(duration_budget) if duration_budget is not None else None,
             duration_score=float(duration_score),
         )
     return "scored", "official", time_metrics.get("selection_score_v1"), time_metrics

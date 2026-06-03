@@ -1,0 +1,193 @@
+{
+    "video_id": "training_demo1",
+    "video_path": "training_demo1.MP4",
+    "video_type": "tutorial",
+    "duration_seconds": 335,
+    "video_summary": "视频为一段健身动作教学，讲解者在健身房中围绕俯身杠铃划船系统说明五个关键技术要点。内容包括屈膝与屈髋姿态、握距选择、肘部方向、杠铃提拉路径和触点，以及通过肘尖主导发力的方法。视频穿插正确动作、常见错误和对比演示，结尾出现平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 10,
+            "description": "讲解者在健身房面对镜头引出俯身杠铃划船，说明该动作具有较高训练效率，并表示将集中讲解动作中容易出现的问题和关键细节。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 10,
+            "end": 20,
+            "description": "讲解者进入第一个要点，示范俯身杠铃划船的基础准备姿态：膝盖仅轻微弯曲，主要通过髋关节向后移动和屈髋使上身前倾，而不是依靠大量屈膝下蹲。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 20,
+            "end": 28,
+            "description": "讲解者示范错误动作：膝盖弯曲幅度过大，身体接近下蹲姿态。画面强调这种姿态会阻挡杠铃向上提拉的路径。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 28,
+            "end": 39,
+            "description": "讲解者继续解释轻微屈膝的重要性，并示范另一种常见问题：由于屈髋不足，上身前倾幅度不够，难以形成稳定的俯身划船姿态。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 39,
+            "end": 55,
+            "description": "讲解者示范在俯身过程中脊柱弯曲并形成猫腰的错误姿态，并指出臀大肌和腘绳肌紧张可能限制屈髋能力，导致训练者通过弯腰代偿。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 55,
+            "end": 77,
+            "description": "讲解者说明应根据自身活动度调整俯身幅度，避免为了追求更低的位置强行弯曲脊柱。画面再次示范轻微屈膝、髋部后移以及保持背部稳定的正确方向，并与猫腰姿态进行对比。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 77,
+            "end": 93,
+            "description": "讲解者总结第一个要点，强调应逐步改善臀大肌和大腿后侧的活动度，在不破坏脊柱稳定性的前提下完成俯身姿态。该段以补充解释和阶段性总结为主。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 93,
+            "end": 110,
+            "description": "讲解者进入第二个要点，介绍杠铃握距。讲解者通过自然放松站立姿态建立参考，说明双手握距通常应接近肩宽。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 110,
+            "end": 128,
+            "description": "讲解者示范握距过窄的情况。画面显示双手距离过近时，杠铃提拉过程中手臂向后移动的空间不足，会影响动作路径和训练效果。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 128,
+            "end": 138,
+            "description": "讲解者示范握距过宽的情况。画面显示过宽握距会使肘部明显向两侧打开，动作逐渐变成开肘划船，不符合本次教学所强调的动作方式。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 138,
+            "end": 151,
+            "description": "讲解者进入第三个要点，强调俯身杠铃划船过程中需要保持扣肘。画面从背后展示双臂位置，肘部在动作全程尽量指向身体后方，而不是向外侧展开。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 151,
+            "end": 163,
+            "description": "讲解者解释扣肘状态与背部发力之间的关系，并说明握距和肘部方向需要相互配合，才能让动作更稳定地刺激目标肌群。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 163,
+            "end": 177,
+            "description": "讲解者使用杠铃再次示范扣肘划船，并给出便于理解的动作提示：双手握住杠铃时想象将杠铃向两侧掰弯，以帮助肘部维持向后的方向。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 177,
+            "end": 200,
+            "description": "讲解者进入第四个要点，讨论杠铃提拉路径和最终触点。讲解者指出，不应机械地要求所有人都将杠铃提到完全相同的位置，因为不同训练者的身体比例存在差异。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 200,
+            "end": 210,
+            "description": "讲解者示范将杠铃向上提拉并贴近腹部，再沿原路径缓慢放下。该段明确展示俯身杠铃划船中杠铃靠近身体的基本动作方式。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 210,
+            "end": 224,
+            "description": "讲解者说明应通过调整双手和小臂位置，使小臂在提拉过程中尽量保持垂直于地面。画面使用红色辅助线展示小臂的垂直方向，并标出自然形成的标准触点。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 224,
+            "end": 242,
+            "description": "讲解者继续示范标准路径：杠铃在身体前方上下移动，小臂保持接近垂直地面的状态，杠铃沿较稳定的轨迹靠近腹部后再下降。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 242,
+            "end": 263,
+            "description": "讲解者对比两种错误路径。画面先示范小臂向前倾斜，再示范小臂向后倾斜，说明这两种情况都会使杠铃轨迹和最终触点偏离更自然的提拉位置。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 263,
+            "end": 293,
+            "description": "讲解者总结第四个要点，强调训练者应根据自身身体比例，通过小臂垂直地面的原则寻找适合自己的杠铃路径和腹部触点，而不是死记固定位置。该段以进一步解释和收束为主。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 293,
+            "end": 304,
+            "description": "讲解者进入第五个要点，分享提升背部发力感的技巧：完成俯身杠铃划船时，不要将全部注意力放在手中的杠铃上，而应将注意力集中在肘尖。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 304,
+            "end": 319,
+            "description": "讲解者从侧面示范以肘尖主导动作。画面使用箭头强调提拉方向：肘部一边向身体后方顶，一边向上方提，而不是单纯依靠手臂将杠铃向上拉。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 319,
+            "end": 332,
+            "description": "讲解者再次演示肘部向后并向上移动的动作轨迹，并建议观众先进行徒手尝试，以体会更明显的背部发力感。该段为第五个要点的重复示范和结尾总结。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 332,
+            "end": 335,
+            "description": "正文结束，画面切换为平台账号搜索引导页，出现账号头像、账号名称、搜索框和平台标识，没有新增健身教学信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}
