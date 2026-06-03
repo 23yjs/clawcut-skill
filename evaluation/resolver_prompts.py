@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 
-RESOLVER_PROMPT_VERSION = "resolver_v3_duration_constraint"
+RESOLVER_PROMPT_VERSION = "resolver_v4_generic_context"
 
 
 RESOLVER_SYSTEM_PROMPT = """你是视频剪辑评测系统中的 Instruction Resolver。
@@ -37,6 +37,8 @@ RESOLVER_SYSTEM_PROMPT = """你是视频剪辑评测系统中的 Instruction Res
   "use_default_highlights": true,
   "relevant_segment_ids": [],
   "forbidden_segment_ids": [],
+  "required_highlight_segment_ids": [],
+  "allowed_context_segment_ids": [],
   "duration_constraint": {
     "status": "resolved | not_specified | unresolved",
     "min_seconds": null,
@@ -50,11 +52,19 @@ RESOLVER_SYSTEM_PROMPT = """你是视频剪辑评测系统中的 Instruction Res
 
 字段规则：
 - generic：用户只要求默认高光时使用；selection_scope 必须为 not_applicable；resolution_status 必须为 resolved；use_default_highlights 必须为 true；relevant_segment_ids 和 forbidden_segment_ids 必须为空数组。
+  - required_highlight_segment_ids：generic 默认高光任务中，根据用户 instruction 和 GT 描述，理应覆盖的核心高光片段。
+  - allowed_context_segment_ids：不是核心高光，但为了保证动作完整、叙事连贯、因果清楚或结果反馈完整，允许进入成片的辅助上下文。
+  - generic resolved 时，required_highlight_segment_ids 必须非空。
+  - allowed_context_segment_ids 可以为空。
+  - required_highlight_segment_ids 和 allowed_context_segment_ids 不得重叠。
+  - avoid_by_default=true 的片段不得进入 required_highlight_segment_ids 或 allowed_context_segment_ids。
+  - allowed_context 必须保守选择，不能把普通低价值过程全部当作上下文。
 - specific：用户明确要求保留某些内容；use_default_highlights 必须为 false；resolved 时 relevant_segment_ids 必须非空。
   - 如果用户说“突出、优先、包含、重点展示”等，selection_scope 为 preferential，允许少量上下文。
   - 如果用户说“只剪、仅保留、不要其他、只要”等，selection_scope 为 exclusive，原则上不允许混入非目标内容。
 - conflict：用户既要求保留内容，又明确排除内容；selection_scope 必须为 preferential 或 exclusive；use_default_highlights 必须为 false；resolved 时 relevant_segment_ids 或 forbidden_segment_ids 至少一个非空。
 - unresolved：GT 信息不足，无法可靠映射用户要求；selection_scope 必须为 unknown；use_default_highlights 必须为 false；resolution_status 必须为 unresolved 或 partial；unresolved_requirements 必须非空。
+- specific、conflict、unresolved 模式中，required_highlight_segment_ids 和 allowed_context_segment_ids 必须为空数组，保持 relevant_segment_ids / forbidden_segment_ids 逻辑不变。
 
 duration_constraint 解析规则：
 - 只输出统一的 min_seconds / max_seconds 区间；不要枚举或输出 exact / approx / max / min / range 等模式。
@@ -96,6 +106,8 @@ def build_resolver_user_payload(
                 "start": segment.get("start"),
                 "end": segment.get("end"),
                 "description": segment.get("description"),
+                "default_highlight_score": segment.get("default_highlight_score"),
+                "avoid_by_default": segment.get("avoid_by_default"),
             }
             for segment in gt_annotation.get("semantic_segments", [])
         ],

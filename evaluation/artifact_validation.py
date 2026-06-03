@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -23,6 +24,45 @@ def _same_path(left: Any, right: Path) -> bool:
     except OSError:
         pass
     return str(left).strip() == str(right)
+
+
+def _sha256_file(path: Path) -> str | None:
+    if not path.exists() or not path.is_file():
+        return None
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _input_video_match(
+    *,
+    result_summary: dict[str, Any],
+    input_video: Path,
+    warnings: list[str],
+) -> tuple[bool, str]:
+    summary_input = result_summary.get("input_video")
+    if _same_path(summary_input, input_video):
+        return True, "path"
+
+    summary_hashes = {
+        str(value).strip().lower()
+        for value in (
+            result_summary.get("input_video_sha256"),
+            result_summary.get("final_edit_source_sha256"),
+        )
+        if str(value or "").strip()
+    }
+    if not summary_hashes:
+        return False, "legacy_path"
+
+    current_hash = _sha256_file(input_video)
+    if current_hash and current_hash.lower() in summary_hashes:
+        warnings.append("input_video 路径不同，但文件 SHA-256 一致")
+        return True, "sha256"
+
+    return False, "mismatch"
 
 
 def _target_duration_matches(actual: Any, expected: float | None) -> bool:
@@ -104,7 +144,14 @@ def validate_skill_artifacts(
     if result_summary and result_summary_status != "success":
         errors.append(f"result_summary.status 不是 success：{result_summary_status}")
 
-    input_video_match = _same_path(result_summary.get("input_video"), input_video) if result_summary else False
+    input_video_match = False
+    input_video_match_method = "mismatch"
+    if result_summary:
+        input_video_match, input_video_match_method = _input_video_match(
+            result_summary=result_summary,
+            input_video=input_video,
+            warnings=warnings,
+        )
     if result_summary and not input_video_match:
         errors.append("result_summary.input_video 与当前 input_video 不一致")
 
@@ -151,6 +198,7 @@ def validate_skill_artifacts(
         "result_summary_exists": result_summary_exists,
         "run_log_exists": run_log_exists,
         "input_video_match": input_video_match,
+        "input_video_match_method": input_video_match_method,
         "instruction_match": instruction_match,
         "target_duration_match": target_duration_match,
         "segments_json_match": segments_json_match,

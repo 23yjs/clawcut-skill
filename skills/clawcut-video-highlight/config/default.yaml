@@ -21,7 +21,7 @@ llm:
   timeout_seconds: 120
 
 duration_policy:
-  mode: bounded_auto
+  mode: llm_free
 
 video_input_policy:
   prefer_original_url: true

@@ -43,6 +43,11 @@ def _intervals_for_ids(semantic_segments: list[dict[str, Any]], segment_ids: lis
     return normalize_intervals(intervals)
 
 
+def _segments_for_ids(semantic_segments: list[dict[str, Any]], segment_ids: list[str]) -> list[dict[str, Any]]:
+    by_id = _segments_by_id(semantic_segments)
+    return [by_id[str(segment_id)] for segment_id in segment_ids if str(segment_id) in by_id]
+
+
 def _pred_intervals(pred_segments: list[dict[str, Any]]) -> list[dict[str, float]]:
     return normalize_intervals({"start": segment["start"], "end": segment["end"]} for segment in pred_segments)
 
@@ -129,32 +134,61 @@ def compute_generic_selection_score(
     *,
     duration_budget: float | None,
     duration_score: float,
+    required_highlight_segment_ids: list[str] | None = None,
+    allowed_context_segment_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     pred_intervals = _pred_intervals(pred_segments)
     pred_total_duration = intervals_duration(pred_intervals)
-    if duration_budget is None:
-        generic_value_mode = "full_gt_highlight_only"
-        generic_value_optimal = _total_generic_value(semantic_segments, min_score=4)
-        generic_value_actual = _weighted_value_for_intervals(pred_intervals, semantic_segments, min_score=4)
-    else:
-        generic_value_mode = "budgeted"
-        duration_budget = float(duration_budget)
-        generic_value_optimal = _optimal_generic_value(semantic_segments, duration_budget)
-        generic_value_actual = _actual_generic_value(pred_intervals, semantic_segments, duration_budget)
-    generic_value_score = generic_value_actual / generic_value_optimal if generic_value_optimal > 0 else 0.0
+    required_highlight_segment_ids = required_highlight_segment_ids or []
+    allowed_context_segment_ids = allowed_context_segment_ids or []
     default_highlight_intervals = [
         {"start": float(segment["start"]), "end": float(segment["end"])}
         for segment in semantic_segments
         if int(segment["default_highlight_score"]) >= 4
         and not bool(segment.get("avoid_by_default"))
     ]
+    if required_highlight_segment_ids:
+        generic_target_source = "resolver"
+        required_segments = _segments_for_ids(semantic_segments, required_highlight_segment_ids)
+        required_intervals = _intervals_for_ids(semantic_segments, required_highlight_segment_ids)
+        acceptable_intervals = _intervals_for_ids(
+            semantic_segments,
+            required_highlight_segment_ids + allowed_context_segment_ids,
+        )
+    else:
+        generic_target_source = "legacy_threshold_fallback"
+        required_segments = [
+            segment
+            for segment in semantic_segments
+            if int(segment["default_highlight_score"]) >= 4
+            and not bool(segment.get("avoid_by_default"))
+        ]
+        required_intervals = default_highlight_intervals
+        acceptable_intervals = required_intervals
+
+    if duration_budget is None:
+        generic_value_mode = "full_gt_required"
+        generic_value_optimal = _total_generic_value(required_segments)
+        generic_value_actual = _weighted_value_for_intervals(pred_intervals, required_segments)
+    else:
+        generic_value_mode = "budgeted"
+        duration_budget = float(duration_budget)
+        generic_value_optimal = _optimal_generic_value(required_segments, duration_budget)
+        generic_value_actual = _actual_generic_value(pred_intervals, required_segments, duration_budget)
+    generic_value_score = generic_value_actual / generic_value_optimal if generic_value_optimal > 0 else 0.0
     default_highlight_duration = overlap_duration_between(pred_intervals, default_highlight_intervals)
     default_highlight_precision = (
         default_highlight_duration / pred_total_duration
         if pred_total_duration > 0
         else 0.0
     )
-    generic_core_score = _compute_f1(generic_value_score, default_highlight_precision)
+    acceptable_overlap_duration = overlap_duration_between(pred_intervals, acceptable_intervals)
+    acceptable_precision = (
+        acceptable_overlap_duration / pred_total_duration
+        if pred_total_duration > 0
+        else 0.0
+    )
+    generic_core_score = _compute_f1(generic_value_score, acceptable_precision)
     avoid_intervals = [
         {"start": float(segment["start"]), "end": float(segment["end"])}
         for segment in semantic_segments
@@ -171,8 +205,13 @@ def compute_generic_selection_score(
         "generic_value_optimal": _round(generic_value_optimal),
         "generic_value_score": _round(generic_value_score),
         "generic_value_mode": generic_value_mode,
+        "generic_target_source": generic_target_source,
+        "required_highlight_segment_ids": list(required_highlight_segment_ids),
+        "allowed_context_segment_ids": list(allowed_context_segment_ids),
         "default_highlight_duration": _round(default_highlight_duration),
         "default_highlight_precision": _round(default_highlight_precision),
+        "acceptable_overlap_duration": _round(acceptable_overlap_duration),
+        "acceptable_precision": _round(acceptable_precision),
         "generic_core_score": _round(generic_core_score),
         "avoid_by_default_overlap_duration": _round(avoid_overlap),
         "avoid_by_default_overlap_ratio": _round(avoid_ratio),

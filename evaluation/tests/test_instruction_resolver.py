@@ -7,9 +7,9 @@ from evaluation.instruction_resolver import ResolverValidationError, validate_re
 
 GT = {
     "semantic_segments": [
-        {"segment_id": "seg_001"},
-        {"segment_id": "seg_002"},
-        {"segment_id": "seg_003"},
+        {"segment_id": "seg_001", "avoid_by_default": False},
+        {"segment_id": "seg_002", "avoid_by_default": False},
+        {"segment_id": "seg_003", "avoid_by_default": True},
     ]
 }
 
@@ -38,10 +38,14 @@ class InstructionResolverValidationTests(unittest.TestCase):
                 use_default_highlights=True,
                 relevant_segment_ids=[],
                 forbidden_segment_ids=[],
+                required_highlight_segment_ids=["seg_001"],
+                allowed_context_segment_ids=["seg_002"],
             ),
             GT,
         )
         self.assertTrue(result["use_default_highlights"])
+        self.assertEqual(result["required_highlight_segment_ids"], ["seg_001"])
+        self.assertEqual(result["allowed_context_segment_ids"], ["seg_002"])
 
     def test_valid_specific(self) -> None:
         result = validate_resolver_result(_result(), GT)
@@ -54,7 +58,11 @@ class InstructionResolverValidationTests(unittest.TestCase):
 
     def test_valid_conflict(self) -> None:
         result = validate_resolver_result(
-            _result(instruction_mode="conflict", selection_scope="exclusive", forbidden_segment_ids=["seg_003"]),
+            _result(
+                instruction_mode="conflict",
+                selection_scope="exclusive",
+                forbidden_segment_ids=["seg_003"],
+            ),
             GT,
         )
         self.assertEqual(result["forbidden_segment_ids"], ["seg_003"])
@@ -93,7 +101,60 @@ class InstructionResolverValidationTests(unittest.TestCase):
                     use_default_highlights=False,
                     relevant_segment_ids=[],
                     forbidden_segment_ids=[],
+                    required_highlight_segment_ids=["seg_001"],
                 ),
+                GT,
+            )
+
+    def test_generic_explicit_empty_required_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(
+                    instruction_mode="generic",
+                    selection_scope="not_applicable",
+                    use_default_highlights=True,
+                    relevant_segment_ids=[],
+                    forbidden_segment_ids=[],
+                    required_highlight_segment_ids=[],
+                    allowed_context_segment_ids=[],
+                ),
+                GT,
+            )
+
+    def test_generic_required_and_context_overlap_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(
+                    instruction_mode="generic",
+                    selection_scope="not_applicable",
+                    use_default_highlights=True,
+                    relevant_segment_ids=[],
+                    forbidden_segment_ids=[],
+                    required_highlight_segment_ids=["seg_001"],
+                    allowed_context_segment_ids=["seg_001"],
+                ),
+                GT,
+            )
+
+    def test_generic_avoid_context_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(
+                    instruction_mode="generic",
+                    selection_scope="not_applicable",
+                    use_default_highlights=True,
+                    relevant_segment_ids=[],
+                    forbidden_segment_ids=[],
+                    required_highlight_segment_ids=["seg_001"],
+                    allowed_context_segment_ids=["seg_003"],
+                ),
+                GT,
+            )
+
+    def test_specific_with_generic_targets_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(required_highlight_segment_ids=["seg_001"]),
                 GT,
             )
 
@@ -235,6 +296,11 @@ class InstructionResolverValidationTests(unittest.TestCase):
                 "reason": "legacy generated_case 未包含 duration_constraint。",
             },
         )
+
+    def test_legacy_result_without_generic_targets_gets_empty_lists(self) -> None:
+        result = validate_resolver_result(_result(), GT)
+        self.assertEqual(result["required_highlight_segment_ids"], [])
+        self.assertEqual(result["allowed_context_segment_ids"], [])
 
 
 if __name__ == "__main__":

@@ -124,6 +124,8 @@ def _resolver_result(**overrides) -> dict:
         "use_default_highlights": False,
         "relevant_segment_ids": ["seg_001"],
         "forbidden_segment_ids": [],
+        "required_highlight_segment_ids": [],
+        "allowed_context_segment_ids": [],
         "unresolved_requirements": [],
         "resolver_reason": "命中商品外观。",
     }
@@ -212,7 +214,8 @@ class AutoEvalUnittestCompatibilityTests(unittest.TestCase):
     def test_resolver_fields_from_generated_case_includes_duration_constraint_slot(self) -> None:
         fields = _resolver_fields_from_generated_case(_resolver_result())
         self.assertIn("duration_constraint", fields)
-        self.assertIsNone(fields["duration_constraint"])
+        self.assertIn("required_highlight_segment_ids", fields)
+        self.assertIn("allowed_context_segment_ids", fields)
 
 
 def test_duration_constraint_upper_bound_allows_shorter_output() -> None:
@@ -347,6 +350,8 @@ def test_auto_eval_generic_scores_and_writes_files(tmp_path, monkeypatch):
             use_default_highlights=True,
             relevant_segment_ids=[],
             forbidden_segment_ids=[],
+            required_highlight_segment_ids=["seg_001", "seg_002"],
+            allowed_context_segment_ids=[],
         ),
     )
     result = run_auto_eval(config)
@@ -356,18 +361,50 @@ def test_auto_eval_generic_scores_and_writes_files(tmp_path, monkeypatch):
     assert result["selection_score_v1"] is not None
     assert result["duration_context"]["duration_score_method"] == "not_applicable"
     assert result["duration_context"]["duration_budget"] is None
-    assert result["time_metrics"]["generic_value_mode"] == "full_gt_highlight_only"
+    assert result["time_metrics"]["generic_value_mode"] == "full_gt_required"
+    assert result["time_metrics"]["generic_target_source"] == "resolver"
+    assert result["time_metrics"]["required_highlight_segment_ids"] == ["seg_001", "seg_002"]
+    assert "acceptable_precision" in result["time_metrics"]
     assert "default_highlight_f1" in result["legacy_metrics"]
 
 
 def test_auto_eval_generated_case_keeps_duration_constraint(tmp_path, monkeypatch):
     config = _prepare_files(tmp_path)
     duration_constraint = _duration_constraint()
-    _patch_resolver(monkeypatch, _resolver_result(duration_constraint=duration_constraint))
+    _patch_resolver(
+        monkeypatch,
+        _resolver_result(
+            duration_constraint=duration_constraint,
+            required_highlight_segment_ids=[],
+            allowed_context_segment_ids=[],
+        ),
+    )
     result = run_auto_eval(config)
     generated_case = json.loads((config.output_dir / "generated_case.json").read_text(encoding="utf-8"))
     assert generated_case["duration_constraint"] == duration_constraint
     assert result["generated_case"]["duration_constraint"] == duration_constraint
+
+
+def test_auto_eval_generated_case_keeps_generic_required_and_context(tmp_path, monkeypatch):
+    config = _prepare_files(tmp_path)
+    _patch_resolver(
+        monkeypatch,
+        _resolver_result(
+            instruction_mode="generic",
+            selection_scope="not_applicable",
+            use_default_highlights=True,
+            relevant_segment_ids=[],
+            forbidden_segment_ids=[],
+            required_highlight_segment_ids=["seg_001"],
+            allowed_context_segment_ids=["seg_002"],
+        ),
+    )
+    result = run_auto_eval(config)
+    generated_case = json.loads((config.output_dir / "generated_case.json").read_text(encoding="utf-8"))
+    assert generated_case["required_highlight_segment_ids"] == ["seg_001"]
+    assert generated_case["allowed_context_segment_ids"] == ["seg_002"]
+    assert result["time_metrics"]["generic_target_source"] == "resolver"
+    assert "acceptable_precision" in result["time_metrics"]
 
 
 def test_auto_eval_specific_scores_reference_metrics(tmp_path, monkeypatch):

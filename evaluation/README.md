@@ -127,7 +127,7 @@ Resolver 的职责是把用户自然语言指令解析为 GT 片段 ID：
 
 ```text
 instruction + 可选 target_duration + GT.video_summary + GT.semantic_segments
-→ relevant_segment_ids / forbidden_segment_ids / duration_constraint
+→ relevant_segment_ids / forbidden_segment_ids / required_highlight_segment_ids / allowed_context_segment_ids / duration_constraint
 ```
 
 `duration_constraint` 只负责将自然语言时长要求转换为统一的可接受时长区间：
@@ -346,7 +346,7 @@ Generic 指令使用默认高光价值评分：
 generic_core_score
 = harmonic_mean(
   generic_value_score,
-  default_highlight_precision
+  acceptable_precision
 )
 
 selection_score_v1
@@ -359,33 +359,48 @@ selection_score_v1
 Generic 时间区间级指标还会输出：
 
 ```text
+required_highlight_segment_ids
+allowed_context_segment_ids
+acceptable_overlap_duration
+acceptable_precision
 default_highlight_duration
 default_highlight_precision
+generic_target_source
 ```
 
 其中：
 
 ```text
+acceptable_precision
+= 输出中落入 required_highlight 或 allowed_context 区间的时长 / 输出总时长
+
 default_highlight_precision
 = 输出中落入默认高光区间的时长 / 输出总时长
 ```
 
-默认高光区间定义为：
+generic 模式不再只依赖固定 4-5 分阈值决定最终 Precision。Resolver 会根据用户指令和人工 GT 描述区分：
+
+```text
+required_highlight_segment_ids：必须覆盖的核心高光
+allowed_context_segment_ids：允许保留的合理上下文
+```
+
+`generic_value_score` 用于评价是否覆盖 required 核心高光的加权价值；有明确时长预算时，只在 required 集合内计算预算内理论最优价值。
+
+当用户没有明确指定剪辑时长时，generic 不使用 Skill 默认目标时长，输出 `generic_value_mode=full_gt_required`，使用全部 required 核心高光加权价值作为召回分母。
+
+`acceptable_precision` 用于评价输出中可接受内容的占比。合理上下文不会被错误惩罚，普通低价值内容和 avoid 内容仍会降低该指标。
+
+`generic_core_score` 使用 `generic_value_score` 和 `acceptable_precision` 的调和平均。任何一项明显偏低，generic 内容选择分都会下降。
+
+`default_highlight_precision` 继续保留为严格诊断指标，定义为固定阈值高光区间：
 
 ```text
 default_highlight_score >= 4
 且 avoid_by_default = false
 ```
 
-`generic_value_score` 用于评价在当前时长预算下是否优先捕获了更高价值的默认高光。
-
-当用户没有明确指定剪辑时长时，generic 不使用 Skill 默认目标时长，也不把 2-3 分辅助片段算入必须召回的分母，而是只使用 GT 中 4-5 分真正默认高光的加权价值作为分母，输出 `generic_value_mode=full_gt_highlight_only`。
-
-`default_highlight_precision` 用于评价输出中真正默认高光片段所占比例，防止成片混入大量普通低价值内容。
-
-`generic_core_score` 使用二者的调和平均。任何一项明显偏低，generic 内容选择分都会下降。
-
-`default_highlight_precision` 已正式参与 generic 模式的 `selection_score_v1` 计算。本轮只修改 generic 模式，specific / conflict guided 路径保持不变。
+DOVER 仍然只作为感知质量诊断。Judge 五维体验分和 `final_score_v2` 公式没有修改。
 
 Specific / conflict 指令使用 guided 评分。Resolver 会输出：
 

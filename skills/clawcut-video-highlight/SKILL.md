@@ -33,7 +33,27 @@ Agent 必须从用户请求中提取：
 
 - `input_video`：原始视频的本地路径。
 - `instruction`：用户的剪辑目标，保留用户原始意图。
+- `user_instruction_original`：用户最初发送给 OpenClaw 的完整自然语言请求，允许包含视频 URL 或路径。
 - `output_dir`：输出目录；如果用户没有指定，默认 `outputs`。
+
+## 指令透传规则
+
+OpenClaw / Agent 只负责抽取参数，不负责润色、扩写、总结或补充用户剪辑要求。
+
+`--instruction` 必须尽可能逐字保留用户原始剪辑要求。只允许从 instruction 中移除 `input_video` 路径或 URL，因为视频地址会通过 `--input_video` 单独传递。
+
+不得自行增加用户没有明确提出的内容，例如：
+
+- “流畅紧凑”
+- “突出爽感”
+- “提取精彩片段”
+- 视频类型
+- 应保留的内容
+- 应排除的内容
+- 节奏偏好
+- 时长要求
+
+`--user_instruction_original` 用于保存用户最初发送给 OpenClaw 的完整自然语言请求，允许包含视频 URL 或路径。缺省时 Skill 会回退为 `--instruction`。
 
 ## 可选输入
 
@@ -45,13 +65,9 @@ Agent 必须从用户请求中提取：
 ## 目标时长策略
 
 - 如果用户明确指定目标时长，Skill 会严格使用用户指定时长。
-- 如果用户未指定目标时长，Skill 会在 `ffprobe` 得到原视频时长后自动推荐默认时长：
-
-```text
-recommended_duration = min(video_duration, min(max(video_duration × 0.15, 15), 60))
-```
-
-- 大模型可以在合理范围内选择 `selected_target_duration`。
+- 如果用户未指定目标时长，默认使用 `llm_free`，不预设固定成片长度。
+- 模型根据高光数量、内容密度、事件完整性和冗余程度决定成片长度。
+- `bounded_auto` 保留为可选基线和兜底模式，不要删除；该模式会使用 `recommended_duration = min(video_duration, min(max(video_duration × 0.15, 15), 60))`。
 - 如果用户指定时长较短但视频中候选高光较多，Skill 会优先选择最高价值片段，并在报告中列出 `excluded_highlights` 说明未选原因。
 - OpenClaw/Agent 如果能从用户指令中抽取明确时长，就传 `--target_duration`。
 - OpenClaw/Agent 如果无法抽取明确时长，就不要传 `--target_duration`，让 `run_skill.py` 自动处理。
@@ -65,7 +81,8 @@ recommended_duration = min(video_duration, min(max(video_duration × 0.15, 15), 
 应抽取为：
 
 - `input_video = data/input/demo.mp4`
-- `instruction = 突出商品外观和核心卖点`
+- `instruction = 剪成 15 秒高光，突出商品外观和核心卖点`
+- `user_instruction_original = 把 data/input/demo.mp4 剪成 15 秒高光，突出商品外观和核心卖点`
 - `target_duration = 15`
 - `output_dir = outputs`
 
@@ -86,8 +103,34 @@ recommended_duration = min(video_duration, min(max(video_duration × 0.15, 15), 
 ```bash
 python skills/clawcut-video-highlight/scripts/run_skill.py \
   --input_video "<input_video>" \
-  --instruction "<instruction>" \
+  --instruction "<移除视频路径或 URL 后，原样保留的用户剪辑要求>" \
+  --user_instruction_original "<用户发送给 OpenClaw 的完整原始请求>" \
   --output_dir "<output_dir>"
+```
+
+示例：
+
+用户发送：
+
+```text
+帮我剪辑一下这个视频
+https://example.com/game.mp4
+```
+
+Agent 应调用：
+
+```bash
+python skills/clawcut-video-highlight/scripts/run_skill.py \
+  --input_video "https://example.com/game.mp4" \
+  --instruction "帮我剪辑一下这个视频" \
+  --user_instruction_original "帮我剪辑一下这个视频 https://example.com/game.mp4" \
+  --output_dir outputs
+```
+
+不得改写为：
+
+```text
+提取游戏视频中的高光精彩片段，生成流畅紧凑的游戏高光剪辑
 ```
 
 如果用户明确指定时长，再加入：
@@ -102,6 +145,7 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
 python skills/clawcut-video-highlight/scripts/run_skill.py \
   --input_video "<input_video>" \
   --instruction "<instruction>" \
+  --user_instruction_original "<user_instruction_original>" \
   --output_dir "<output_dir>" \
   --llm_backend "<ark_or_mock>"
 ```
@@ -112,6 +156,7 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
 python skills/clawcut-video-highlight/scripts/run_skill.py \
   --input_video "<input_video>" \
   --instruction "<instruction>" \
+  --user_instruction_original "<user_instruction_original>" \
   --output_dir "<output_dir>" \
   --llm_backend ark \
   --llm_video_url "<public_video_url>"
@@ -123,6 +168,7 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
 python skills/clawcut-video-highlight/scripts/run_skill.py \
   --input_video "<input_video>" \
   --instruction "<instruction>" \
+  --user_instruction_original "<user_instruction_original>" \
   --output_dir "<output_dir>" \
   --config "<config_path>"
 ```
@@ -151,6 +197,7 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
 `segments.json` 和 `result_summary.json` 中会包含：
 
 - `duration_policy`：用户是否指定时长、系统推荐时长、模型选择时长和允许范围。
+- `user_instruction_original` / `skill_instruction_effective` / `model_interpreted_intent`：用于追踪用户原话、Agent 实际传给 Skill 的剪辑要求、模型内部理解。
 - `excluded_highlights`：被识别为候选高光但因时长限制、重复或优先级较低而未进入最终剪辑的片段。
 
 ## 如何回复用户

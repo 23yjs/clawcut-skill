@@ -80,10 +80,11 @@ def _base_plan(duration_policy: dict, start: float = 0.0, end: float = 5.0) -> d
 
 
 class DurationPolicyModeTests(unittest.TestCase):
-    def test_default_mode_is_bounded_auto(self) -> None:
+    def test_default_mode_is_llm_free(self) -> None:
         policy = _build_duration_policy(233.289, None)
-        self.assertEqual(policy["duration_policy_mode"], "bounded_auto")
-        self.assertAlmostEqual(policy["recommended_duration"], 34.993)
+        self.assertEqual(policy["duration_policy_mode"], "llm_free")
+        self.assertIsNone(policy["recommended_duration"])
+        self.assertIsNone(policy["selected_target_duration"])
 
     def test_bounded_auto_without_target_uses_existing_formula(self) -> None:
         policy = _build_duration_policy(120.0, None, "bounded_auto")
@@ -153,6 +154,7 @@ class DurationPolicyModeTests(unittest.TestCase):
                 summary,
                 paths,
                 Path("data/input/demo.MP4"),
+                "剪出高光",
                 "剪出高光",
                 plan,
                 {

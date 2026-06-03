@@ -36,6 +36,7 @@ LEGACY_DURATION_CONSTRAINT = {
     "source": "none",
     "reason": "legacy generated_case 未包含 duration_constraint。",
 }
+LEGACY_SEGMENT_IDS: list[str] = []
 
 
 def _string_list(value: Any, field: str) -> list[str]:
@@ -117,6 +118,17 @@ def validate_resolver_result(
     use_default_highlights = result["use_default_highlights"]
     relevant_segment_ids = _string_list(result["relevant_segment_ids"], "relevant_segment_ids")
     forbidden_segment_ids = _string_list(result["forbidden_segment_ids"], "forbidden_segment_ids")
+    required_raw = result.get("required_highlight_segment_ids")
+    allowed_context_raw = result.get("allowed_context_segment_ids")
+    legacy_generic_targets = required_raw is None and allowed_context_raw is None
+    required_highlight_segment_ids = _string_list(
+        LEGACY_SEGMENT_IDS if required_raw is None else required_raw,
+        "required_highlight_segment_ids",
+    )
+    allowed_context_segment_ids = _string_list(
+        LEGACY_SEGMENT_IDS if allowed_context_raw is None else allowed_context_raw,
+        "allowed_context_segment_ids",
+    )
     unresolved_requirements = _string_list(result["unresolved_requirements"], "unresolved_requirements")
     duration_constraint = _validate_duration_constraint(result.get("duration_constraint"))
     resolver_reason = result["resolver_reason"]
@@ -134,14 +146,42 @@ def validate_resolver_result(
 
     _reject_duplicates(relevant_segment_ids, "relevant_segment_ids")
     _reject_duplicates(forbidden_segment_ids, "forbidden_segment_ids")
+    _reject_duplicates(required_highlight_segment_ids, "required_highlight_segment_ids")
+    _reject_duplicates(allowed_context_segment_ids, "allowed_context_segment_ids")
     overlap = sorted(set(relevant_segment_ids) & set(forbidden_segment_ids))
     if overlap:
         raise ResolverValidationError(f"同一 segment_id 不能同时 relevant 和 forbidden：{', '.join(overlap)}")
+    generic_target_overlap = sorted(set(required_highlight_segment_ids) & set(allowed_context_segment_ids))
+    if generic_target_overlap:
+        raise ResolverValidationError(
+            "同一 segment_id 不能同时 required_highlight 和 allowed_context："
+            + ", ".join(generic_target_overlap)
+        )
 
-    existing_ids = {str(segment.get("segment_id")) for segment in gt_annotation.get("semantic_segments", [])}
-    unknown_ids = sorted((set(relevant_segment_ids) | set(forbidden_segment_ids)) - existing_ids)
+    segment_by_id = {
+        str(segment.get("segment_id")): segment
+        for segment in gt_annotation.get("semantic_segments", [])
+    }
+    existing_ids = set(segment_by_id)
+    all_referenced_ids = (
+        set(relevant_segment_ids)
+        | set(forbidden_segment_ids)
+        | set(required_highlight_segment_ids)
+        | set(allowed_context_segment_ids)
+    )
+    unknown_ids = sorted(all_referenced_ids - existing_ids)
     if unknown_ids:
         raise ResolverValidationError(f"Resolver 引用了 GT 中不存在的 segment_id：{', '.join(unknown_ids)}")
+    avoid_ids = sorted(
+        segment_id
+        for segment_id in (set(required_highlight_segment_ids) | set(allowed_context_segment_ids))
+        if bool(segment_by_id.get(segment_id, {}).get("avoid_by_default"))
+    )
+    if avoid_ids:
+        raise ResolverValidationError(
+            "avoid_by_default=true 的 segment_id 不能进入 required_highlight 或 allowed_context："
+            + ", ".join(avoid_ids)
+        )
 
     if instruction_mode == "generic":
         if selection_scope != "not_applicable":
@@ -150,7 +190,11 @@ def validate_resolver_result(
             raise ResolverValidationError("generic 必须 resolved 且 use_default_highlights=true")
         if relevant_segment_ids or forbidden_segment_ids:
             raise ResolverValidationError("generic 的 relevant_segment_ids 和 forbidden_segment_ids 必须为空")
+        if not legacy_generic_targets and not required_highlight_segment_ids:
+            raise ResolverValidationError("generic resolved 时 required_highlight_segment_ids 不能为空")
     elif instruction_mode == "specific":
+        if required_highlight_segment_ids or allowed_context_segment_ids:
+            raise ResolverValidationError("非 generic 模式 required_highlight_segment_ids 和 allowed_context_segment_ids 必须为空")
         if selection_scope not in {"preferential", "exclusive"}:
             raise ResolverValidationError("specific 的 selection_scope 必须是 preferential 或 exclusive")
         if use_default_highlights:
@@ -158,6 +202,8 @@ def validate_resolver_result(
         if resolution_status == "resolved" and not relevant_segment_ids:
             raise ResolverValidationError("specific resolved 时 relevant_segment_ids 不能为空")
     elif instruction_mode == "conflict":
+        if required_highlight_segment_ids or allowed_context_segment_ids:
+            raise ResolverValidationError("非 generic 模式 required_highlight_segment_ids 和 allowed_context_segment_ids 必须为空")
         if selection_scope not in {"preferential", "exclusive"}:
             raise ResolverValidationError("conflict 的 selection_scope 必须是 preferential 或 exclusive")
         if use_default_highlights:
@@ -165,6 +211,8 @@ def validate_resolver_result(
         if resolution_status == "resolved" and not relevant_segment_ids and not forbidden_segment_ids:
             raise ResolverValidationError("conflict resolved 时 relevant 或 forbidden 至少一个非空")
     elif instruction_mode == "unresolved":
+        if required_highlight_segment_ids or allowed_context_segment_ids:
+            raise ResolverValidationError("非 generic 模式 required_highlight_segment_ids 和 allowed_context_segment_ids 必须为空")
         if selection_scope != "unknown":
             raise ResolverValidationError("unresolved 的 selection_scope 必须是 unknown")
         if use_default_highlights:
@@ -181,6 +229,8 @@ def validate_resolver_result(
         "use_default_highlights": use_default_highlights,
         "relevant_segment_ids": relevant_segment_ids,
         "forbidden_segment_ids": forbidden_segment_ids,
+        "required_highlight_segment_ids": required_highlight_segment_ids,
+        "allowed_context_segment_ids": allowed_context_segment_ids,
         "duration_constraint": duration_constraint,
         "unresolved_requirements": unresolved_requirements,
         "resolver_reason": resolver_reason.strip(),

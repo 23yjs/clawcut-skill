@@ -159,6 +159,8 @@ def _resolver_fields_from_generated_case(generated_case: dict[str, Any]) -> dict
         "use_default_highlights": generated_case.get("use_default_highlights"),
         "relevant_segment_ids": generated_case.get("relevant_segment_ids"),
         "forbidden_segment_ids": generated_case.get("forbidden_segment_ids"),
+        "required_highlight_segment_ids": generated_case.get("required_highlight_segment_ids"),
+        "allowed_context_segment_ids": generated_case.get("allowed_context_segment_ids"),
         "duration_constraint": generated_case.get("duration_constraint"),
         "unresolved_requirements": generated_case.get("unresolved_requirements"),
         "resolver_reason": generated_case.get("resolver_reason"),
@@ -359,6 +361,8 @@ def _selection_score(
             gt_annotation.get("semantic_segments", []),
             duration_budget=float(duration_budget) if duration_budget is not None else None,
             duration_score=float(duration_score),
+            required_highlight_segment_ids=resolver_result.get("required_highlight_segment_ids"),
+            allowed_context_segment_ids=resolver_result.get("allowed_context_segment_ids"),
         )
     else:
         time_metrics = compute_guided_selection_score(
@@ -436,6 +440,8 @@ def _write_report(path: Path, result: dict[str, Any]) -> None:
         f"- use_default_highlights: `{generated_case.get('use_default_highlights')}`",
         f"- relevant_segment_ids: `{generated_case.get('relevant_segment_ids')}`",
         f"- forbidden_segment_ids: `{generated_case.get('forbidden_segment_ids')}`",
+        f"- required_highlight_segment_ids: `{generated_case.get('required_highlight_segment_ids')}`",
+        f"- allowed_context_segment_ids: `{generated_case.get('allowed_context_segment_ids')}`",
         f"- duration_constraint: `{generated_case.get('duration_constraint')}`",
         f"- unresolved_requirements: `{generated_case.get('unresolved_requirements')}`",
         f"- resolver_reason: {generated_case.get('resolver_reason', '')}",

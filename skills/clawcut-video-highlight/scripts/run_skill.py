@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import re
 import traceback
 from datetime import datetime
@@ -26,6 +27,14 @@ def _safe_output_name(input_video: Path) -> str:
     return name or "video"
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def _md(value: Any) -> str:
     text = "" if value is None else str(value)
     return text.replace("|", "\\|").replace("\n", "<br>")
@@ -44,7 +53,7 @@ def _recommended_duration(video_duration: float) -> float:
 
 
 def _normalize_duration_policy_mode(mode: str | None) -> str:
-    normalized = str(mode or "bounded_auto").strip().lower()
+    normalized = str(mode or "llm_free").strip().lower()
     if normalized not in {"bounded_auto", "llm_free"}:
         raise SkillError(f"不支持的 duration_policy_mode：{mode}")
     return normalized
@@ -63,7 +72,7 @@ def _final_segments_total_duration(plan: dict[str, Any]) -> float:
 def _build_duration_policy(
     video_duration: float,
     user_target_duration: float | None,
-    duration_policy_mode: str = "bounded_auto",
+    duration_policy_mode: str = "llm_free",
 ) -> dict[str, Any]:
     duration_policy_mode = _normalize_duration_policy_mode(duration_policy_mode)
     if user_target_duration is not None:
@@ -248,6 +257,7 @@ def _write_success_summary(
     paths: dict[str, Path],
     input_video: Path,
     instruction: str,
+    user_instruction_original: str,
     plan: dict[str, Any],
     validation: dict[str, Any],
     preview_path: Path | None,
@@ -260,12 +270,23 @@ def _write_success_summary(
     llm_metadata = plan.get("llm_metadata", {}) if isinstance(plan.get("llm_metadata"), dict) else {}
     skill_backend_used = str(llm_metadata.get("backend", "") or "").strip().lower() or "unknown"
     fallback_used = skill_backend_requested == "ark" and skill_backend_used != "ark"
+    input_video_sha256 = _sha256_file(input_video) if input_video.exists() and input_video.is_file() else ""
+    final_edit_source = Path(str(plan.get("final_edit_source", str(input_video))))
+    final_edit_source_sha256 = (
+        _sha256_file(final_edit_source)
+        if final_edit_source.exists() and final_edit_source.is_file()
+        else input_video_sha256
+    )
     write_json(
         summary_path,
         {
             "status": "success",
             "input_video": str(input_video),
+            "input_video_sha256": input_video_sha256,
             "instruction": instruction,
+            "user_instruction_original": user_instruction_original,
+            "skill_instruction_effective": instruction,
+            "model_interpreted_intent": plan.get("user_intent", ""),
             "target_duration": plan.get("duration_policy", {}).get("user_target_duration"),
             "skill_backend_requested": skill_backend_requested,
             "skill_backend_used": skill_backend_used,
@@ -286,7 +307,8 @@ def _write_success_summary(
             "preview_video": str(preview_path) if preview_path else "",
             "model_video_input_source": plan.get("model_video_input_source", ""),
             "model_video_input_path_or_url": plan.get("model_video_input_path_or_url", ""),
-            "final_edit_source": plan.get("final_edit_source", str(input_video)),
+            "final_edit_source": str(final_edit_source),
+            "final_edit_source_sha256": final_edit_source_sha256,
             "final_segments": _summary_segments(plan),
             "excluded_highlights": _summary_excluded_highlights(plan),
             "warnings": validation.get("warnings", []),
@@ -299,6 +321,7 @@ def _write_failure_summary(
     paths: dict[str, Path],
     input_video: Path,
     instruction: str,
+    user_instruction_original: str,
     target_duration: float | None,
     error_type: str,
     error_message: str,
@@ -313,6 +336,9 @@ def _write_failure_summary(
             "status": "failed",
             "input_video": str(input_video),
             "instruction": instruction,
+            "user_instruction_original": user_instruction_original,
+            "skill_instruction_effective": instruction,
+            "model_interpreted_intent": "",
             "target_duration": float(target_duration) if target_duration is not None else None,
             "skill_backend_requested": skill_backend_requested or "",
             "skill_backend_used": "",
@@ -525,6 +551,7 @@ def _write_report(
 def run_skill(
     input_video: Path,
     instruction: str,
+    user_instruction_original: str | None = None,
     target_duration: float | None = None,
     output_dir: Path = Path("outputs"),
     llm_video_url: str | None = None,
@@ -534,6 +561,7 @@ def run_skill(
     runtime_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     run_started_at = datetime.now().isoformat(timespec="seconds")
+    user_instruction_original = user_instruction_original or instruction
     runtime_context = runtime_context if runtime_context is not None else {}
     runtime_context["run_started_at"] = run_started_at
     paths = _output_paths(output_dir, input_video)
@@ -543,6 +571,8 @@ def run_skill(
     logger = setup_logger(paths["log"])
     logger.info("开始运行 ClawCut 视频高光剪辑 Skill")
     logger.info("启动参数：input_video=%s", input_video)
+    logger.info("启动参数：user_instruction_original=%s", user_instruction_original)
+    logger.info("启动参数：skill_instruction_effective=%s", instruction)
     logger.info("启动参数：instruction=%s", instruction)
     logger.info("启动参数：target_duration=%s", target_duration if target_duration is not None else "未指定")
     logger.info("启动参数：output_dir=%s", output_dir)
@@ -567,7 +597,7 @@ def run_skill(
     configured_duration_mode = (
         duration_policy_mode
         or (config.get("duration_policy", {}) if isinstance(config.get("duration_policy"), dict) else {}).get("mode")
-        or "bounded_auto"
+        or "llm_free"
     )
     configured_duration_mode = _normalize_duration_policy_mode(configured_duration_mode)
     if llm_backend:
@@ -619,6 +649,7 @@ def run_skill(
     client = create_llm_client(config, logger=logger)
     plan = client.generate_edit_plan(str(preview_path or ""), instruction, planning_target_duration, video_info, config)
     logger.info("LLM 输出解析完成")
+    logger.info("模型解释后的 user_intent=%s", plan.get("user_intent", ""))
     plan = _attach_pipeline_metadata(
         plan,
         model_video_input_source,
@@ -688,6 +719,7 @@ def run_skill(
         paths,
         input_video,
         instruction,
+        user_instruction_original,
         plan,
         validation,
         preview_path,
@@ -714,13 +746,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="运行 ClawCut 视频高光剪辑 Skill。")
     parser.add_argument("--input_video", type=Path, required=True)
     parser.add_argument("--instruction", required=True)
+    parser.add_argument(
+        "--user_instruction_original",
+        default=None,
+        help="用户发送给 OpenClaw 的原始自然语言请求；缺省时回退为 --instruction。",
+    )
     parser.add_argument("--target_duration", type=float, default=None)
     parser.add_argument("--output_dir", type=Path, default=Path("outputs"))
     parser.add_argument(
         "--duration_policy_mode",
         choices=["bounded_auto", "llm_free"],
         default=None,
-        help="可选：未指定 target_duration 时的时长策略。bounded_auto 为默认 15% 策略，llm_free 让模型自由决定成片长度。",
+        help="可选：未指定 target_duration 时的时长策略。llm_free 为默认自由时长策略，bounded_auto 为 15% 基线策略。",
     )
     parser.add_argument(
         "--llm_backend",
@@ -752,6 +789,7 @@ def main() -> int:
         result = run_skill(
             args.input_video,
             args.instruction,
+            args.user_instruction_original,
             args.target_duration,
             output_dir,
             llm_video_url=args.llm_video_url,
@@ -768,6 +806,7 @@ def main() -> int:
             paths,
             args.input_video,
             args.instruction,
+            args.user_instruction_original or args.instruction,
             args.target_duration,
             exc.__class__.__name__,
             str(exc),
@@ -788,6 +827,7 @@ def main() -> int:
             paths,
             args.input_video,
             args.instruction,
+            args.user_instruction_original or args.instruction,
             args.target_duration,
             exc.__class__.__name__,
             str(exc),

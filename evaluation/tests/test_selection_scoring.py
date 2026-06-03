@@ -48,7 +48,9 @@ class SelectionScoringTests(unittest.TestCase):
         self.assertEqual(result["generic_value_actual"], 10.0)
         self.assertEqual(result["generic_value_score"], 1.0)
         self.assertEqual(result["generic_value_mode"], "budgeted")
+        self.assertEqual(result["generic_target_source"], "legacy_threshold_fallback")
         self.assertEqual(result["default_highlight_precision"], 1.0)
+        self.assertEqual(result["acceptable_precision"], 1.0)
         self.assertEqual(result["generic_core_score"], 1.0)
         self.assertEqual(result["selection_score_v1"], 100.0)
 
@@ -89,7 +91,8 @@ class SelectionScoringTests(unittest.TestCase):
             duration_budget=None,
             duration_score=1.0,
         )
-        self.assertEqual(result["generic_value_mode"], "full_gt_highlight_only")
+        self.assertEqual(result["generic_value_mode"], "full_gt_required")
+        self.assertEqual(result["generic_target_source"], "legacy_threshold_fallback")
         self.assertEqual(result["generic_value_optimal"], 20.0)
         self.assertEqual(result["generic_value_actual"], 10.0)
         self.assertEqual(result["generic_value_score"], 0.5)
@@ -127,7 +130,8 @@ class SelectionScoringTests(unittest.TestCase):
             duration_budget=None,
             duration_score=1.0,
         )
-        self.assertEqual(result["generic_value_mode"], "full_gt_highlight_only")
+        self.assertEqual(result["generic_value_mode"], "full_gt_required")
+        self.assertEqual(result["generic_target_source"], "legacy_threshold_fallback")
         self.assertEqual(result["generic_value_optimal"], 10.0)
         self.assertEqual(result["generic_value_actual"], 10.0)
         self.assertEqual(result["generic_value_score"], 1.0)
@@ -144,6 +148,7 @@ class SelectionScoringTests(unittest.TestCase):
         )
         self.assertEqual(result["default_highlight_duration"], 10.0)
         self.assertEqual(result["default_highlight_precision"], 1.0)
+        self.assertEqual(result["acceptable_precision"], 1.0)
         self.assertEqual(result["generic_core_score"], 1.0)
         self.assertEqual(result["selection_score_v1"], 100.0)
 
@@ -157,6 +162,7 @@ class SelectionScoringTests(unittest.TestCase):
         self.assertEqual(result["pred_total_duration"], 20.0)
         self.assertEqual(result["default_highlight_duration"], 10.0)
         self.assertEqual(result["default_highlight_precision"], 0.5)
+        self.assertEqual(result["acceptable_precision"], 0.5)
         self.assertEqual(result["generic_value_score"], 0.588)
         self.assertEqual(result["generic_core_score"], 0.541)
         self.assertEqual(result["default_avoid_compliance_score"], 0.5)
@@ -190,6 +196,7 @@ class SelectionScoringTests(unittest.TestCase):
         self.assertEqual(result["generic_value_score"], 1.0)
         self.assertEqual(result["default_highlight_duration"], 10.0)
         self.assertEqual(result["default_highlight_precision"], 0.333)
+        self.assertEqual(result["acceptable_precision"], 0.333)
         self.assertEqual(result["generic_core_score"], 0.5)
         self.assertEqual(result["default_avoid_compliance_score"], 1.0)
         self.assertEqual(result["selection_score_v1"], 50.0)
@@ -223,6 +230,7 @@ class SelectionScoringTests(unittest.TestCase):
         self.assertEqual(result["generic_value_actual"], 7.0)
         self.assertEqual(result["generic_value_score"], 0.7)
         self.assertEqual(result["default_highlight_precision"], 1.0)
+        self.assertEqual(result["acceptable_precision"], 1.0)
         self.assertEqual(result["generic_core_score"], 0.824)
         self.assertAlmostEqual(result["selection_score_v1"], 82.4, places=1)
 
@@ -253,6 +261,7 @@ class SelectionScoringTests(unittest.TestCase):
         )
         self.assertEqual(result["generic_value_score"], 1.0)
         self.assertEqual(result["default_highlight_precision"], 0.5)
+        self.assertEqual(result["acceptable_precision"], 0.5)
         self.assertEqual(result["generic_core_score"], 0.667)
         self.assertEqual(result["default_avoid_compliance_score"], 0.5)
         self.assertEqual(result["selection_score_v1"], 33.333)
@@ -284,6 +293,7 @@ class SelectionScoringTests(unittest.TestCase):
         )
         self.assertEqual(result["default_highlight_duration"], 10.0)
         self.assertEqual(result["default_highlight_precision"], 0.5)
+        self.assertEqual(result["acceptable_precision"], 0.5)
         self.assertEqual(result["generic_core_score"], 0.667)
 
     def test_generic_default_highlight_precision_empty_output(self) -> None:
@@ -296,8 +306,129 @@ class SelectionScoringTests(unittest.TestCase):
         self.assertEqual(result["generic_value_score"], 0.0)
         self.assertEqual(result["default_highlight_duration"], 0.0)
         self.assertEqual(result["default_highlight_precision"], 0.0)
+        self.assertEqual(result["acceptable_precision"], 0.0)
         self.assertEqual(result["generic_core_score"], 0.0)
         self.assertEqual(result["selection_score_v1"], 0.0)
+
+    def test_generic_allowed_context_counts_as_acceptable_precision(self) -> None:
+        semantic = [
+            {
+                "segment_id": "seg_required",
+                "start": 0,
+                "end": 10,
+                "description": "核心高光",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_context",
+                "start": 10,
+                "end": 15,
+                "description": "动作结果反馈",
+                "default_highlight_score": 3,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_avoid",
+                "start": 15,
+                "end": 20,
+                "description": "片尾导流",
+                "default_highlight_score": 1,
+                "avoid_by_default": True,
+            },
+        ]
+        result = compute_generic_selection_score(
+            [{"start": 0, "end": 15}],
+            semantic,
+            duration_budget=15,
+            duration_score=1.0,
+            required_highlight_segment_ids=["seg_required"],
+            allowed_context_segment_ids=["seg_context"],
+        )
+        self.assertEqual(result["generic_target_source"], "resolver")
+        self.assertEqual(result["default_highlight_precision"], 0.667)
+        self.assertEqual(result["acceptable_overlap_duration"], 15.0)
+        self.assertEqual(result["acceptable_precision"], 1.0)
+        self.assertEqual(result["default_avoid_compliance_score"], 1.0)
+        self.assertEqual(result["selection_score_v1"], 100.0)
+
+    def test_generic_plain_low_value_content_still_lowers_acceptable_precision(self) -> None:
+        semantic = [
+            {
+                "segment_id": "seg_required",
+                "start": 0,
+                "end": 10,
+                "description": "核心高光",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_low",
+                "start": 10,
+                "end": 20,
+                "description": "普通低价值过程",
+                "default_highlight_score": 2,
+                "avoid_by_default": False,
+            },
+        ]
+        result = compute_generic_selection_score(
+            [{"start": 0, "end": 20}],
+            semantic,
+            duration_budget=20,
+            duration_score=1.0,
+            required_highlight_segment_ids=["seg_required"],
+            allowed_context_segment_ids=[],
+        )
+        self.assertEqual(result["acceptable_precision"], 0.5)
+        self.assertEqual(result["generic_core_score"], 0.667)
+
+    def test_generic_avoid_content_gets_acceptable_and_avoid_penalties(self) -> None:
+        semantic = [
+            {
+                "segment_id": "seg_required",
+                "start": 0,
+                "end": 10,
+                "description": "核心高光",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_context",
+                "start": 10,
+                "end": 15,
+                "description": "动作结果反馈",
+                "default_highlight_score": 3,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_avoid",
+                "start": 15,
+                "end": 20,
+                "description": "片尾导流",
+                "default_highlight_score": 1,
+                "avoid_by_default": True,
+            },
+        ]
+        result = compute_generic_selection_score(
+            [{"start": 0, "end": 20}],
+            semantic,
+            duration_budget=20,
+            duration_score=1.0,
+            required_highlight_segment_ids=["seg_required"],
+            allowed_context_segment_ids=["seg_context"],
+        )
+        self.assertEqual(result["acceptable_precision"], 0.75)
+        self.assertEqual(result["default_avoid_compliance_score"], 0.75)
+        self.assertEqual(result["selection_score_v1"], 64.286)
+
+    def test_generic_legacy_case_uses_threshold_fallback(self) -> None:
+        result = compute_generic_selection_score(
+            [{"start": 0, "end": 10}],
+            SEMANTIC,
+            duration_budget=10,
+            duration_score=1.0,
+        )
+        self.assertEqual(result["generic_target_source"], "legacy_threshold_fallback")
 
     def test_guided_precision_coverage_f1(self) -> None:
         result = compute_guided_selection_score(
