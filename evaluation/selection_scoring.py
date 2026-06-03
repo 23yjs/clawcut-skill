@@ -50,10 +50,15 @@ def _pred_intervals(pred_segments: list[dict[str, Any]]) -> list[dict[str, float
 def _weighted_value_for_intervals(
     intervals: list[dict[str, float]],
     semantic_segments: list[dict[str, Any]],
+    *,
+    min_score: int = 1,
 ) -> float:
     value = 0.0
     for segment in semantic_segments:
-        weight = 0.0 if bool(segment.get("avoid_by_default")) else DEFAULT_HIGHLIGHT_VALUE_WEIGHTS.get(int(segment["default_highlight_score"]), 0.0)
+        score = int(segment["default_highlight_score"])
+        if score < min_score:
+            continue
+        weight = 0.0 if bool(segment.get("avoid_by_default")) else DEFAULT_HIGHLIGHT_VALUE_WEIGHTS.get(score, 0.0)
         if weight <= 0:
             continue
         overlap = overlap_duration_between(intervals, [{"start": segment["start"], "end": segment["end"]}])
@@ -89,10 +94,13 @@ def _optimal_generic_value(
     return _top_weighted_value(pieces, duration_budget)
 
 
-def _total_generic_value(semantic_segments: list[dict[str, Any]]) -> float:
+def _total_generic_value(semantic_segments: list[dict[str, Any]], *, min_score: int = 1) -> float:
     value = 0.0
     for segment in semantic_segments:
-        weight = 0.0 if bool(segment.get("avoid_by_default")) else DEFAULT_HIGHLIGHT_VALUE_WEIGHTS.get(int(segment["default_highlight_score"]), 0.0)
+        score = int(segment["default_highlight_score"])
+        if score < min_score:
+            continue
+        weight = 0.0 if bool(segment.get("avoid_by_default")) else DEFAULT_HIGHLIGHT_VALUE_WEIGHTS.get(score, 0.0)
         duration = float(segment["end"]) - float(segment["start"])
         if duration > 0 and weight > 0:
             value += duration * weight
@@ -125,9 +133,9 @@ def compute_generic_selection_score(
     pred_intervals = _pred_intervals(pred_segments)
     pred_total_duration = intervals_duration(pred_intervals)
     if duration_budget is None:
-        generic_value_mode = "full_gt"
-        generic_value_optimal = _total_generic_value(semantic_segments)
-        generic_value_actual = _weighted_value_for_intervals(pred_intervals, semantic_segments)
+        generic_value_mode = "full_gt_highlight_only"
+        generic_value_optimal = _total_generic_value(semantic_segments, min_score=4)
+        generic_value_actual = _weighted_value_for_intervals(pred_intervals, semantic_segments, min_score=4)
     else:
         generic_value_mode = "budgeted"
         duration_budget = float(duration_budget)

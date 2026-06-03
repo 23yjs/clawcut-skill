@@ -356,7 +356,7 @@ def test_auto_eval_generic_scores_and_writes_files(tmp_path, monkeypatch):
     assert result["selection_score_v1"] is not None
     assert result["duration_context"]["duration_score_method"] == "not_applicable"
     assert result["duration_context"]["duration_budget"] is None
-    assert result["time_metrics"]["generic_value_mode"] == "full_gt"
+    assert result["time_metrics"]["generic_value_mode"] == "full_gt_highlight_only"
     assert "default_highlight_f1" in result["legacy_metrics"]
 
 

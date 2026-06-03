@@ -64,7 +64,7 @@ class SelectionScoringTests(unittest.TestCase):
         self.assertEqual(result["generic_value_mode"], "budgeted")
         self.assertEqual(result["generic_core_score"], 1.0)
 
-    def test_generic_without_duration_budget_uses_full_gt_value_denominator(self) -> None:
+    def test_generic_without_duration_budget_uses_true_highlight_denominator(self) -> None:
         semantic = [
             {
                 "segment_id": "seg_001",
@@ -89,10 +89,51 @@ class SelectionScoringTests(unittest.TestCase):
             duration_budget=None,
             duration_score=1.0,
         )
-        self.assertEqual(result["generic_value_mode"], "full_gt")
+        self.assertEqual(result["generic_value_mode"], "full_gt_highlight_only")
         self.assertEqual(result["generic_value_optimal"], 20.0)
         self.assertEqual(result["generic_value_actual"], 10.0)
         self.assertEqual(result["generic_value_score"], 0.5)
+
+    def test_generic_without_duration_budget_excludes_score_three_auxiliary_from_denominator(self) -> None:
+        semantic = [
+            {
+                "segment_id": "seg_highlight",
+                "start": 0,
+                "end": 10,
+                "description": "核心高光",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_auxiliary",
+                "start": 10,
+                "end": 30,
+                "description": "合理辅助过程",
+                "default_highlight_score": 3,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_regular",
+                "start": 30,
+                "end": 60,
+                "description": "普通内容",
+                "default_highlight_score": 1,
+                "avoid_by_default": False,
+            },
+        ]
+        result = compute_generic_selection_score(
+            [{"start": 0, "end": 10}],
+            semantic,
+            duration_budget=None,
+            duration_score=1.0,
+        )
+        self.assertEqual(result["generic_value_mode"], "full_gt_highlight_only")
+        self.assertEqual(result["generic_value_optimal"], 10.0)
+        self.assertEqual(result["generic_value_actual"], 10.0)
+        self.assertEqual(result["generic_value_score"], 1.0)
+        self.assertEqual(result["default_highlight_precision"], 1.0)
+        self.assertEqual(result["generic_core_score"], 1.0)
+        self.assertEqual(result["selection_score_v1"], 100.0)
 
     def test_generic_default_highlight_precision_all_highlight(self) -> None:
         result = compute_generic_selection_score(

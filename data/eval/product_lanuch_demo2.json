@@ -1,0 +1,417 @@
+{
+    "video_id": "product_lanuch_demo2",
+    "video_path": "product_lanuch_demo2.MP4",
+    "video_type": "product_launch",
+    "duration_seconds": 2044,
+    "video_summary": "视频为一段小米 17 Ultra 新品发布会实录，重点围绕手机外观设计和移动影像能力展开。内容依次介绍机身设计、防护能力、徕卡一英寸主摄、LOFIC 超高动态技术、烟花抓拍、2 亿像素连续光学变焦长焦、夜景人像、4K 动态照片、屏幕与性能、星辰通信、UWB 生态互联、苹果生态互联、产品价格以及影像套装。视频以舞台讲解、技术示意图、对比样张和功能演示为主，夹杂少量观众反应、重复总结页和结尾产品特写。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 8,
+            "description": "发布会舞台展示“全球影像战略合作升级”主题页，主持人介绍小米与影像合作伙伴进一步深化合作，为新品影像能力发布作开场铺垫。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 8,
+            "end": 13,
+            "description": "镜头切换至台下观众席，观众鼓掌并注视舞台。该段主要用于展示现场反应，没有新增产品信息。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 13,
+            "end": 35,
+            "description": "主持人正式引出小米 17 Ultra，并将其定位为巅峰影像科技旗舰。舞台大屏依次出现产品名称和影像旗舰主题文字。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 35,
+            "end": 65,
+            "description": "视频通过高质感产品动画展示绿色机身、背部圆形相机模组、Ultra 标识和徕卡相关标识，并使用手持画面呈现机身外观。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 65,
+            "end": 95,
+            "description": "主持人介绍小米 17 Ultra 的整体外观设计。画面展示白色机身、背部相机模组、正面屏幕和侧边结构，并通过不同角度说明机身布局。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 95,
+            "end": 122,
+            "description": "舞台大屏重点展示机身侧面和背部相机模组，说明手机厚度约为 8.29 毫米，并强调大尺寸影像模组与日常握持之间的平衡。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 122,
+            "end": 128,
+            "description": "镜头再次切换至台下观众席，观众观看发布会并鼓掌。该段没有新增产品卖点。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 128,
+            "end": 170,
+            "description": "主持人继续介绍机身外观和日常使用体验。画面展示不同配色、正反面效果和手持姿态，并出现“一台日常使用无压力的影像旗舰”等总结性文字。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 170,
+            "end": 210,
+            "description": "视频使用近距离产品动画进一步展示白色和绿色机身、圆形相机模组、边框和 Ultra 字样。该段主要为外观细节补充，部分镜头与此前展示内容相近。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 210,
+            "end": 240,
+            "description": "主持人介绍绿色机身的纹理、材质质感和外观辨识度。画面通过背板微距特写和不同光线下的机身动画展示设计细节。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 240,
+            "end": 265,
+            "description": "舞台大屏展示小米 17 Ultra 的防护能力，包括 IP66、IP68 和 IP69 等防护等级，并通过产品动画表现机身面对水和复杂环境时的耐用性。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 265,
+            "end": 300,
+            "description": "发布会从外观转入影像系统。主持人将小米 17 Ultra 称为新一代“小米夜神”，并通过相机模组拆解动画展示内部镜头和传感器结构。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 300,
+            "end": 330,
+            "description": "舞台继续展示小米 17 Ultra 的影像硬件组合，并使用汇总页明确提出“徕卡 1 英寸光影大师”和“徕卡 2 亿像素光学变焦”两项核心影像卖点。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 330,
+            "end": 365,
+            "description": "主持人重点介绍徕卡 1 英寸光影大师主摄，并通过大屏展示主摄传感器和画面动态范围相关信息。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 365,
+            "end": 430,
+            "description": "发布会介绍“光影猎人 1050L”传感器和 LOFIC 超高动态技术。技术动画展示传感器结构，画面出现约 6.3 倍动态范围相关信息，用于说明强光与暗部同时存在时的成像能力。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 430,
+            "end": 510,
+            "description": "视频通过夜间街景和霓虹灯招牌样张进行对比展示，说明 LOFIC 技术能够减少高亮区域过曝，并保留夜景中的灯光文字、暗部建筑和环境细节。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 510,
+            "end": 565,
+            "description": "主持人使用“无 1 英寸不 Ultra”和“无 LOFIC 不 Ultra”等文字页总结主摄卖点。该段以重复强化技术定位为主，没有引入新的演示内容。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 565,
+            "end": 595,
+            "description": "舞台大屏播放夜间火焰表演样张，展示人物周围高亮火焰和暗部环境同时保留的效果，用于进一步说明主摄动态范围能力。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 595,
+            "end": 640,
+            "description": "画面展示大型烟花表演和水面倒影，多组明亮烟花在夜空中展开。主持人借此引出复杂高亮场景中的烟花拍摄难点。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 640,
+            "end": 710,
+            "description": "发布会进入“烟花抓拍”主题。主持人通过多张烟花对比样张和与其他手机的对比画面，说明小米 17 Ultra 在烟花拍摄中的高光控制、色彩和细节表现，并展示相机中的烟花模式。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 710,
+            "end": 820,
+            "description": "视频连续展示多组烟花样张、夜间人物与烟花合影以及社交平台分享页面。画面强调烟花颜色、形态和人物轮廓均能较清晰保留。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 820,
+            "end": 870,
+            "description": "舞台大屏播放连续烟花视频和实拍操作画面，展示不同颜色烟花在夜空中升起和绽放的视觉效果，并呈现手机拍摄界面。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 870,
+            "end": 925,
+            "description": "主持人使用“烟花神器”主题页总结烟花拍摄能力，并重复展示手机拍摄界面和主摄相关卖点。该段主要为章节总结。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 925,
+            "end": 975,
+            "description": "发布会进入长焦章节。主持人提出“挑战 2026 最强主摄”，并重点展示徕卡 2 亿像素光学变焦镜头、200MP 分辨率和约 1/1.4 英寸感光元件。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 975,
+            "end": 1020,
+            "description": "主持人说明传统手机长焦方案中大底长焦与大底中焦难以同时兼得的问题，并引出通过连续光学变焦覆盖多个焦段的解决思路。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 1020,
+            "end": 1090,
+            "description": "视频使用 75 毫米和 90 毫米等不同焦段的建筑装饰样张进行对比，展示光学变焦在不同构图距离下的成像效果和细节保留。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 1090,
+            "end": 1120,
+            "description": "舞台大屏展示“连续光学变焦”和定制镜头结构，主持人说明镜头可以在多个焦段之间实现连续变化，而不是仅依赖固定焦段切换。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_028",
+            "start": 1120,
+            "end": 1180,
+            "description": "发布会通过城市建筑远景和镜头结构动画说明连续光学变焦的实际使用效果。画面在不同放大倍率下逐步拉近高层建筑，并强调画面细节保持稳定。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_029",
+            "start": 1180,
+            "end": 1240,
+            "description": "主持人进一步解释变焦镜组内部结构、双镜群协同和高通量设计。舞台动画展示多片镜片移动过程，并出现约 99% 高通量相关说明。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_030",
+            "start": 1240,
+            "end": 1260,
+            "description": "舞台大屏展示手机相机界面和“2 亿像素光学直出”文字，说明用户可以在相机中直接使用高像素长焦拍摄模式。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_031",
+            "start": 1260,
+            "end": 1300,
+            "description": "主持人使用“移动影像光学变焦时代”主题页总结方案，并展示约 75 毫米至 400 毫米多个焦段连续衔接的超长焦能力。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_032",
+            "start": 1300,
+            "end": 1370,
+            "description": "视频依次展示猫咪、夜间舞者和高塔等不同距离主体的长焦样张，并标注 75 毫米、100 毫米和 200 毫米等焦段，用于说明从中焦到远摄的覆盖能力。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_033",
+            "start": 1370,
+            "end": 1420,
+            "description": "发布会进入夜景人像展示。画面依次呈现室内人物、戴帽男性和低光环境人物样张，并通过 75 毫米、85 毫米和 100 毫米等焦段说明不同人像构图效果。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_034",
+            "start": 1420,
+            "end": 1470,
+            "description": "主持人将 2 亿像素大底长焦与连续光学变焦概括为手机长焦终极方案，并介绍徕卡 APO 光学认证。画面展示镜组结构和 APO 镜头相关示意图。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_035",
+            "start": 1470,
+            "end": 1500,
+            "description": "舞台使用“新一代小米夜神”和“挑战 2026 最强主摄长焦组合”等总结页回顾主摄与长焦组合。该段以章节收束为主。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_036",
+            "start": 1500,
+            "end": 1535,
+            "description": "发布会介绍 4K 动态照片和 4K 实况运镜功能。画面展示手机相机界面、动态照片缩略图和连续运镜操作。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_037",
+            "start": 1535,
+            "end": 1595,
+            "description": "视频播放多组动态照片效果样例，包括手持仙女棒的人物、海边人物、城市街景人物和红毯人物。画面强调照片具有连续动作和更强的现场感。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_038",
+            "start": 1595,
+            "end": 1610,
+            "description": "舞台展示红毯人物运镜样例并切换至观众席。该段主要用于结束动态照片章节并过渡到基础配置介绍。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_039",
+            "start": 1610,
+            "end": 1645,
+            "description": "发布会介绍手机正面屏幕和显示能力。画面展示约 6.9 英寸屏幕、像素结构以及“小米超级像素 3.0”和 20X 等显示相关信息。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_040",
+            "start": 1645,
+            "end": 1700,
+            "description": "主持人介绍手机性能、散热和续航能力。画面展示芯片、散热结构、温度对比、续航测试数据以及 6800mAh 电池容量。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_041",
+            "start": 1700,
+            "end": 1730,
+            "description": "发布会介绍“小米星辰通信”。画面展示通信芯片和全球网络覆盖示意图，强调复杂环境下的通信能力。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_042",
+            "start": 1730,
+            "end": 1760,
+            "description": "主持人介绍 UWB 超宽带互联能力，并通过车辆靠近后自动解锁、开启后备箱和雨伞场景展示手机与汽车之间的联动体验。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_043",
+            "start": 1760,
+            "end": 1790,
+            "description": "发布会进入生态互联章节。舞台大屏展示手机、平板、电脑和其他终端之间的连接能力，并重点引出与苹果生态设备之间的互联。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_044",
+            "start": 1790,
+            "end": 1840,
+            "description": "视频展示小米手机与 iPhone 之间的互联操作，包括屏幕镜像、文件传输、扫码连接和图片分享等界面演示。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_045",
+            "start": 1840,
+            "end": 1860,
+            "description": "舞台大屏展示小米首次支持苹果三件套分享界面，并通过两台手机并排显示进一步说明跨生态互联体验。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_046",
+            "start": 1860,
+            "end": 1925,
+            "description": "主持人使用汇总信息图和产品长图回顾小米 17 Ultra 的影像、屏幕、性能、通信和互联卖点。该段主要为信息复盘，部分内容与前文重复。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_047",
+            "start": 1925,
+            "end": 1970,
+            "description": "发布会公布小米 17 Ultra 的不同配色、版本和价格信息。画面明确显示起售价为 6999 元，并展示不同存储版本、首销权益和一年碎屏保等购买信息。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_048",
+            "start": 1970,
+            "end": 1985,
+            "description": "舞台继续展示首销权益、服务权益和购买相关信息。该段是价格发布后的补充说明，没有新的核心硬件卖点。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_049",
+            "start": 1985,
+            "end": 2010,
+            "description": "发布会展示专业影像套装，画面出现外接摄影手柄、镜头配件和挂绳等组合，并公布相应套装信息。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_050",
+            "start": 2010,
+            "end": 2035,
+            "description": "主持人进一步介绍轻量影像套装。画面展示不同配色的手机、可拆卸摄影配件和套装价格，强调便携拍摄体验。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_051",
+            "start": 2035,
+            "end": 2044,
+            "description": "视频结尾继续展示机身和圆形相机模组近景，主持人在舞台上进行收尾说明。该段以重复产品特写为主，没有新增功能或价格信息。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        }
+    ]
+}

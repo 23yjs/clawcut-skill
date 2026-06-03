@@ -160,7 +160,7 @@ instruction + 可选 target_duration + GT.video_summary + GT.semantic_segments
 
 - 不使用 Skill 自己的默认 `selected_target_duration` 作为评分分母。
 - `recommended_duration`、`selected_target_duration` 和 `compression_ratio` 仍保留在报告中，仅作为运行记录。
-- generic 使用 GT 全部加权价值作为 `generic_value_score` 分母。
+- generic 使用 GT 中 4-5 分真正默认高光的加权价值作为 `generic_value_score` 分母。
 - specific / conflict 使用全部 relevant GT 时长作为 Coverage 分母。
 
 示例：
@@ -279,7 +279,7 @@ editing_experience_score_v1 = 20 × 五项平均分
 aesthetic_score_v1 = editing_experience_score_v1  # 兼容别名
 ```
 
-Judge 还会输出标准化 `issues` 列表，用于记录动作截断、口播截断、突兀转场、冗余、节奏问题、音频切断、缺少上下文或独立观看性不足等剪辑体验问题。`issues` 不参与 `editing_experience_score_v1`，只用于失败原因统计、人工校准和典型案例分析；它不记录高光遗漏、指令不满足、画质、黑屏、冻结或音频流缺失。
+Judge 还会输出标准化 `issues` 列表，用于记录动作截断、口播截断、突兀转场、冗余、节奏问题、音频切断、缺少上下文或独立观看性不足等剪辑体验问题。常见 `issue_type` 包括 `action_truncation`、`speech_truncation`、`abrupt_transition`、`redundancy`、`audio_cut_abrupt` 和 `not_standalone_watchable`。`issues` 不参与 `editing_experience_score_v1`，只用于失败原因统计、人工校准和典型案例分析；多次 Judge 汇总会输出 `judge_issue_counts`。它不记录高光遗漏、指令不满足、画质、黑屏、冻结或音频流缺失。
 
 最终综合分：
 
@@ -379,7 +379,7 @@ default_highlight_score >= 4
 
 `generic_value_score` 用于评价在当前时长预算下是否优先捕获了更高价值的默认高光。
 
-当用户没有明确指定剪辑时长时，generic 不使用 Skill 默认目标时长，而是使用 GT 全部默认候选片段的加权价值作为分母，输出 `generic_value_mode=full_gt`。
+当用户没有明确指定剪辑时长时，generic 不使用 Skill 默认目标时长，也不把 2-3 分辅助片段算入必须召回的分母，而是只使用 GT 中 4-5 分真正默认高光的加权价值作为分母，输出 `generic_value_mode=full_gt_highlight_only`。
 
 `default_highlight_precision` 用于评价输出中真正默认高光片段所占比例，防止成片混入大量普通低价值内容。
 
