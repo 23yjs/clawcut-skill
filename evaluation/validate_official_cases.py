@@ -24,6 +24,7 @@ REQUIRED_FIELDS = {
 }
 
 CSV_FIELDS = [
+    "case_index",
     "case_id",
     "video_id",
     "priority",
@@ -40,6 +41,9 @@ CSV_FIELDS = [
     "target_duration_match",
     "error_message",
 ]
+
+READY_CASES_FILENAME = "official_ready_cases.jsonl"
+DIAGNOSTIC_CASES_FILENAME = "official_diagnostic_cases.jsonl"
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -108,7 +112,11 @@ def classify_case_readiness(case: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_readiness_report(cases: list[dict[str, Any]]) -> dict[str, Any]:
-    rows = [classify_case_readiness(case) for case in cases]
+    rows = []
+    for case_index, case in enumerate(cases, start=1):
+        row = classify_case_readiness(case)
+        row["case_index"] = case_index
+        rows.append(row)
     counts = Counter(row["status"] for row in rows)
     by_priority = {
         priority: dict(Counter(row["status"] for row in rows if row.get("priority") == priority))
@@ -119,17 +127,42 @@ def build_readiness_report(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "status_counts": dict(sorted(counts.items())),
         "by_priority": by_priority,
         "ready_for_official_eval": counts.get("ready", 0),
+        "diagnostic_case_count": counts.get("diagnostic_fallback", 0),
         "not_ready_count": len(cases) - counts.get("ready", 0),
         "rows": rows,
     }
 
 
-def write_readiness_outputs(report: dict[str, Any], output_dir: Path) -> None:
+def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+    with path.open("w", encoding="utf-8") as handle:
+        for row in rows:
+            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
+def _select_cases_by_status(
+    cases: list[dict[str, Any]],
+    report: dict[str, Any],
+    statuses: set[str],
+) -> list[dict[str, Any]]:
+    selected_indexes = {
+        int(row["case_index"])
+        for row in report["rows"]
+        if row.get("status") in statuses and row.get("case_index")
+    }
+    return [case for case_index, case in enumerate(cases, start=1) if case_index in selected_indexes]
+
+
+def write_readiness_outputs(report: dict[str, Any], output_dir: Path, cases: list[dict[str, Any]] | None = None) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "official_case_readiness.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    if cases is not None:
+        ready_cases = _select_cases_by_status(cases, report, {"ready"})
+        diagnostic_cases = _select_cases_by_status(cases, report, {"diagnostic_fallback"})
+        _write_jsonl(output_dir / READY_CASES_FILENAME, ready_cases)
+        _write_jsonl(output_dir / DIAGNOSTIC_CASES_FILENAME, diagnostic_cases)
     with (output_dir / "official_case_readiness.csv").open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=CSV_FIELDS)
         writer.writeheader()
@@ -140,7 +173,10 @@ def write_readiness_outputs(report: dict[str, Any], output_dir: Path) -> None:
         "",
         f"- case_count: {report['case_count']}",
         f"- ready_for_official_eval: {report['ready_for_official_eval']}",
+        f"- diagnostic_case_count: {report['diagnostic_case_count']}",
         f"- not_ready_count: {report['not_ready_count']}",
+        f"- ready_cases_jsonl: {READY_CASES_FILENAME}",
+        f"- diagnostic_cases_jsonl: {DIAGNOSTIC_CASES_FILENAME}",
         "",
         "## Status Counts",
         *(f"- {key}: {value}" for key, value in report["status_counts"].items()),
@@ -162,8 +198,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--require-ready", action="store_true")
     args = parser.parse_args(argv)
-    report = build_readiness_report(read_jsonl(args.cases))
-    write_readiness_outputs(report, args.output_dir)
+    cases = read_jsonl(args.cases)
+    report = build_readiness_report(cases)
+    write_readiness_outputs(report, args.output_dir, cases)
     print(f"official case 预检完成：{args.output_dir}")
     if args.require_ready and report["not_ready_count"]:
         return 1

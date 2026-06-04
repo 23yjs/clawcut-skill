@@ -489,6 +489,21 @@ python evaluation/run_batch_eval.py \
   --output_dir eval_outputs/batch_v1
 ```
 
+正式 official case 建议先做产物预检，再只评分已经具备有效 Ark 成片的 ready 子集：
+
+```bash
+python evaluation/validate_official_cases.py \
+  --cases data/eval/cases.official.v1.jsonl \
+  --output-dir eval_outputs/official_v1_readiness
+
+python evaluation/run_batch_eval.py \
+  --cases eval_outputs/official_v1_readiness/official_ready_cases.jsonl \
+  --gt_dir data/eval \
+  --output_dir eval_outputs/official_v1
+```
+
+`official_diagnostic_cases.jsonl` 会保留 fallback 样本，用于单独分析调用链路或 Skill fallback，不进入正式剪辑效果平均分。
+
 输出：
 
 ```text

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from evaluation.validate_official_cases import build_readiness_report, main
+from evaluation.validate_official_cases import build_readiness_report, main, write_readiness_outputs
 
 
 def _write_json(path: Path, payload: dict) -> None:
@@ -47,6 +47,7 @@ def _case(input_video: Path, output_dir: Path) -> dict:
         "target_duration": None,
         "input_video": str(input_video),
         "skill_output_dir": str(output_dir),
+        "tested_capability": "默认高光识别",
     }
 
 
@@ -56,6 +57,7 @@ def test_readiness_ready_when_artifacts_are_valid(tmp_path) -> None:
     assert report["status_counts"]["ready"] == 1
     assert report["ready_for_official_eval"] == 1
     assert report["not_ready_count"] == 0
+    assert report["rows"][0]["case_index"] == 1
 
 
 def test_readiness_detects_missing_artifacts(tmp_path) -> None:
@@ -82,3 +84,34 @@ def test_validate_official_cases_cli_writes_outputs(tmp_path) -> None:
     assert (output / "official_case_readiness.json").exists()
     assert (output / "official_case_readiness.csv").exists()
     assert (output / "official_case_readiness.md").exists()
+    ready_lines = (output / "official_ready_cases.jsonl").read_text(encoding="utf-8").splitlines()
+    assert len(ready_lines) == 1
+    assert json.loads(ready_lines[0])["tested_capability"] == "默认高光识别"
+    assert (output / "official_diagnostic_cases.jsonl").read_text(encoding="utf-8") == ""
+
+
+def test_readiness_exports_only_ready_cases(tmp_path) -> None:
+    ready_input, ready_output = _artifact_tree(tmp_path / "ready")
+    fallback_input, fallback_output = _artifact_tree(tmp_path / "fallback", fallback=True)
+    missing_input = tmp_path / "missing" / "input" / "demo.MP4"
+    missing_input.parent.mkdir(parents=True)
+    missing_input.write_bytes(b"video")
+    cases = [
+        _case(ready_input, ready_output),
+        {**_case(fallback_input, fallback_output), "case_id": "case_fallback"},
+        {**_case(missing_input, tmp_path / "missing" / "outputs"), "case_id": "case_missing"},
+    ]
+    report = build_readiness_report(cases)
+    output = tmp_path / "readiness"
+    write_readiness_outputs(report, output, cases)
+
+    ready_cases = [
+        json.loads(line)
+        for line in (output / "official_ready_cases.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    diagnostic_cases = [
+        json.loads(line)
+        for line in (output / "official_diagnostic_cases.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert [case["case_id"] for case in ready_cases] == ["case_demo"]
+    assert [case["case_id"] for case in diagnostic_cases] == ["case_fallback"]

@@ -13,8 +13,8 @@ ClawCut 评测体系分为五层：
 ## 标准执行顺序
 
 1. 先用 `data/eval/baseline_openclaw_cases.v1.jsonl` 通过 OpenClaw 收集 baseline 成片。
-2. 对 `data/eval/cases.official.v1.jsonl` 做产物预检，确认哪些 case 已经具备正式评测条件。
-3. 用 `data/eval/cases.official.v1.jsonl` 对已有成片进行正式效果评测；该文件同时包含 case 设计字段和容器内执行字段。
+2. 对 `data/eval/cases.official.v1.jsonl` 做产物预检，确认哪些 case 已经具备正式评测条件，并导出 ready-only 子清单。
+3. 用 `eval_outputs/official_v1_readiness/official_ready_cases.jsonl` 对已有成片进行正式效果评测；原始 official 文件继续作为完整设计清单保留。
 4. 批量评测完成后自动生成 `report.html`、`summary.md`、`technical_appendix.html` 和单 case 页面。
 5. 单独运行异常评测、稳定性汇总和 fps 敏感性专项。
 
@@ -23,11 +23,10 @@ ClawCut 评测体系分为五层：
 ```bash
 python evaluation/validate_official_cases.py \
   --cases data/eval/cases.official.v1.jsonl \
-  --output-dir eval_outputs/official_v1_readiness \
-  --require-ready
+  --output-dir eval_outputs/official_v1_readiness
 
 python evaluation/run_batch_eval.py \
-  --cases data/eval/cases.official.v1.jsonl \
+  --cases eval_outputs/official_v1_readiness/official_ready_cases.jsonl \
   --gt_dir data/eval \
   --output_dir eval_outputs/official_v1
 
@@ -54,6 +53,8 @@ python evaluation/run_fps_sensitivity_eval.py \
 ```
 
 因此正式批量评测应在容器或同等路径映射环境中运行。
+
+如果要求 56 条 official case 全部具备产物后才允许继续，可以给预检命令增加 `--require-ready`。日常迭代中更推荐先用 `official_ready_cases.jsonl` 跑已完成子集，并把 `official_diagnostic_cases.jsonl` 留给 fallback 问题分析。
 
 ## 不混分原则
 

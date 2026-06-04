@@ -215,8 +215,12 @@ python evaluation/human_readable_report.py \
 ```bash
 python evaluation/validate_official_cases.py \
   --cases data/eval/cases.official.v1.jsonl \
-  --output-dir eval_outputs/official_v1_readiness \
-  --require-ready
+  --output-dir eval_outputs/official_v1_readiness
+
+python evaluation/run_batch_eval.py \
+  --cases eval_outputs/official_v1_readiness/official_ready_cases.jsonl \
+  --gt_dir data/eval \
+  --output_dir eval_outputs/official_v1
 
 python evaluation/run_abnormal_eval.py \
   --cases data/eval/abnormal_cases.v1.jsonl \
