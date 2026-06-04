@@ -1,0 +1,305 @@
+{
+    "video_id": "cooking_demo2",
+    "video_path": "cooking_demo2.MP4",
+    "video_type": "cooking_tutorial",
+    "duration_seconds": 391,
+    "video_summary": "视频为一段多道菜连续制作的美食教程与成品展示混剪。内容包括酱汁炖带骨牛肉、鲜虾肉馅锅贴、整虾、牛肉鲜虾炒饭、水果冰淇淋、酱香炸茄子、番茄汤面和牛肉芝士饼等菜品，前半段以步骤演示为主，后半段集中展示摆盘、拉丝、酱汁和食材质感。视频整体信息密度较高，没有明显片尾推广页，但结尾包含多道成品的重复近景展示。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 21,
+            "description": "视频使用快速蒙太奇作为开场预告，依次展示切割层叠面皮或饼皮、处理番茄、切开整只虾以及挖空菠萝等食材准备画面。该段用于概览后续将出现的多道菜品。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 21,
+            "end": 24,
+            "description": "制作者将带骨牛肉切分为较大的块状，为煎制和后续炖煮做准备。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 24,
+            "end": 40,
+            "description": "制作者将多块牛肉放入煎锅，持续翻面煎制，使牛肉表面逐渐形成明显的焦褐色纹路。片段中多次近距离展示牛肉上色效果。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 40,
+            "end": 49,
+            "description": "制作者切碎洋葱，并将洋葱、菠萝块、蒜瓣和多种调味料放入搅拌机，制作后续炖牛肉使用的酱汁。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 49,
+            "end": 63,
+            "description": "制作者先在锅中炒香洋葱和蒜末，再放入煎好的牛肉并倒入搅拌后的酱汁。随后加入带骨牛肉块或骨髓部位，盖上锅盖进行炖煮。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 63,
+            "end": 69,
+            "description": "制作者在小锅中加入姜片、葱段和花椒等香料煮水，随后过滤得到调味用的葱姜香料水，为肉馅制作做准备。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 69,
+            "end": 81,
+            "description": "制作者将肉末进一步剁细，并加入鸡蛋、酱油、胡椒粉和葱姜香料水等调料，持续搅拌至肉馅混合均匀。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 81,
+            "end": 94,
+            "description": "制作者展示处理好的整只虾，将肉馅放在圆形面皮上，再放入较大的虾肉并将面皮两侧收拢，制作鲜虾肉馅锅贴。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 94,
+            "end": 102,
+            "description": "制作者向平底锅中加入食用油，放入多只带壳整虾持续煎炒。虾逐渐由灰色变为橙红色，并在锅中完成初步调味。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 102,
+            "end": 117,
+            "description": "制作者将包好的鲜虾肉馅锅贴放入锅中煎制，待底部形成焦黄色后加入清水并盖盖焖熟。开盖后镜头展示整齐排列、表面金黄的锅贴成品，并夹起一个锅贴呈现外观。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 117,
+            "end": 131,
+            "description": "制作者开始准备炒饭配料，依次煸炒切碎的香肠、去壳虾仁和牛肉片，使不同肉类和海鲜配料分别熟化并产生焦香。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 131,
+            "end": 142,
+            "description": "制作者在锅中炒香蒜末和葱花，加入鸡蛋并快速翻炒，再放入米饭，将鸡蛋和米饭炒散形成炒饭基础。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 142,
+            "end": 162,
+            "description": "制作者向炒饭中加入生菜、此前煸炒过的牛肉、虾仁和香肠，并加入黄油、酱油等调味料。片段后半段加入大量切碎辣椒持续翻炒，最后用木勺展示配料丰富的牛肉鲜虾炒饭。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 162,
+            "end": 180,
+            "description": "制作者开始制作水果冰淇淋，展示菠萝、哈密瓜、橙子和桃子等水果，并依次切开和挖空果肉，保留水果外壳作为盛装容器。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 180,
+            "end": 184,
+            "description": "制作者将不同水果果肉分别放入搅拌机打成果泥，再将颜色不同的水果泥倒入碗中备用。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 184,
+            "end": 190,
+            "description": "制作者将淡奶油和糖放入碗中，使用电动打蛋器持续打发，直至奶油形成较为稳定的纹理。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 190,
+            "end": 198,
+            "description": "制作者将不同颜色的水果泥、酸奶或其他乳制品与打发奶油混合，并继续搅拌，使水果与奶油形成均匀的冰淇淋混合物。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 198,
+            "end": 208,
+            "description": "制作者将水果奶油混合物分别倒入挖空的哈密瓜、菠萝、橙子和桃子外壳中，并将多个水果容器摆放在一起，完成冷冻前的装盘。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 208,
+            "end": 218,
+            "description": "制作者开始制作茄子菜品，将茄子切成细长条并放入水中处理，随后加入淀粉抓拌，使茄条表面均匀裹粉。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 218,
+            "end": 232,
+            "description": "制作者将裹粉后的茄条放入热油中炸制，并使用漏勺翻动和捞出。片段中展示茄条从浅色逐渐变为金黄色，并进行沥油处理。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 232,
+            "end": 242,
+            "description": "制作者调配茄子使用的酱汁，将糖、醋、酱油等调味料倒入杯中混合，并在锅中炒香蒜末、花椒和干辣椒。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 242,
+            "end": 250,
+            "description": "制作者将调好的酱汁倒入锅中煮至浓稠，再加入炸好的茄条快速翻炒，使茄条均匀裹上深色酱汁。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 250,
+            "end": 254,
+            "description": "制作者将酱香茄子装入黑色盘中，并用手和筷子近距离展示表面油亮、裹满酱汁的茄条质感。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 254,
+            "end": 266,
+            "description": "视频切回水果冰淇淋成品。镜头依次展示菠萝壳、哈密瓜壳和橙子壳中的冰淇淋，并用勺子挖起不同口味的成品，呈现细腻绵密的质感。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 266,
+            "end": 274,
+            "description": "制作者开始制作番茄汤面配料，将牛肉片、肉丸或虾丸等食材放入沸水中焯煮，并使用漏勺捞出备用。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 274,
+            "end": 284,
+            "description": "制作者在锅中炒软番茄块，加入酱油、番茄酱、糖、调味料和清水，持续搅拌煮成颜色浓郁的番茄汤底。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 284,
+            "end": 294,
+            "description": "制作者将面条、焯熟的肉丸、牛肉片和其他配菜加入番茄汤中，并摆放玉米、鸡蛋和生菜。片段末尾使用筷子夹起面条，展示浓稠番茄汤面成品。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_028",
+            "start": 294,
+            "end": 311,
+            "description": "视频回到此前炖煮的带骨牛肉。镜头近距离展示浓稠酱汁覆盖的牛肉、骨髓和肉块，并通过夹取、切开和撕开牛肉呈现软烂程度和内部纹理。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_029",
+            "start": 311,
+            "end": 318,
+            "description": "制作者在煎锅中加热多张圆形面饼，并在表面刷上酱汁，为制作牛肉芝士饼做准备。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_030",
+            "start": 318,
+            "end": 324,
+            "description": "制作者在面饼上加入撕碎的炖牛肉、芝士碎和深色酱汁，再覆盖另一张面饼，将馅料夹在中间。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_031",
+            "start": 324,
+            "end": 332,
+            "description": "制作者将夹有牛肉和芝士的面饼继续煎至表面金黄，并切开或拉开成品，展示内部融化芝士产生的明显拉丝效果。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_032",
+            "start": 332,
+            "end": 348,
+            "description": "制作者开始组合大份成品拼盘，将炒饭放在中央，并依次摆入牛肉芝士饼、鲜虾、酱香茄子、带骨炖牛肉和其他配菜。片段中多次近距离调整摆盘位置。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_033",
+            "start": 348,
+            "end": 360,
+            "description": "镜头完整展示摆盘完成后的多菜品拼盘，并通过缓慢移动和局部特写依次呈现炒饭、整虾、牛肉芝士饼、骨髓、炖牛肉和酱香茄子。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_034",
+            "start": 360,
+            "end": 366,
+            "description": "成品品尝蒙太奇开始。镜头先展示水果冰淇淋，再近距离夹取和品尝炖牛肉及骨髓，突出肉质软烂和酱汁浓稠的效果。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_035",
+            "start": 366,
+            "end": 373,
+            "description": "镜头依次展示牛肉芝士饼内部的芝士拉丝，以及橙红色整虾的近距离外观。该段以成品质感特写为主。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_036",
+            "start": 373,
+            "end": 384,
+            "description": "镜头切换至炒饭、酱香茄子和炖牛肉的连续近景。制作者用勺子翻动炒饭，并用手撕开大块牛肉，展示配料丰富程度和肉质纤维。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_037",
+            "start": 384,
+            "end": 391,
+            "description": "视频结尾再次展示水果冰淇淋和番茄汤面。镜头用勺子挖取冰淇淋，并以筷子夹起面条和肉丸的近距离画面结束，没有出现额外片尾页面。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        }
+    ]
+}
