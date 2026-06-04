@@ -157,6 +157,18 @@ def validate_resolver_result(
             "同一 segment_id 不能同时 required_highlight 和 allowed_context："
             + ", ".join(generic_target_overlap)
         )
+    guided_context_relevant_overlap = sorted(set(allowed_context_segment_ids) & set(relevant_segment_ids))
+    if guided_context_relevant_overlap:
+        raise ResolverValidationError(
+            "同一 segment_id 不能同时 relevant 和 allowed_context："
+            + ", ".join(guided_context_relevant_overlap)
+        )
+    guided_context_forbidden_overlap = sorted(set(allowed_context_segment_ids) & set(forbidden_segment_ids))
+    if guided_context_forbidden_overlap:
+        raise ResolverValidationError(
+            "同一 segment_id 不能同时 forbidden 和 allowed_context："
+            + ", ".join(guided_context_forbidden_overlap)
+        )
 
     segment_by_id = {
         str(segment.get("segment_id")): segment
@@ -193,8 +205,8 @@ def validate_resolver_result(
         if not legacy_generic_targets and not required_highlight_segment_ids:
             raise ResolverValidationError("generic resolved 时 required_highlight_segment_ids 不能为空")
     elif instruction_mode == "specific":
-        if required_highlight_segment_ids or allowed_context_segment_ids:
-            raise ResolverValidationError("非 generic 模式 required_highlight_segment_ids 和 allowed_context_segment_ids 必须为空")
+        if required_highlight_segment_ids:
+            raise ResolverValidationError("specific 模式 required_highlight_segment_ids 必须为空")
         if selection_scope not in {"preferential", "exclusive"}:
             raise ResolverValidationError("specific 的 selection_scope 必须是 preferential 或 exclusive")
         if use_default_highlights:
@@ -202,8 +214,8 @@ def validate_resolver_result(
         if resolution_status == "resolved" and not relevant_segment_ids:
             raise ResolverValidationError("specific resolved 时 relevant_segment_ids 不能为空")
     elif instruction_mode == "conflict":
-        if required_highlight_segment_ids or allowed_context_segment_ids:
-            raise ResolverValidationError("非 generic 模式 required_highlight_segment_ids 和 allowed_context_segment_ids 必须为空")
+        if required_highlight_segment_ids:
+            raise ResolverValidationError("conflict 模式 required_highlight_segment_ids 必须为空")
         if selection_scope not in {"preferential", "exclusive"}:
             raise ResolverValidationError("conflict 的 selection_scope 必须是 preferential 或 exclusive")
         if use_default_highlights:
@@ -212,7 +224,7 @@ def validate_resolver_result(
             raise ResolverValidationError("conflict resolved 时 relevant 或 forbidden 至少一个非空")
     elif instruction_mode == "unresolved":
         if required_highlight_segment_ids or allowed_context_segment_ids:
-            raise ResolverValidationError("非 generic 模式 required_highlight_segment_ids 和 allowed_context_segment_ids 必须为空")
+            raise ResolverValidationError("unresolved 模式 required_highlight_segment_ids 和 allowed_context_segment_ids 必须为空")
         if selection_scope != "unknown":
             raise ResolverValidationError("unresolved 的 selection_scope 必须是 unknown")
         if use_default_highlights:

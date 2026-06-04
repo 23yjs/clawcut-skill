@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 
-RESOLVER_PROMPT_VERSION = "resolver_v4_generic_context"
+RESOLVER_PROMPT_VERSION = "resolver_v5_guided_context"
 
 
 RESOLVER_SYSTEM_PROMPT = """你是视频剪辑评测系统中的 Instruction Resolver。
@@ -62,9 +62,20 @@ RESOLVER_SYSTEM_PROMPT = """你是视频剪辑评测系统中的 Instruction Res
 - specific：用户明确要求保留某些内容；use_default_highlights 必须为 false；resolved 时 relevant_segment_ids 必须非空。
   - 如果用户说“突出、优先、包含、重点展示”等，selection_scope 为 preferential，允许少量上下文。
   - 如果用户说“只剪、仅保留、不要其他、只要”等，selection_scope 为 exclusive，原则上不允许混入非目标内容。
+  - required_highlight_segment_ids 必须为空数组。
+  - allowed_context_segment_ids 可以为空；只允许包含为 relevant 内容提供动作完整、语义连贯、因果清楚或结果反馈所必需的片段。
+  - allowed_context_segment_ids 不得包含 forbidden_segment_ids，不得包含 avoid_by_default=true 的片段。
+  - exclusive 模式下选择 allowed_context 应比 preferential 更保守。
+  - 如果移除某片段后 relevant 内容仍然完整清楚，不要标记为 allowed_context。
 - conflict：用户既要求保留内容，又明确排除内容；selection_scope 必须为 preferential 或 exclusive；use_default_highlights 必须为 false；resolved 时 relevant_segment_ids 或 forbidden_segment_ids 至少一个非空。
+  - required_highlight_segment_ids 必须为空数组。
+  - allowed_context_segment_ids 可以为空；只允许包含为 relevant 内容提供动作完整、语义连贯、因果清楚或结果反馈所必需的片段。
+  - allowed_context_segment_ids 不得包含 forbidden_segment_ids，不得包含 avoid_by_default=true 的片段。
+  - exclusive 模式下选择 allowed_context 应比 preferential 更保守。
+  - 如果移除某片段后 relevant 内容仍然完整清楚，不要标记为 allowed_context。
 - unresolved：GT 信息不足，无法可靠映射用户要求；selection_scope 必须为 unknown；use_default_highlights 必须为 false；resolution_status 必须为 unresolved 或 partial；unresolved_requirements 必须非空。
-- specific、conflict、unresolved 模式中，required_highlight_segment_ids 和 allowed_context_segment_ids 必须为空数组，保持 relevant_segment_ids / forbidden_segment_ids 逻辑不变。
+  - required_highlight_segment_ids 必须为空数组。
+  - allowed_context_segment_ids 必须为空数组。
 
 duration_constraint 解析规则：
 - 只输出统一的 min_seconds / max_seconds 区间；不要枚举或输出 exact / approx / max / min / range 等模式。

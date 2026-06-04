@@ -410,10 +410,14 @@ selection_scope:
   exclusive     # 只剪目标内容，原则上不允许混入非目标内容
 ```
 
+specific / conflict 模式允许 Resolver 标记少量 `allowed_context_segment_ids`。Coverage 仍只计算 `relevant_segment_ids`，Precision 使用 `relevant_segment_ids + allowed_context_segment_ids` 作为可接受内容，`forbidden_segment_ids` 继续单独计算惩罚。
+
+`allowed_context_segment_ids` 只能用于保证动作完整、语义连贯、因果清楚或结果反馈完整，不能作为普通低价值内容的免责桶。
+
 `preferential`：
 
 ```text
-guided_core_score = 0.70 × relevant_duration_coverage + 0.30 × relevant_duration_precision
+guided_core_score = 0.70 × relevant_duration_coverage + 0.30 × acceptable_precision
 ```
 
 当用户没有明确指定剪辑时长时，guided coverage 使用全部 relevant GT 时长作为分母，输出 `coverage_mode=full_gt`；有明确时长预算时仍使用 `coverage_mode=budgeted`。
@@ -421,7 +425,7 @@ guided_core_score = 0.70 × relevant_duration_coverage + 0.30 × relevant_durati
 `exclusive`：
 
 ```text
-guided_core_score = relevant_duration_f1
+guided_core_score = F1(acceptable_precision, relevant_duration_coverage)
 ```
 
 最终：

@@ -52,6 +52,13 @@ class InstructionResolverValidationTests(unittest.TestCase):
         self.assertEqual(result["instruction_mode"], "specific")
         self.assertEqual(result["selection_scope"], "preferential")
 
+    def test_valid_specific_with_allowed_context(self) -> None:
+        result = validate_resolver_result(
+            _result(allowed_context_segment_ids=["seg_002"]),
+            GT,
+        )
+        self.assertEqual(result["allowed_context_segment_ids"], ["seg_002"])
+
     def test_valid_specific_exclusive(self) -> None:
         result = validate_resolver_result(_result(selection_scope="exclusive"), GT)
         self.assertEqual(result["selection_scope"], "exclusive")
@@ -66,6 +73,18 @@ class InstructionResolverValidationTests(unittest.TestCase):
             GT,
         )
         self.assertEqual(result["forbidden_segment_ids"], ["seg_003"])
+
+    def test_valid_conflict_with_allowed_context(self) -> None:
+        result = validate_resolver_result(
+            _result(
+                instruction_mode="conflict",
+                selection_scope="preferential",
+                forbidden_segment_ids=["seg_003"],
+                allowed_context_segment_ids=["seg_002"],
+            ),
+            GT,
+        )
+        self.assertEqual(result["allowed_context_segment_ids"], ["seg_002"])
 
     def test_valid_unresolved(self) -> None:
         result = validate_resolver_result(
@@ -155,6 +174,45 @@ class InstructionResolverValidationTests(unittest.TestCase):
         with self.assertRaises(ResolverValidationError):
             validate_resolver_result(
                 _result(required_highlight_segment_ids=["seg_001"]),
+                GT,
+            )
+
+    def test_specific_allowed_context_overlaps_relevant_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(allowed_context_segment_ids=["seg_001"]),
+                GT,
+            )
+
+    def test_conflict_allowed_context_overlaps_forbidden_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(
+                    instruction_mode="conflict",
+                    forbidden_segment_ids=["seg_002"],
+                    allowed_context_segment_ids=["seg_002"],
+                ),
+                GT,
+            )
+
+    def test_specific_allowed_context_avoid_by_default_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(allowed_context_segment_ids=["seg_003"]),
+                GT,
+            )
+
+    def test_unresolved_allowed_context_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(
+                    instruction_mode="unresolved",
+                    selection_scope="unknown",
+                    resolution_status="unresolved",
+                    relevant_segment_ids=[],
+                    allowed_context_segment_ids=["seg_002"],
+                    unresolved_requirements=["GT 信息不足"],
+                ),
                 GT,
             )
 

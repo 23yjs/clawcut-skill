@@ -447,6 +447,87 @@ class SelectionScoringTests(unittest.TestCase):
         self.assertEqual(result["guided_core_score"], 0.5)
         self.assertEqual(result["selection_score_v1"], 50.0)
 
+    def test_guided_preferential_uses_acceptable_precision(self) -> None:
+        semantic = [
+            {
+                "segment_id": "seg_relevant",
+                "start": 0,
+                "end": 10,
+                "description": "目标内容",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_context",
+                "start": 10,
+                "end": 15,
+                "description": "动作结果反馈",
+                "default_highlight_score": 3,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_low",
+                "start": 15,
+                "end": 20,
+                "description": "普通低价值内容",
+                "default_highlight_score": 2,
+                "avoid_by_default": False,
+            },
+        ]
+        result = compute_guided_selection_score(
+            [{"start": 0, "end": 15}],
+            semantic,
+            relevant_segment_ids=["seg_relevant"],
+            forbidden_segment_ids=[],
+            allowed_context_segment_ids=["seg_context"],
+            selection_scope="preferential",
+            duration_budget=10,
+            duration_score=1.0,
+        )
+        self.assertEqual(result["relevant_duration_precision"], 0.667)
+        self.assertEqual(result["allowed_context_segment_ids"], ["seg_context"])
+        self.assertEqual(result["allowed_context_overlap_duration"], 5.0)
+        self.assertEqual(result["acceptable_overlap_duration"], 15.0)
+        self.assertEqual(result["acceptable_precision"], 1.0)
+        self.assertEqual(result["relevant_duration_coverage"], 1.0)
+        self.assertEqual(result["guided_core_score"], 1.0)
+        self.assertEqual(result["selection_score_v1"], 100.0)
+
+    def test_guided_exclusive_uses_acceptable_precision_f1(self) -> None:
+        semantic = [
+            {
+                "segment_id": "seg_relevant",
+                "start": 0,
+                "end": 10,
+                "description": "目标内容",
+                "default_highlight_score": 5,
+                "avoid_by_default": False,
+            },
+            {
+                "segment_id": "seg_context",
+                "start": 10,
+                "end": 15,
+                "description": "结果反馈",
+                "default_highlight_score": 3,
+                "avoid_by_default": False,
+            },
+        ]
+        result = compute_guided_selection_score(
+            [{"start": 0, "end": 15}],
+            semantic,
+            relevant_segment_ids=["seg_relevant"],
+            forbidden_segment_ids=[],
+            allowed_context_segment_ids=["seg_context"],
+            selection_scope="exclusive",
+            duration_budget=10,
+            duration_score=1.0,
+        )
+        self.assertEqual(result["relevant_duration_precision"], 0.667)
+        self.assertEqual(result["relevant_duration_f1"], 0.8)
+        self.assertEqual(result["acceptable_precision"], 1.0)
+        self.assertEqual(result["guided_core_score"], 1.0)
+        self.assertEqual(result["selection_score_v1"], 100.0)
+
     def test_guided_without_duration_budget_uses_full_relevant_gt_coverage(self) -> None:
         semantic = [
             {

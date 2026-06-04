@@ -370,6 +370,7 @@ def _selection_score(
             gt_annotation.get("semantic_segments", []),
             relevant_segment_ids=resolver_result.get("relevant_segment_ids", []),
             forbidden_segment_ids=resolver_result.get("forbidden_segment_ids", []),
+            allowed_context_segment_ids=resolver_result.get("allowed_context_segment_ids"),
             selection_scope=resolver_result.get("selection_scope", "preferential"),
             duration_budget=float(duration_budget) if duration_budget is not None else None,
             duration_score=float(duration_score),

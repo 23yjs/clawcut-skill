@@ -409,13 +409,21 @@ def test_auto_eval_generated_case_keeps_generic_required_and_context(tmp_path, m
 
 def test_auto_eval_specific_scores_reference_metrics(tmp_path, monkeypatch):
     config = _prepare_files(tmp_path)
-    _patch_resolver(monkeypatch, _resolver_result(relevant_segment_ids=["seg_001"]))
+    _patch_resolver(
+        monkeypatch,
+        _resolver_result(
+            relevant_segment_ids=["seg_001"],
+            allowed_context_segment_ids=["seg_002"],
+        ),
+    )
     result = run_auto_eval(config)
     _assert_common_outputs(config.output_dir)
     assert result["evaluation_status"] == "selection_scored_aesthetic_pending"
     assert result["evaluation_scope"] == "official"
     assert result["time_metrics"]["coverage_mode"] == "full_gt"
     assert result["time_metrics"]["relevant_duration_coverage"] == 0.778
+    assert result["time_metrics"]["allowed_context_segment_ids"] == ["seg_002"]
+    assert "acceptable_precision" in result["time_metrics"]
 
 
 def test_auto_eval_conflict_scores_forbidden_metrics(tmp_path, monkeypatch):

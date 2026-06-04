@@ -227,17 +227,24 @@ def compute_guided_selection_score(
     *,
     relevant_segment_ids: list[str],
     forbidden_segment_ids: list[str],
+    allowed_context_segment_ids: list[str] | None = None,
     selection_scope: str,
     duration_budget: float | None,
     duration_score: float,
 ) -> dict[str, Any]:
     pred_intervals = _pred_intervals(pred_segments)
     pred_total_duration = intervals_duration(pred_intervals)
+    allowed_context_segment_ids = allowed_context_segment_ids or []
     relevant_intervals = _intervals_for_ids(semantic_segments, relevant_segment_ids)
+    allowed_context_intervals = _intervals_for_ids(semantic_segments, allowed_context_segment_ids)
+    acceptable_intervals = normalize_intervals(relevant_intervals + allowed_context_intervals)
     forbidden_intervals = _intervals_for_ids(semantic_segments, forbidden_segment_ids)
     relevant_gt_total_duration = intervals_duration(relevant_intervals)
     matched_relevant_duration = overlap_duration_between(pred_intervals, relevant_intervals)
     precision = matched_relevant_duration / pred_total_duration if pred_total_duration > 0 else 0.0
+    allowed_context_overlap_duration = overlap_duration_between(pred_intervals, allowed_context_intervals)
+    acceptable_overlap_duration = overlap_duration_between(pred_intervals, acceptable_intervals)
+    acceptable_precision = acceptable_overlap_duration / pred_total_duration if pred_total_duration > 0 else 0.0
     if duration_budget is None:
         coverage_mode = "full_gt"
         coverage_denominator = relevant_gt_total_duration
@@ -245,16 +252,17 @@ def compute_guided_selection_score(
         coverage_mode = "budgeted"
         coverage_denominator = min(relevant_gt_total_duration, float(duration_budget))
     coverage = min(matched_relevant_duration, coverage_denominator) / coverage_denominator if coverage_denominator > 0 else 0.0
-    f1 = _compute_f1(precision, coverage)
+    relevant_f1 = _compute_f1(precision, coverage)
+    acceptable_f1 = _compute_f1(acceptable_precision, coverage)
     non_relevant_duration = max(0.0, pred_total_duration - matched_relevant_duration)
     non_relevant_ratio = non_relevant_duration / pred_total_duration if pred_total_duration > 0 else 0.0
     forbidden_overlap = overlap_duration_between(pred_intervals, forbidden_intervals)
     forbidden_ratio = forbidden_overlap / pred_total_duration if pred_total_duration > 0 else 0.0
     forbidden_compliance = max(0.0, 1.0 - forbidden_ratio)
     if selection_scope == "exclusive":
-        guided_core_score = f1
+        guided_core_score = acceptable_f1
     else:
-        guided_core_score = 0.70 * coverage + 0.30 * precision
+        guided_core_score = 0.70 * coverage + 0.30 * acceptable_precision
     selection_score = 100.0 * guided_core_score * forbidden_compliance * float(duration_score)
     return {
         "score_type": "guided",
@@ -264,7 +272,11 @@ def compute_guided_selection_score(
         "matched_relevant_duration": _round(matched_relevant_duration),
         "relevant_duration_precision": _round(precision),
         "relevant_duration_coverage": _round(coverage),
-        "relevant_duration_f1": _round(f1),
+        "relevant_duration_f1": _round(relevant_f1),
+        "allowed_context_segment_ids": list(allowed_context_segment_ids),
+        "allowed_context_overlap_duration": _round(allowed_context_overlap_duration),
+        "acceptable_overlap_duration": _round(acceptable_overlap_duration),
+        "acceptable_precision": _round(acceptable_precision),
         "coverage_mode": coverage_mode,
         "non_relevant_duration": _round(non_relevant_duration),
         "non_relevant_duration_ratio": _round(non_relevant_ratio),
