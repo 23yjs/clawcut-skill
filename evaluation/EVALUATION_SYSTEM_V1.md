@@ -18,6 +18,7 @@ ClawCut 评测体系分为五层：
 3. 用 `eval_outputs/official_v1_readiness/official_ready_cases.jsonl` 对已有成片进行正式效果评测；原始 official 文件继续作为完整设计清单保留。
 4. 批量评测完成后自动生成 `report.html`、`summary.md`、`technical_appendix.html` 和单 case 页面；主报告必须包含能力维度汇总以及典型成功、失败和诊断样本。
 5. 单独运行异常评测、稳定性汇总、fps 敏感性专项和版本回归对比。
+6. 聚合生成 `FINAL_EVALUATION_REPORT.md`，作为训练营提交和答辩材料的总入口。
 
 ## 关键命令
 
@@ -51,6 +52,15 @@ python evaluation/regression_report.py \
   --gate-config evaluation/config/regression_gate.v1.json \
   --output-dir eval_outputs/regression_v1 \
   --fail-on-regression
+
+python evaluation/final_delivery_report.py \
+  --official-summary-json eval_outputs/official_v1/summary.json \
+  --readiness-json eval_outputs/official_v1_readiness/official_case_readiness.json \
+  --abnormal-summary-json eval_outputs/abnormal_v1/abnormal_summary.json \
+  --stability-summary-json eval_outputs/stability_v1/stability_summary.json \
+  --fps-summary-json eval_outputs/fps_sensitivity_v1/fps_sensitivity_summary.json \
+  --regression-summary-json eval_outputs/regression_v1/regression_summary.json \
+  --output-dir eval_outputs/final_delivery_v1
 ```
 
 `cases.official.v1.jsonl` 中的 `input_video` 和 `skill_output_dir` 默认面向 OpenClaw 容器路径：

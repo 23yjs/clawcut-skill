@@ -517,6 +517,21 @@ python evaluation/regression_report.py \
 
 默认门禁会拦截：case 丢失、原本成功的 case 变失败、fallback 增加、技术质量退步、单 case 分数下降超过阈值、平均分下降超过阈值。
 
+最终交付报告用于把上述分散结果聚合成训练营可提交材料：
+
+```bash
+python evaluation/final_delivery_report.py \
+  --official-summary-json eval_outputs/official_v1/summary.json \
+  --readiness-json eval_outputs/official_v1_readiness/official_case_readiness.json \
+  --abnormal-summary-json eval_outputs/abnormal_v1/abnormal_summary.json \
+  --stability-summary-json eval_outputs/stability_v1/stability_summary.json \
+  --fps-summary-json eval_outputs/fps_sensitivity_v1/fps_sensitivity_summary.json \
+  --regression-summary-json eval_outputs/regression_v1/regression_summary.json \
+  --output-dir eval_outputs/final_delivery_v1
+```
+
+它会生成 `FINAL_EVALUATION_REPORT.md` 和 `final_delivery_report.json`，集中说明总体结论、能力覆盖、典型成功/失败案例、异常处理、稳定性/成本、高动态 fps、版本回归和缺失证据层。
+
 输出：
 
 ```text

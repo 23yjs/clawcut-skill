@@ -242,6 +242,15 @@ python evaluation/regression_report.py \
   --gate-config evaluation/config/regression_gate.v1.json \
   --output-dir eval_outputs/regression_v1 \
   --fail-on-regression
+
+python evaluation/final_delivery_report.py \
+  --official-summary-json eval_outputs/official_v1/summary.json \
+  --readiness-json eval_outputs/official_v1_readiness/official_case_readiness.json \
+  --abnormal-summary-json eval_outputs/abnormal_v1/abnormal_summary.json \
+  --stability-summary-json eval_outputs/stability_v1/stability_summary.json \
+  --fps-summary-json eval_outputs/fps_sensitivity_v1/fps_sensitivity_summary.json \
+  --regression-summary-json eval_outputs/regression_v1/regression_summary.json \
+  --output-dir eval_outputs/final_delivery_v1
 ```
 
 正式 case 设计见 `data/eval/CASE_DESIGN_V1.md` 和 `data/eval/cases.official.v1.jsonl`。`cases.official.v1.jsonl` 同时包含 `input_video` 和 `skill_output_dir`，默认指向 OpenClaw 容器路径；正式批量评测应在容器或等价路径映射环境中运行。异常、稳定性和 fps 对比均为专项评测，不混入 `selection_score_v1` 的正式效果分。
