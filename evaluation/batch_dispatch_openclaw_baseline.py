@@ -252,7 +252,7 @@ def build_openclaw_command(
         "agent",
         "--agent",
         agent,
-        "--session-key",
+        "--session-id",
         session_key,
         "--message",
         message,

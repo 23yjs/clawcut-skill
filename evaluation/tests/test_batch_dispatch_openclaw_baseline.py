@@ -109,6 +109,17 @@ def test_session_key_is_unique_per_case_and_run():
     assert len({first, second, third}) == 3
 
 
+def test_openclaw_command_uses_session_id_flag():
+    command = dispatch.build_openclaw_command(
+        agent="main",
+        session_key="clawcut-baseline-generic__demo-run_01",
+        message="hello",
+        timeout_seconds=1800,
+    )
+    assert "--session-id" in command
+    assert "--session-key" not in command
+
+
 def test_choose_next_attempt_allocates_run_nn(tmp_path):
     case = _case(tmp_path)
     root = dispatch.case_root(tmp_path / "out", case)
