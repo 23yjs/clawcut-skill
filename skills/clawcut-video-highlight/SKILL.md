@@ -184,6 +184,85 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
 - `preview.mp4` 只用于模型理解或本地调试，不作为最终出片源。
 - 如果传入 `--llm_video_url`，模型会直接使用该 URL；当前版本不会自动上传 preview 到 TOS。
 
+## 内部基线采集协议：CLAWCUT_BASELINE_COLLECTION_V1
+
+当 Agent 收到以 `/skill clawcut-video-highlight` 开头，并包含以下协议块的消息时：
+
+```text
+[CLAWCUT_BASELINE_COLLECTION_V1]
+...
+[/CLAWCUT_BASELINE_COLLECTION_V1]
+```
+
+这表示当前任务是一次可复现的基线剪辑产物采集。Agent 仍然必须通过本 Skill 调用 `scripts/run_skill.py`，不得绕过 Skill 自行剪辑。
+
+Agent 必须读取协议块中的字段：
+
+- `case_id`
+- `run_id`
+- `user_instruction_original`
+- `instruction`
+- `input_video`
+- `llm_video_url`
+- `output_dir`
+- `llm_backend`
+- `target_duration`
+
+执行规则：
+
+- 将协议块中的 `instruction` 原样传给 `--instruction`。
+- 将协议块中的 `user_instruction_original` 原样传给 `--user_instruction_original`。
+- `target_duration` 为 `null`、空值或 `未指定` 时，不得传入 `--target_duration`。
+- `input_video` 必须作为本地原始剪辑源路径传给 `--input_video`。
+- `llm_video_url` 必须传给 `--llm_video_url`，供 Ark 模型理解视频内容。
+- `llm_backend` 必须传给 `--llm_backend`；基线采集默认使用 `ark`。
+- 不得润色、扩写或补充 `instruction`，不得根据视频类型擅自增加剪辑重点。
+- 不得把整段 `[CLAWCUT_BASELINE_COLLECTION_V1]` 协议块传给 `--instruction`。
+- 不得修改 Skill 代码、Prompt、配置或 fallback 行为。
+- 不得绕过 `run_skill.py` 直接调用 `ffmpeg`。
+
+执行完成后，Agent 应返回：
+
+- 实际执行命令。
+- 退出码。
+- 实际 `result_summary.json` 路径。
+- 实际 `highlight.mp4` 路径。
+- 是否触发 fallback。
+
+示例 message：
+
+```text
+/skill clawcut-video-highlight
+
+[CLAWCUT_BASELINE_COLLECTION_V1]
+
+case_id: generic__game_demo2
+run_id: run_01
+
+user_instruction_original:
+帮我剪辑一下这个视频 /home/node/.openclaw/workspace/data/input/game_demo2.MP4
+
+instruction:
+帮我剪辑一下这个视频
+
+input_video:
+/home/node/.openclaw/workspace/data/input/game_demo2.MP4
+
+llm_video_url:
+https://clawcut.tos-cn-beijing.volces.com/input/game_demo2.MP4
+
+output_dir:
+/home/node/.openclaw/workspace/outputs/openclaw_collection_v1/game_demo2/generic__game_demo2/run_01
+
+llm_backend:
+ark
+
+target_duration:
+未指定
+
+[/CLAWCUT_BASELINE_COLLECTION_V1]
+```
+
 ## 输出文件
 
 执行成功后应查看：
