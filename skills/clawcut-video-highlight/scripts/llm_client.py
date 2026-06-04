@@ -5,9 +5,11 @@ import json
 import logging
 import mimetypes
 import os
+import time
 import urllib.error
 import urllib.request
 from abc import ABC, abstractmethod
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -156,9 +158,14 @@ class ArkLLMClient(BaseLLMClient):
             video_source,
             preview_size_mb,
         )
+        request_started_at = _utc_now()
+        started_monotonic = time.monotonic()
         raw_response = _post_json(request_url, api_key, payload, timeout)
+        request_finished_at = _utc_now()
+        latency_seconds = round(time.monotonic() - started_monotonic, 3)
         content = _extract_message_content(raw_response)
         plan = _parse_json_object(content)
+        usage = raw_response.get("usage") if isinstance(raw_response.get("usage"), dict) else {}
         plan.setdefault("llm_metadata", {})
         plan["llm_metadata"].update(
             {
@@ -166,6 +173,14 @@ class ArkLLMClient(BaseLLMClient):
                 "model": model,
                 "preview_video_path": preview_video_path,
                 "video_source": video_source,
+                "usage": {
+                    "prompt_tokens": usage.get("prompt_tokens"),
+                    "completion_tokens": usage.get("completion_tokens"),
+                    "total_tokens": usage.get("total_tokens"),
+                },
+                "request_started_at": request_started_at,
+                "request_finished_at": request_finished_at,
+                "latency_seconds": latency_seconds,
             }
         )
         return plan
@@ -178,6 +193,10 @@ def create_llm_client(config: dict, logger: logging.Logger | None = None) -> Bas
     if backend == "ark":
         return ArkLLMClient(logger=logger)
     raise SkillError(f"不支持的 LLM backend：{backend}")
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 def _candidate_env_paths() -> list[Path]:

@@ -38,6 +38,14 @@ def _write_success_artifacts(run_dir: Path, *, fallback: bool = False, backend: 
                 "skill_instruction_effective": dispatch.BASELINE_INSTRUCTION,
                 "user_instruction_original": f"{dispatch.BASELINE_INSTRUCTION} /input/demo.MP4",
                 "model_interpreted_intent": "默认高光剪辑",
+                "skill_llm_model": "ep-test",
+                "skill_llm_prompt_tokens": 100,
+                "skill_llm_completion_tokens": 25,
+                "skill_llm_total_tokens": 125,
+                "skill_llm_latency_seconds": 3.5,
+                "skill_llm_video_source": "url",
+                "skill_llm_request_started_at": "2026-06-04T00:00:00+00:00",
+                "skill_llm_request_finished_at": "2026-06-04T00:00:03.5+00:00",
                 "run_log": str(logs / "run.log"),
             },
             ensure_ascii=False,
@@ -235,6 +243,9 @@ def test_run_openclaw_attempt_writes_manifest_and_summaries(tmp_path):
     )
     dispatch.write_batch_outputs(output_root, [manifest])
     assert manifest["collection_status"] == "official_success"
+    assert manifest["skill_llm_total_tokens"] == 125
     assert (output_root / "batch_progress.json").exists()
-    assert (output_root / "batch_results.csv").exists()
+    csv_text = (output_root / "batch_results.csv").read_text(encoding="utf-8")
+    assert "skill_llm_total_tokens" in csv_text
+    assert "125" in csv_text
     assert (output_root / "batch_results.jsonl").exists()

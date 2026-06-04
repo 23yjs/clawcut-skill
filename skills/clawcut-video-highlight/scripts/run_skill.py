@@ -268,6 +268,7 @@ def _write_success_summary(
 ) -> None:
     video_info = video_info or {}
     llm_metadata = plan.get("llm_metadata", {}) if isinstance(plan.get("llm_metadata"), dict) else {}
+    llm_usage = llm_metadata.get("usage", {}) if isinstance(llm_metadata.get("usage"), dict) else {}
     skill_backend_used = str(llm_metadata.get("backend", "") or "").strip().lower() or "unknown"
     fallback_used = skill_backend_requested == "ark" and skill_backend_used != "ark"
     input_video_sha256 = _sha256_file(input_video) if input_video.exists() and input_video.is_file() else ""
@@ -296,6 +297,14 @@ def _write_success_summary(
             "run_finished_at": run_finished_at,
             "skill_prompt_version": SKILL_PROMPT_VERSION,
             "skill_model": llm_metadata.get("model", ""),
+            "skill_llm_model": llm_metadata.get("model", ""),
+            "skill_llm_prompt_tokens": llm_usage.get("prompt_tokens"),
+            "skill_llm_completion_tokens": llm_usage.get("completion_tokens"),
+            "skill_llm_total_tokens": llm_usage.get("total_tokens"),
+            "skill_llm_latency_seconds": llm_metadata.get("latency_seconds"),
+            "skill_llm_video_source": llm_metadata.get("video_source", ""),
+            "skill_llm_request_started_at": llm_metadata.get("request_started_at", ""),
+            "skill_llm_request_finished_at": llm_metadata.get("request_finished_at", ""),
             "duration_policy": plan.get("duration_policy", {}),
             "selected_target_duration": validation.get("selected_target_duration"),
             "final_total_duration": validation.get("total_duration"),

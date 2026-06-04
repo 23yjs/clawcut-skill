@@ -168,6 +168,56 @@ class DurationPolicyModeTests(unittest.TestCase):
             payload = json.loads(summary.read_text(encoding="utf-8"))
             self.assertEqual(payload["duration_policy"]["duration_policy_mode"], "llm_free")
 
+    def test_result_summary_contains_skill_llm_usage(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            policy = _build_duration_policy(120.0, None, "llm_free")
+            policy["selected_target_duration"] = 12.0
+            policy["final_total_duration"] = 12.0
+            plan = _base_plan(policy, 0.0, 12.0)
+            plan["llm_metadata"] = {
+                "backend": "ark",
+                "model": "ep-test",
+                "video_source": "url",
+                "usage": {
+                    "prompt_tokens": 100,
+                    "completion_tokens": 25,
+                    "total_tokens": 125,
+                },
+                "latency_seconds": 3.5,
+                "request_started_at": "2026-06-04T00:00:00+00:00",
+                "request_finished_at": "2026-06-04T00:00:03.5+00:00",
+            }
+            paths = {
+                "highlight": root / "videos" / "highlight.mp4",
+                "segments": root / "reports" / "segments.json",
+                "report": root / "reports" / "report.md",
+                "log": root / "logs" / "run.log",
+            }
+            summary = root / "reports" / "result_summary.json"
+            _write_success_summary(
+                summary,
+                paths,
+                Path("data/input/demo.MP4"),
+                "剪出高光",
+                "剪出高光",
+                plan,
+                {
+                    "selected_target_duration": 12.0,
+                    "total_duration": 12.0,
+                    "duration_delta": 0.0,
+                    "warnings": [],
+                },
+                None,
+            )
+            payload = json.loads(summary.read_text(encoding="utf-8"))
+            self.assertEqual(payload["skill_llm_model"], "ep-test")
+            self.assertEqual(payload["skill_llm_prompt_tokens"], 100)
+            self.assertEqual(payload["skill_llm_completion_tokens"], 25)
+            self.assertEqual(payload["skill_llm_total_tokens"], 125)
+            self.assertEqual(payload["skill_llm_latency_seconds"], 3.5)
+            self.assertEqual(payload["skill_llm_video_source"], "url")
+
 
 if __name__ == "__main__":
     unittest.main()
