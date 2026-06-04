@@ -13,13 +13,19 @@ ClawCut 评测体系分为五层：
 ## 标准执行顺序
 
 1. 先用 `data/eval/baseline_openclaw_cases.v1.jsonl` 通过 OpenClaw 收集 baseline 成片。
-2. 用 `data/eval/cases.official.v1.jsonl` 对已有成片进行正式效果评测；该文件同时包含 case 设计字段和容器内执行字段。
-3. 批量评测完成后自动生成 `report.html`、`summary.md`、`technical_appendix.html` 和单 case 页面。
-4. 单独运行异常评测、稳定性汇总和 fps 敏感性专项。
+2. 对 `data/eval/cases.official.v1.jsonl` 做产物预检，确认哪些 case 已经具备正式评测条件。
+3. 用 `data/eval/cases.official.v1.jsonl` 对已有成片进行正式效果评测；该文件同时包含 case 设计字段和容器内执行字段。
+4. 批量评测完成后自动生成 `report.html`、`summary.md`、`technical_appendix.html` 和单 case 页面。
+5. 单独运行异常评测、稳定性汇总和 fps 敏感性专项。
 
 ## 关键命令
 
 ```bash
+python evaluation/validate_official_cases.py \
+  --cases data/eval/cases.official.v1.jsonl \
+  --output-dir eval_outputs/official_v1_readiness \
+  --require-ready
+
 python evaluation/run_batch_eval.py \
   --cases data/eval/cases.official.v1.jsonl \
   --gt_dir data/eval \

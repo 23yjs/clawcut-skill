@@ -213,6 +213,11 @@ python evaluation/human_readable_report.py \
 专项评测入口：
 
 ```bash
+python evaluation/validate_official_cases.py \
+  --cases data/eval/cases.official.v1.jsonl \
+  --output-dir eval_outputs/official_v1_readiness \
+  --require-ready
+
 python evaluation/run_abnormal_eval.py \
   --cases data/eval/abnormal_cases.v1.jsonl \
   --output-dir eval_outputs/abnormal_v1
