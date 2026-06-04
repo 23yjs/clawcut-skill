@@ -1,0 +1,10 @@
+{"case_id":"generic__ecom_fani_demo2","video_id":"ecom_fani_demo2","repeat_count":3,"reason":"短电商单品，作为低成本稳定性基准。"}
+{"case_id":"generic__game_demo2","video_id":"game_demo2","repeat_count":3,"reason":"高动态游戏，观察短时动作选择波动。"}
+{"case_id":"generic__cooking_demo1","video_id":"cooking_demo1","repeat_count":3,"reason":"结构化教程，曾出现计划校验 fallback，适合观察稳定性。"}
+{"case_id":"generic__cooking_demo2","video_id":"cooking_demo2","repeat_count":3,"reason":"多菜品高密度长教程，观察成本和多主题覆盖波动。"}
+{"case_id":"generic__knowledge-share-demo1","video_id":"knowledge-share-demo1","repeat_count":3,"reason":"连续口播知识分享，观察信息提炼稳定性。"}
+{"case_id":"generic__sports_demo1","video_id":"sports_demo1","repeat_count":3,"reason":"长篮球比赛，高动态和长视频压力兼具。"}
+{"case_id":"duration__product_lanuch_demo2__core_launch_info","video_id":"product_lanuch_demo2","repeat_count":3,"reason":"完整发布会长视频，观察超长输入耗时和 token 成本。"}
+{"case_id":"specific__ecom_multiple_demo3__ai_plush_only","video_id":"ecom_multiple_demo3","repeat_count":3,"reason":"多商品指定筛选，观察指令遵循波动。"}
+{"case_id":"conflict__game_demo1__confirmed_kills_only","video_id":"game_demo1","repeat_count":3,"reason":"高动态排除场景，观察 forbidden 内容控制。"}
+{"case_id":"duration__vlog_demo4__daily_highlights","video_id":"vlog_demo4","repeat_count":3,"reason":"低信息量 Vlog，观察过滤和压缩稳定性。"}

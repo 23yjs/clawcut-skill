@@ -199,6 +199,37 @@ python evaluation/run_batch_eval.py \
   --output_dir eval_outputs/batch_v1
 ```
 
+面向训练营答辩或非专业读者的报告使用：
+
+```bash
+python evaluation/human_readable_report.py \
+  --results-csv eval_outputs/batch_v1/results.csv \
+  --summary-json eval_outputs/batch_v1/summary.json \
+  --output-dir eval_outputs/batch_v1
+```
+
+这会生成 `report.html`、`summary.md`、`technical_appendix.html` 和 `cases/<case_id>.html`。主报告只写人能看懂的结论，技术附录保留底层证据。
+
+专项评测入口：
+
+```bash
+python evaluation/run_abnormal_eval.py \
+  --cases data/eval/abnormal_cases.v1.jsonl \
+  --output-dir eval_outputs/abnormal_v1
+
+python evaluation/stability_report.py \
+  --results-jsonl outputs/openclaw_collection_v1/batch_results.jsonl \
+  --cost-model evaluation/config/cost_model.yaml \
+  --output-dir eval_outputs/stability_v1
+
+python evaluation/run_fps_sensitivity_eval.py \
+  --cases data/eval/high_dynamic_fps_cases.v1.jsonl \
+  --results-jsonl eval_outputs/fps_sensitivity_results.jsonl \
+  --output-dir eval_outputs/fps_sensitivity_v1
+```
+
+正式 case 设计见 `data/eval/CASE_DESIGN_V1.md` 和 `data/eval/cases.official.v1.jsonl`。`cases.official.v1.jsonl` 同时包含 `input_video` 和 `skill_output_dir`，默认指向 OpenClaw 容器路径；正式批量评测应在容器或等价路径映射环境中运行。异常、稳定性和 fps 对比均为专项评测，不混入 `selection_score_v1` 的正式效果分。
+
 启用 DOVER 的单视频评测示例：
 
 ```bash

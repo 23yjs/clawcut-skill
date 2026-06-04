@@ -12,12 +12,14 @@ try:
     from .ark_resolver_client import ArkResolverConfig
     from .auto_eval import AutoEvalConfig, run_auto_eval
     from .dover_quality import build_dover_config
+    from .human_readable_report import write_reports
     from .tos_uploader import build_tos_upload_config
 except ImportError:  # pragma: no cover - script mode
     from ark_aesthetic_judge_client import ArkAestheticJudgeConfig
     from ark_resolver_client import ArkResolverConfig
     from auto_eval import AutoEvalConfig, run_auto_eval
     from dover_quality import build_dover_config
+    from human_readable_report import write_reports
     from tos_uploader import build_tos_upload_config
 
 
@@ -170,6 +172,7 @@ def main() -> int:
     parser.add_argument("--dover_device", default=None)
     parser.add_argument("--dover_timeout_seconds", type=int)
     parser.add_argument("--technical_quality_config", type=Path, default=Path("evaluation/config/default.yaml"))
+    parser.add_argument("--skip_human_report", action="store_true")
     args = parser.parse_args()
 
     cases = _read_jsonl(args.cases)
@@ -258,6 +261,8 @@ def main() -> int:
             f"| {row.get('case_id')} | {row.get('evaluation_status')} | {row.get('selection_score_v1')} | {row.get('aesthetic_score_v1')} | {row.get('final_score_v2')} |"
         )
     (args.output_dir / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    if not args.skip_human_report:
+        write_reports(rows=rows, output_dir=args.output_dir, source_summary=summary)
     print(f"批量评测完成：{args.output_dir}")
     return 0
 
