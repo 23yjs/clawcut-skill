@@ -226,6 +226,11 @@ python evaluation/run_abnormal_eval.py \
   --cases data/eval/abnormal_cases.v1.jsonl \
   --output-dir eval_outputs/abnormal_v1
 
+python evaluation/run_abnormal_eval.py \
+  --cases data/eval/abnormal_cases.v1.jsonl \
+  --results-jsonl eval_outputs/abnormal_v1/abnormal_results.jsonl \
+  --output-dir eval_outputs/abnormal_v1
+
 python evaluation/stability_report.py \
   --results-jsonl outputs/openclaw_collection_v1/batch_results.jsonl \
   --cost-model evaluation/config/cost_model.yaml \

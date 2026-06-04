@@ -504,6 +504,15 @@ python evaluation/run_batch_eval.py \
 
 `official_diagnostic_cases.jsonl` 会保留 fallback 样本，用于单独分析调用链路或 Skill fallback，不进入正式剪辑效果平均分。
 
+异常场景评测支持两种模式：不传 `--results-jsonl` 时只校验异常 case 清单；传入实际执行结果后，会检查每条异常用例是否得到预期错误类型、是否写入 `result_summary` 和 `run.log`、是否避免卡死、是否没有错误生成 misleading 成片、是否没有进入正式效果评分。
+
+```bash
+python evaluation/run_abnormal_eval.py \
+  --cases data/eval/abnormal_cases.v1.jsonl \
+  --results-jsonl eval_outputs/abnormal_v1/abnormal_results.jsonl \
+  --output-dir eval_outputs/abnormal_v1
+```
+
 版本回归评测用于回答“新版本到底变好了还是退步了”。它只读取两次批量评测的 `results.csv`，不重新调用 Skill 或模型：
 
 ```bash

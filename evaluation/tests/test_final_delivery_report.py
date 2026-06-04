@@ -40,6 +40,10 @@ def _complete_inputs() -> dict:
         "abnormal": {
             "status": "ready",
             "case_count": 3,
+            "result_count": 3,
+            "passed_result_count": 3,
+            "failed_result_count": 0,
+            "not_run_count": 0,
             "abnormal_type_counts": {"missing_video_path": 1, "no_audio_video": 1},
             "errors": [],
         },
@@ -78,6 +82,7 @@ def test_final_delivery_report_summarizes_complete_evidence() -> None:
     assert report["overall_conclusion"] == "基本可用"
     assert report["missing_sections"] == []
     assert report["official_effect"]["case_count"] == 2
+    assert report["abnormal"]["passed_result_count"] == 3
     assert report["stability_cost"]["slowest_cases"][0]["case_id"] == "case_ok"
     markdown = render_markdown(report)
     assert "ClawCut 最终评测交付报告" in markdown
