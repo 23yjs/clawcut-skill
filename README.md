@@ -208,7 +208,7 @@ python evaluation/human_readable_report.py \
   --output-dir eval_outputs/batch_v1
 ```
 
-这会生成 `report.html`、`summary.md`、`technical_appendix.html` 和 `cases/<case_id>.html`。主报告只写人能看懂的结论，技术附录保留底层证据。
+这会生成 `report.html`、`summary.md`、`technical_appendix.html` 和 `cases/<case_id>.html`。主报告只写人能看懂的结论，并自动列出按测试类型/优先级的能力汇总、典型成功案例、典型失败或待优化案例；技术附录保留底层证据。
 
 专项评测入口：
 

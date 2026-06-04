@@ -47,13 +47,21 @@ def _truthy(value: Any) -> bool:
     return bool(value)
 
 
+def _case_key(row: dict[str, Any]) -> str:
+    return str(row.get("case_id") or row.get("video_id") or "case")
+
+
+def _score_value(row: dict[str, Any]) -> float | None:
+    return _to_float(row.get("final_score_v2")) or _to_float(row.get("selection_score_v1"))
+
+
 def classify_case(row: dict[str, Any]) -> str:
     status = str(row.get("evaluation_status") or row.get("collection_status") or "")
     scope = str(row.get("evaluation_scope") or "")
     fallback = _truthy(row.get("fallback_used"))
     backend = str(row.get("skill_backend_used") or "")
     technical_passed = row.get("technical_quality_passed")
-    score = _to_float(row.get("final_score_v2")) or _to_float(row.get("selection_score_v1"))
+    score = _score_value(row)
 
     if status in {"failed", "batch_case_failed", "ambiguous_output"} or "failed" in status:
         return "failed"
@@ -126,17 +134,90 @@ def explain_case(row: dict[str, Any]) -> dict[str, str]:
 
 def build_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     labels = Counter(classify_case(row) for row in rows)
-    scores = [
-        value
-        for value in (_to_float(row.get("final_score_v2")) or _to_float(row.get("selection_score_v1")) for row in rows)
-        if value is not None
-    ]
+    scores = [value for value in (_score_value(row) for row in rows) if value is not None]
     return {
         "case_count": len(rows),
         "conclusion_counts": {CONCLUSION_LABELS[key]: labels.get(key, 0) for key in CONCLUSION_LABELS},
         "average_score": round(sum(scores) / len(scores), 3) if scores else None,
         "fallback_count": sum(1 for row in rows if _truthy(row.get("fallback_used"))),
         "failed_count": labels.get("failed", 0),
+        "by_test_type": build_breakdown(rows, "test_type"),
+        "by_priority": build_breakdown(rows, "priority"),
+        "case_studies": build_case_studies(rows),
+    }
+
+
+def build_breakdown(rows: list[dict[str, Any]], field: str) -> list[dict[str, Any]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        group = str(row.get(field) or "未标注")
+        grouped.setdefault(group, []).append(row)
+
+    breakdown = []
+    for group, group_rows in sorted(grouped.items()):
+        scores = [value for value in (_score_value(row) for row in group_rows) if value is not None]
+        labels = Counter(classify_case(row) for row in group_rows)
+        breakdown.append(
+            {
+                "name": group,
+                "case_count": len(group_rows),
+                "average_score": round(sum(scores) / len(scores), 3) if scores else None,
+                "conclusion_counts": {CONCLUSION_LABELS[key]: labels.get(key, 0) for key in CONCLUSION_LABELS},
+            }
+        )
+    return breakdown
+
+
+def _case_study(row: dict[str, Any], reason: str) -> dict[str, Any]:
+    explanation = explain_case(row)
+    return {
+        "case_id": _case_key(row),
+        "video_id": row.get("video_id") or "",
+        "test_type": row.get("test_type") or "未标注",
+        "priority": row.get("priority") or "未标注",
+        "conclusion": explanation["conclusion"],
+        "score": _score_value(row),
+        "why": reason,
+        "suggestion": explanation["suggestion"],
+    }
+
+
+def _failure_reason(row: dict[str, Any]) -> str:
+    explanation = explain_case(row)
+    error = row.get("error_message") or row.get("evaluation_error") or row.get("openclaw_fallback_reason")
+    if error:
+        return f"执行或产物检查失败：{error}"
+    if str(row.get("technical_quality_passed")).lower() == "false":
+        return explanation["technical"]
+    return explanation["selection"]
+
+
+def build_case_studies(rows: list[dict[str, Any]], limit: int = 3) -> dict[str, list[dict[str, Any]]]:
+    success_candidates = [row for row in rows if classify_case(row) in {"excellent", "usable"}]
+    failure_candidates = [row for row in rows if classify_case(row) in {"failed", "needs_work"}]
+    diagnostic_candidates = [row for row in rows if classify_case(row) == "diagnostic"]
+
+    success_candidates.sort(key=lambda row: (_score_value(row) is not None, _score_value(row) or -1), reverse=True)
+    failure_candidates.sort(
+        key=lambda row: (
+            classify_case(row) == "failed",
+            _score_value(row) is None,
+            -(_score_value(row) or 0),
+        ),
+        reverse=True,
+    )
+    diagnostic_candidates.sort(key=_case_key)
+
+    return {
+        "representative_successes": [
+            _case_study(row, explain_case(row)["selection"]) for row in success_candidates[:limit]
+        ],
+        "representative_failures": [
+            _case_study(row, _failure_reason(row)) for row in failure_candidates[:limit]
+        ],
+        "diagnostic_samples": [
+            _case_study(row, explain_case(row)["chain"]) for row in diagnostic_candidates[:limit]
+        ],
     }
 
 
@@ -159,6 +240,54 @@ def _case_html(row: dict[str, Any]) -> str:
     return f"<section><h2>{html.escape(str(row.get('case_id') or 'case'))}</h2><dl>{body}</dl></section>"
 
 
+def _breakdown_html(title: str, breakdown: list[dict[str, Any]]) -> str:
+    if not breakdown:
+        return ""
+    rows = []
+    for item in breakdown:
+        counts = "；".join(f"{key} {value}" for key, value in item["conclusion_counts"].items() if value)
+        rows.append(
+            "<tr>"
+            f"<td>{html.escape(str(item['name']))}</td>"
+            f"<td>{html.escape(str(item['case_count']))}</td>"
+            f"<td>{html.escape(str(item['average_score']))}</td>"
+            f"<td>{html.escape(counts or '暂无结论')}</td>"
+            "</tr>"
+        )
+    return (
+        f"<section><h2>{html.escape(title)}</h2><table>"
+        "<thead><tr><th>分组</th><th>case 数</th><th>平均分</th><th>结论分布</th></tr></thead>"
+        f"<tbody>{''.join(rows)}</tbody></table></section>"
+    )
+
+
+def _case_studies_html(studies: dict[str, list[dict[str, Any]]]) -> str:
+    titles = {
+        "representative_successes": "典型成功案例",
+        "representative_failures": "典型失败或待优化案例",
+        "diagnostic_samples": "诊断样本",
+    }
+    sections = []
+    for key, title in titles.items():
+        items = studies.get(key) or []
+        if not items:
+            sections.append(f"<section><h2>{html.escape(title)}</h2><p>暂无。</p></section>")
+            continue
+        lines = []
+        for item in items:
+            score = "暂无" if item.get("score") is None else str(item.get("score"))
+            lines.append(
+                "<li>"
+                f"<strong>{html.escape(str(item['case_id']))}</strong>"
+                f"（{html.escape(str(item['conclusion']))}，分数 {html.escape(score)}）"
+                f"<br>为什么：{html.escape(str(item['why']))}"
+                f"<br>建议：{html.escape(str(item['suggestion']))}"
+                "</li>"
+            )
+        sections.append(f"<section><h2>{html.escape(title)}</h2><ul>{''.join(lines)}</ul></section>")
+    return "".join(sections)
+
+
 def write_reports(*, rows: list[dict[str, Any]], output_dir: Path, source_summary: dict[str, Any] | None = None) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     cases_dir = output_dir / "cases"
@@ -178,16 +307,23 @@ def write_reports(*, rows: list[dict[str, Any]], output_dir: Path, source_summar
         )
 
     main_sections = "\n".join(_case_html(row) for row in rows)
+    breakdown_sections = (
+        _breakdown_html("按测试类型汇总", summary["by_test_type"])
+        + _breakdown_html("按优先级汇总", summary["by_priority"])
+    )
+    case_study_sections = _case_studies_html(summary["case_studies"])
     summary_items = "".join(
         f"<li>{html.escape(str(key))}: {html.escape(str(value))}</li>"
         for key, value in summary.items()
-        if key != "source_summary"
+        if key not in {"source_summary", "by_test_type", "by_priority", "case_studies"}
     )
     (output_dir / "report.html").write_text(
         "<!doctype html><meta charset='utf-8'>"
         "<title>ClawCut 评测报告</title>"
         "<h1>ClawCut 评测报告</h1>"
         f"<ul>{summary_items}</ul>"
+        f"{breakdown_sections}"
+        f"{case_study_sections}"
         f"{main_sections}",
         encoding="utf-8",
     )
@@ -209,8 +345,48 @@ def write_reports(*, rows: list[dict[str, Any]], output_dir: Path, source_summar
         f"- fallback 数：{summary['fallback_count']}",
         f"- 失败数：{summary['failed_count']}",
         "",
-        "## 单条结论",
+        "## 能力维度汇总",
     ]
+    for item in summary["by_test_type"]:
+        md_lines.append(
+            f"- {item['name']}：{item['case_count']} 条，平均分 {item['average_score']}，结论分布 {item['conclusion_counts']}"
+        )
+    md_lines.extend(
+        [
+            "",
+            "## 典型成功案例",
+        ]
+    )
+    for item in summary["case_studies"]["representative_successes"]:
+        md_lines.append(f"- {item['case_id']}：{item['why']} 建议：{item['suggestion']}")
+    if not summary["case_studies"]["representative_successes"]:
+        md_lines.append("- 暂无。")
+    md_lines.extend(
+        [
+            "",
+            "## 典型失败或待优化案例",
+        ]
+    )
+    for item in summary["case_studies"]["representative_failures"]:
+        md_lines.append(f"- {item['case_id']}：{item['why']} 建议：{item['suggestion']}")
+    if not summary["case_studies"]["representative_failures"]:
+        md_lines.append("- 暂无。")
+    md_lines.extend(
+        [
+            "",
+            "## 诊断样本",
+        ]
+    )
+    for item in summary["case_studies"]["diagnostic_samples"]:
+        md_lines.append(f"- {item['case_id']}：{item['why']}")
+    if not summary["case_studies"]["diagnostic_samples"]:
+        md_lines.append("- 暂无。")
+    md_lines.extend(
+        [
+            "",
+            "## 单条结论",
+        ]
+    )
     for row in rows:
         explanation = explain_case(row)
         md_lines.append(f"- {row.get('case_id')}: {explanation['conclusion']}；{explanation['selection']}")

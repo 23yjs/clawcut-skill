@@ -510,10 +510,15 @@ python evaluation/run_batch_eval.py \
 results.csv
 summary.json
 summary.md
+report.html
+technical_appendix.html
+cases/<case_id>.html
 runs/<case_id>/evaluation_result.json
 runs/<case_id>/eval_report.md
 runs/<case_id>/run_manifest.json
 ```
+
+`report.html` 和 `summary.md` 面向非专业读者，包含按测试类型/优先级的能力汇总、典型成功案例、典型失败或待优化案例。`technical_appendix.html` 保留底层字段，便于开发者追溯 selection、technical quality、Judge、token、耗时和 fallback。
 
 单条失败不会中断整个批次。
 
