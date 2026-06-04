@@ -474,6 +474,20 @@ python evaluation/run_eval.py \
 
 ## 10. 批量评测
 
+正式执行前后可以运行评测体系自检。它不会调用模型或视频处理，只检查源码清单、case 文件、专项脚本和输出证据是否齐备：
+
+```bash
+python evaluation/evaluation_system_audit.py \
+  --repo-root . \
+  --output-dir eval_outputs/system_audit_precheck
+```
+
+自检状态含义：
+
+- `ready`：源码和输出证据都齐备；
+- `evidence_incomplete`：源码和 case 体系齐备，但真实评测输出还没跑完；
+- `failed`：源码、配置或 case 清单本身有缺口。
+
 批量输入 JSONL 示例：
 
 ```json

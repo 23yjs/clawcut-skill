@@ -213,6 +213,10 @@ python evaluation/human_readable_report.py \
 专项评测入口：
 
 ```bash
+python evaluation/evaluation_system_audit.py \
+  --repo-root . \
+  --output-dir eval_outputs/system_audit_precheck
+
 python evaluation/validate_official_cases.py \
   --cases data/eval/cases.official.v1.jsonl \
   --output-dir eval_outputs/official_v1_readiness
@@ -256,6 +260,11 @@ python evaluation/final_delivery_report.py \
   --fps-summary-json eval_outputs/fps_sensitivity_v1/fps_sensitivity_summary.json \
   --regression-summary-json eval_outputs/regression_v1/regression_summary.json \
   --output-dir eval_outputs/final_delivery_v1
+
+python evaluation/evaluation_system_audit.py \
+  --repo-root . \
+  --output-dir eval_outputs/system_audit_final \
+  --require-complete
 ```
 
 正式 case 设计见 `data/eval/CASE_DESIGN_V1.md` 和 `data/eval/cases.official.v1.jsonl`。`cases.official.v1.jsonl` 同时包含 `input_video` 和 `skill_output_dir`，默认指向 OpenClaw 容器路径；正式批量评测应在容器或等价路径映射环境中运行。异常、稳定性和 fps 对比均为专项评测，不混入 `selection_score_v1` 的正式效果分。

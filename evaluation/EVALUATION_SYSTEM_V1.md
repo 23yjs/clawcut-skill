@@ -2,7 +2,7 @@
 
 ## 评测分层
 
-ClawCut 评测体系分为五层：
+ClawCut 评测体系分为六层：
 
 1. 剪辑效果：`selection_score_v1` 判断选了什么内容。
 2. 技术质量：`technical_quality` 检查解码、时长、黑屏、冻结、静音和重复片段。
@@ -23,6 +23,10 @@ ClawCut 评测体系分为五层：
 ## 关键命令
 
 ```bash
+python evaluation/evaluation_system_audit.py \
+  --repo-root . \
+  --output-dir eval_outputs/system_audit_precheck
+
 python evaluation/validate_official_cases.py \
   --cases data/eval/cases.official.v1.jsonl \
   --output-dir eval_outputs/official_v1_readiness
@@ -67,6 +71,11 @@ python evaluation/final_delivery_report.py \
   --fps-summary-json eval_outputs/fps_sensitivity_v1/fps_sensitivity_summary.json \
   --regression-summary-json eval_outputs/regression_v1/regression_summary.json \
   --output-dir eval_outputs/final_delivery_v1
+
+python evaluation/evaluation_system_audit.py \
+  --repo-root . \
+  --output-dir eval_outputs/system_audit_final \
+  --require-complete
 ```
 
 `cases.official.v1.jsonl` 中的 `input_video` 和 `skill_output_dir` 默认面向 OpenClaw 容器路径：
