@@ -52,13 +52,8 @@ export ARK_API_KEY=xxx
 `--target_duration` 是可选参数：
 
 - 用户明确指定时长时，传入 `--target_duration`，Skill 会严格围绕该时长生成 `final_segments`。
-- 用户没有指定时长时，不传 `--target_duration`，程序会在 `ffprobe` 后根据原视频时长自动推荐：
-
-```text
-recommended_duration = min(video_duration, min(max(video_duration × 0.15, 15), 60))
-```
-
-例如 30 秒视频推荐 15 秒，120 秒视频推荐 18 秒，300 秒视频推荐 45 秒，600 秒以上视频推荐 60 秒。若原视频短于 15 秒，推荐时长不会超过视频本身。
+- 用户没有指定时长时，不传 `--target_duration`，默认使用 `llm_free`：不预设固定目标时长，由模型根据高光数量、内容密度、事件完整性和冗余程度决定成片长度。
+- `bounded_auto` 仍保留为可选基线模式，可通过 `--duration_policy_mode bounded_auto` 显式启用；该模式会使用 `recommended_duration = min(video_duration, min(max(video_duration × 0.15, 15), 60))`。
 
 用户指定时长：
 
@@ -81,7 +76,7 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
   --llm_backend mock
 ```
 
-诊断性自由时长实验：
+显式启用 bounded_auto 基线：
 
 ```bash
 python skills/clawcut-video-highlight/scripts/run_skill.py \
@@ -90,10 +85,10 @@ python skills/clawcut-video-highlight/scripts/run_skill.py \
   --output_dir outputs \
   --llm_backend ark \
   --llm_video_url "https://your-public-video-url/demo.mp4" \
-  --duration_policy_mode llm_free
+  --duration_policy_mode bounded_auto
 ```
 
-`llm_free` 仅用于诊断实验：用户未指定 `--target_duration` 时不预设 15%/15-60 秒预算，让视频模型自行决定成片长度。正式默认策略仍是 `bounded_auto`。
+`llm_free` 是当前默认策略，不是诊断模式。评测侧在用户未指定可量化时长时会设置 `duration_score=1.0`，不使用 Skill 自己的默认目标时长作为评分分母，仍然可以输出正式 `selection_score_v1`。
 
 ark + 原视频 URL 模式：
 
@@ -193,7 +188,7 @@ output/<video_id>/instruction-<instruction_hash>/<run_id>/highlight.mp4
 
 这样同一个视频在不同用户指令或不同评测输出目录下不会互相覆盖。结果目录会写入 `tos_upload.json`，只保存去除 query string 的可读 URL 和完整签名 URL 的 sha256，不保存 AK/SK 或签名参数。
 
-`llm_free` 输出只进入 `diagnostic_only`，不产生正式 `selection_score_v1`。正式 A/B 实验建议先人工检查 `generated_case.json`，再用 `--generated_case_json` 复用同一评分标准。
+正式 A/B 实验建议先人工检查 `generated_case.json`，再用 `--generated_case_json` 复用同一评分标准。`llm_free` 输出可以正式评分；只有 Skill 回退到 mock 或 artifact validation 失败时，才会进入 `diagnostic_only` 或无效产物路径。
 
 批量评测使用：
 

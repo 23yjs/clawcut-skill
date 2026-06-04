@@ -1,0 +1,129 @@
+{
+    "video_id": "ecom_meizhuang_demo5",
+    "video_path": "ecom_meizhuang_demo5.MP4",
+    "video_type": "product_review",
+    "duration_seconds": 124,
+    "video_summary": "视频为一段面向 30 岁以上消费者的抗老面霜推荐类口播，讲解者围绕怡丽丝尔紧塑焕颜面霜展开介绍。内容从抗老护肤的试错成本和“质价比”概念切入，随后展示产品外观，介绍外拉紧与内充盈等宣称卖点，并通过使用体验、肤感对比和前后效果画面强化产品价值。结尾主要为理性消费建议和购买导向较强的总结。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 7,
+            "description": "讲解者以 30 岁以后容易出现面部松垮、轮廓不够紧致等抗老困扰开场，并通过夸张表情和插入的面部近景强调问题。该段用于建立护肤痛点。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 7,
+            "end": 14,
+            "description": "讲解者表示消费者容易为抗老护肤品反复尝试并付出较高试错成本，画面穿插皮肤状态近景、钱包支出相关表述和夸张滤镜效果。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 14,
+            "end": 24,
+            "description": "讲解者提出选购护肤品时应关注“质价比”，并在画面中明确展示“质价比 = 抗老效果 ÷ 价格”的表达。随后以高价产品见效较慢为例，说明价格高并不必然代表更值得购买。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 24,
+            "end": 39,
+            "description": "讲解者对比三位数价格产品和更高价产品，强调应减少溢价带来的额外支出，并将目标产品概括为效果在线、价格负担较低的“质价比卷王”。该段以消费观念和产品定位为主。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 39,
+            "end": 43,
+            "description": "讲解者将怡丽丝尔紧塑焕颜面霜举至镜头前进行正式展示。画面随后切换为手持产品罐体的近距离特写，清晰呈现包装、金属色罐身和品牌标识。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 43,
+            "end": 50,
+            "description": "讲解者表示 30 岁以后面部状态可能更容易出现明显变化，仅依赖普通补水护肤有时难以满足抗老需求。画面穿插面部松垮和普通护肤状态的示意近景。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 50,
+            "end": 59,
+            "description": "讲解者将怡丽丝尔面霜描述为使用了资生堂相关抗老技术，并称产品具备双重抗老思路。画面持续展示产品罐体，并穿插面部轮廓向上提拉的示意效果。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 59,
+            "end": 66,
+            "description": "讲解者进一步拆解产品宣称的两类作用：外部通过紧塑系统帮助轮廓向上提拉，内部通过胶原相关机制改善松垮并提升饱满感。画面使用下颌线手势和图文叠加分别说明外拉紧与内充盈。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 66,
+            "end": 72,
+            "description": "讲解者总结认为，选择适合自己的产品比单纯选择价格更高的产品重要，并表示该面霜在自己的使用场景中没有替代品。画面继续以人物口播和手持产品为主。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 72,
+            "end": 80,
+            "description": "讲解者结合一段时间的使用体验，称面部状态出现肉眼可见的改善。画面穿插自拍视频和前后状态展示，用于强调轮廓提升和面部紧致感。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 80,
+            "end": 86,
+            "description": "画面展示打开罐盖后的面霜膏体以及人物将产品涂抹至面部的过程。讲解者称面霜上脸后吸收速度较快，并形容皮肤具有较明显的提拉感。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 86,
+            "end": 94,
+            "description": "讲解者对比其他抗老产品，表示部分产品虽然可能在某些方面有效，但使用肤感较厚重，夏季不愿意使用。画面以人物口播和产品展示为主。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 94,
+            "end": 105,
+            "description": "讲解者继续对比另一类仅能提供基础补水保湿、但无法明显改善状态的产品，并称怡丽丝尔面霜兼顾肤感和较高规格的使用效果。画面穿插皮肤问题近景、产品罐体和短暂的效果展示。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 105,
+            "end": 116,
+            "description": "讲解者表示 30 岁以后产生抗老焦虑较为常见，但提醒消费者不要因为焦虑而盲目购买高溢价产品，并建议将预算投入到更符合自身需求的产品。该段以消费建议为主。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 116,
+            "end": 124,
+            "description": "讲解者以“钱省了、效果有了”等表述进行收尾，将产品形容为适合高要求抗老人群的选择，并使用“量身定制”“冲就完了”等购买导向较强的语言结束视频。该段没有新增产品机制或使用演示。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        }
+    ]
+}

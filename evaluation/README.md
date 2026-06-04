@@ -201,7 +201,7 @@ instruction + 可选 target_duration + GT.video_summary + GT.semantic_segments
 - `specific`：使用 `relevant_segment_ids` 的时间级 Precision / Coverage / F1。
 - `conflict`：同时检查 `relevant_segment_ids` 和 `forbidden_segment_ids`。
 - `partial / unresolved`：不强行打分，进入人工复核。
-- `llm_free`：只作为诊断模式，`evaluation_scope=diagnostic_only`，不输出正式 `selection_score_v1`。
+- `llm_free`：用户未指定可量化时长时的默认策略；`duration_score=1.0` 且不使用 Skill 默认目标时长作为评分分母，仍输出正式 `selection_score_v1`。
 
 ## 6. 完整评测闭环与 final_score_v2
 

@@ -573,6 +573,8 @@ def test_auto_eval_llm_free_without_duration_still_scores(tmp_path, monkeypatch)
             use_default_highlights=True,
             relevant_segment_ids=[],
             forbidden_segment_ids=[],
+            required_highlight_segment_ids=["seg_001", "seg_002"],
+            allowed_context_segment_ids=[],
         ),
     )
     result = run_auto_eval(config)
@@ -581,6 +583,9 @@ def test_auto_eval_llm_free_without_duration_still_scores(tmp_path, monkeypatch)
     assert result["duration_context"]["duration_score_method"] == "not_applicable"
     assert result["duration_context"]["duration_budget"] is None
     assert result["selection_score_v1"] is not None
+    assert result["time_metrics"]["generic_target_source"] == "resolver"
+    assert result["time_metrics"]["required_highlight_segment_ids"] == ["seg_001", "seg_002"]
+    assert "acceptable_precision" in result["time_metrics"]
 
 
 def test_auto_eval_uses_frozen_generated_case_without_resolver(tmp_path, monkeypatch):
