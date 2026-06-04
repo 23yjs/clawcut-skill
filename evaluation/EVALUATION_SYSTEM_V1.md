@@ -9,6 +9,7 @@ ClawCut 评测体系分为五层：
 3. 调用链路：OpenClaw baseline 批跑验证 `openclaw agent -> /skill -> run_skill.py`。
 4. 稳定性与成本：重复运行后统计成功率、fallback、耗时、token 和估算成本。
 5. 人类解释报告：把底层证据翻译成非专业人员可读结论。
+6. 版本回归：比较两次 `results.csv`，判断新版本是否引入失败、fallback、技术质量或分数退步。
 
 ## 标准执行顺序
 
@@ -16,7 +17,7 @@ ClawCut 评测体系分为五层：
 2. 对 `data/eval/cases.official.v1.jsonl` 做产物预检，确认哪些 case 已经具备正式评测条件，并导出 ready-only 子清单。
 3. 用 `eval_outputs/official_v1_readiness/official_ready_cases.jsonl` 对已有成片进行正式效果评测；原始 official 文件继续作为完整设计清单保留。
 4. 批量评测完成后自动生成 `report.html`、`summary.md`、`technical_appendix.html` 和单 case 页面；主报告必须包含能力维度汇总以及典型成功、失败和诊断样本。
-5. 单独运行异常评测、稳定性汇总和 fps 敏感性专项。
+5. 单独运行异常评测、稳定性汇总、fps 敏感性专项和版本回归对比。
 
 ## 关键命令
 
@@ -43,6 +44,13 @@ python evaluation/run_fps_sensitivity_eval.py \
   --cases data/eval/high_dynamic_fps_cases.v1.jsonl \
   --results-jsonl eval_outputs/fps_sensitivity_results.jsonl \
   --output-dir eval_outputs/fps_sensitivity_v1
+
+python evaluation/regression_report.py \
+  --baseline-results eval_outputs/official_v1_baseline/results.csv \
+  --candidate-results eval_outputs/official_v1_candidate/results.csv \
+  --gate-config evaluation/config/regression_gate.v1.json \
+  --output-dir eval_outputs/regression_v1 \
+  --fail-on-regression
 ```
 
 `cases.official.v1.jsonl` 中的 `input_video` 和 `skill_output_dir` 默认面向 OpenClaw 容器路径：
@@ -70,3 +78,4 @@ python evaluation/run_fps_sensitivity_eval.py \
 - 哪些失败来自输入、调用链路、模型输出、ffmpeg 或技术质量。
 - 哪些视频成本高、耗时长、fallback 多或重复运行波动大。
 - 高动态视频是否证明需要更高 fps 或局部二次分析。
+- 新版本相比基准版本是否出现分数下降、失败增加、fallback 增加或技术质量退步。

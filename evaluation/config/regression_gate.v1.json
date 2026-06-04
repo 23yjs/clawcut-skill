@@ -1,0 +1,8 @@
+{
+  "max_average_score_drop": 2.0,
+  "max_case_score_drop": 5.0,
+  "max_removed_cases": 0,
+  "max_failed_case_regressions": 0,
+  "max_fallback_regressions": 0,
+  "max_technical_quality_regressions": 0
+}

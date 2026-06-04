@@ -504,6 +504,19 @@ python evaluation/run_batch_eval.py \
 
 `official_diagnostic_cases.jsonl` 会保留 fallback 样本，用于单独分析调用链路或 Skill fallback，不进入正式剪辑效果平均分。
 
+版本回归评测用于回答“新版本到底变好了还是退步了”。它只读取两次批量评测的 `results.csv`，不重新调用 Skill 或模型：
+
+```bash
+python evaluation/regression_report.py \
+  --baseline-results eval_outputs/official_v1_baseline/results.csv \
+  --candidate-results eval_outputs/official_v1_candidate/results.csv \
+  --gate-config evaluation/config/regression_gate.v1.json \
+  --output-dir eval_outputs/regression_v1 \
+  --fail-on-regression
+```
+
+默认门禁会拦截：case 丢失、原本成功的 case 变失败、fallback 增加、技术质量退步、单 case 分数下降超过阈值、平均分下降超过阈值。
+
 输出：
 
 ```text
