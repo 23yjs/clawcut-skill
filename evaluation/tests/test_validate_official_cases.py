@@ -90,6 +90,38 @@ def test_validate_official_cases_cli_writes_outputs(tmp_path) -> None:
     assert (output / "official_diagnostic_cases.jsonl").read_text(encoding="utf-8") == ""
 
 
+def test_validate_official_cases_cli_accepts_path_map(tmp_path) -> None:
+    host_workspace = tmp_path / "host_workspace"
+    input_video, output_dir = _artifact_tree(host_workspace)
+    result_summary_path = output_dir / "reports" / "result_summary.json"
+    result_summary = json.loads(result_summary_path.read_text(encoding="utf-8"))
+    result_summary["input_video"] = "/home/node/.openclaw/workspace/input/demo.MP4"
+    result_summary["segments_json"] = "/home/node/.openclaw/workspace/outputs/demo/reports/segments.json"
+    result_summary_path.write_text(json.dumps(result_summary, ensure_ascii=False), encoding="utf-8")
+
+    case = _case(input_video, output_dir)
+    case["input_video"] = "/home/node/.openclaw/workspace/input/demo.MP4"
+    case["skill_output_dir"] = "/home/node/.openclaw/workspace/outputs/demo"
+    cases = tmp_path / "cases.jsonl"
+    cases.write_text(json.dumps(case, ensure_ascii=False) + "\n", encoding="utf-8")
+    output = tmp_path / "readiness"
+
+    assert main(
+        [
+            "--cases",
+            str(cases),
+            "--output-dir",
+            str(output),
+            "--path-map",
+            f"/home/node/.openclaw/workspace={host_workspace}",
+            "--require-ready",
+        ]
+    ) == 0
+
+    readiness = json.loads((output / "official_case_readiness.json").read_text(encoding="utf-8"))
+    assert readiness["ready_for_official_eval"] == 1
+
+
 def test_readiness_exports_only_ready_cases(tmp_path) -> None:
     ready_input, ready_output = _artifact_tree(tmp_path / "ready")
     fallback_input, fallback_output = _artifact_tree(tmp_path / "fallback", fallback=True)

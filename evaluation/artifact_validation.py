@@ -14,16 +14,39 @@ def _read_json(path: Path) -> dict[str, Any]:
     return payload
 
 
-def _same_path(left: Any, right: Path) -> bool:
+def _map_path_value(value: Any, path_map: dict[str, str] | None = None) -> str:
+    text = str(value or "").strip()
+    if not text or not path_map:
+        return text
+    for source_prefix, target_prefix in path_map.items():
+        source = str(source_prefix).rstrip("/")
+        target = str(target_prefix).rstrip("/")
+        if text == source:
+            return target
+        if text.startswith(source + "/"):
+            return target + text[len(source) :]
+    return text
+
+
+def _same_path(left: Any, right: Path, path_map: dict[str, str] | None = None) -> bool:
     if not left:
         return False
-    try:
-        left_path = Path(str(left))
-        if left_path.exists() and right.exists():
-            return left_path.resolve() == right.resolve()
-    except OSError:
-        pass
-    return str(left).strip() == str(right)
+    candidates = [str(left).strip()]
+    mapped = _map_path_value(left, path_map)
+    if mapped and mapped not in candidates:
+        candidates.append(mapped)
+    right_text = str(right)
+    for candidate in candidates:
+        try:
+            left_path = Path(candidate)
+            if left_path.exists() and right.exists():
+                if left_path.resolve() == right.resolve():
+                    return True
+        except OSError:
+            pass
+        if candidate == right_text:
+            return True
+    return False
 
 
 def _sha256_file(path: Path) -> str | None:
@@ -41,9 +64,10 @@ def _input_video_match(
     result_summary: dict[str, Any],
     input_video: Path,
     warnings: list[str],
+    path_map: dict[str, str] | None = None,
 ) -> tuple[bool, str]:
     summary_input = result_summary.get("input_video")
-    if _same_path(summary_input, input_video):
+    if _same_path(summary_input, input_video, path_map):
         return True, "path"
 
     summary_hashes = {
@@ -107,6 +131,7 @@ def validate_skill_artifacts(
     instruction: str,
     target_duration: float | None,
     skill_output_dir: Path,
+    path_map: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     paths = find_skill_artifacts(skill_output_dir, input_video)
     errors: list[str] = []
@@ -151,6 +176,7 @@ def validate_skill_artifacts(
             result_summary=result_summary,
             input_video=input_video,
             warnings=warnings,
+            path_map=path_map,
         )
     if result_summary and not input_video_match:
         errors.append("result_summary.input_video 与当前 input_video 不一致")
@@ -163,7 +189,11 @@ def validate_skill_artifacts(
     if result_summary and not target_duration_match:
         errors.append("result_summary.target_duration 与当前 target_duration 不一致")
 
-    segments_json_match = _same_path(result_summary.get("segments_json"), paths["segments_json"]) if result_summary else False
+    segments_json_match = (
+        _same_path(result_summary.get("segments_json"), paths["segments_json"], path_map)
+        if result_summary
+        else False
+    )
     if result_summary and not segments_json_match:
         errors.append("result_summary.segments_json 与实际读取文件不一致")
 

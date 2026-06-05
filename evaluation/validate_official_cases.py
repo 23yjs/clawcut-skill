@@ -64,7 +64,36 @@ def _missing_required(case: dict[str, Any]) -> list[str]:
     return sorted(field for field in REQUIRED_FIELDS if not case.get(field))
 
 
-def classify_case_readiness(case: dict[str, Any]) -> dict[str, Any]:
+def _parse_path_maps(values: list[str] | None) -> dict[str, str]:
+    path_map: dict[str, str] = {}
+    for value in values or []:
+        if "=" not in value:
+            raise ValueError(f"--path-map 必须使用 FROM=TO 格式：{value}")
+        source, target = value.split("=", 1)
+        source = source.strip().rstrip("/")
+        target = target.strip().rstrip("/")
+        if not source or not target:
+            raise ValueError(f"--path-map 不能为空：{value}")
+        path_map[source] = target
+    return path_map
+
+
+def _map_case_path(value: Any, path_map: dict[str, str] | None = None) -> Path:
+    text = str(value)
+    for source_prefix, target_prefix in (path_map or {}).items():
+        source = str(source_prefix).rstrip("/")
+        target = str(target_prefix).rstrip("/")
+        if text == source:
+            return Path(target)
+        if text.startswith(source + "/"):
+            return Path(target + text[len(source) :])
+    return Path(text)
+
+
+def classify_case_readiness(
+    case: dict[str, Any],
+    path_map: dict[str, str] | None = None,
+) -> dict[str, Any]:
     missing = _missing_required(case)
     if missing:
         return {
@@ -77,10 +106,11 @@ def classify_case_readiness(case: dict[str, Any]) -> dict[str, Any]:
         }
 
     validation = validate_skill_artifacts(
-        input_video=Path(str(case["input_video"])),
+        input_video=_map_case_path(case["input_video"], path_map),
         instruction=str(case["instruction"]),
         target_duration=case.get("target_duration"),
-        skill_output_dir=Path(str(case["skill_output_dir"])),
+        skill_output_dir=_map_case_path(case["skill_output_dir"], path_map),
+        path_map=path_map,
     )
     errors = validation.get("artifact_validation_errors") or []
     if not validation.get("result_summary_exists") or not validation.get("segments_json_exists") or not validation.get("highlight_video_exists"):
@@ -111,10 +141,13 @@ def classify_case_readiness(case: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_readiness_report(cases: list[dict[str, Any]]) -> dict[str, Any]:
+def build_readiness_report(
+    cases: list[dict[str, Any]],
+    path_map: dict[str, str] | None = None,
+) -> dict[str, Any]:
     rows = []
     for case_index, case in enumerate(cases, start=1):
-        row = classify_case_readiness(case)
+        row = classify_case_readiness(case, path_map)
         row["case_index"] = case_index
         rows.append(row)
     counts = Counter(row["status"] for row in rows)
@@ -196,10 +229,16 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate official ClawCut cases before running batch evaluation.")
     parser.add_argument("--cases", type=Path, default=Path("data/eval/cases.official.v1.jsonl"))
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument(
+        "--path-map",
+        action="append",
+        default=[],
+        help="Map paths recorded inside containers to host paths, in FROM=TO format. Can be repeated.",
+    )
     parser.add_argument("--require-ready", action="store_true")
     args = parser.parse_args(argv)
     cases = read_jsonl(args.cases)
-    report = build_readiness_report(cases)
+    report = build_readiness_report(cases, _parse_path_maps(args.path_map))
     write_readiness_outputs(report, args.output_dir, cases)
     print(f"official case 预检完成：{args.output_dir}")
     if args.require_ready and report["not_ready_count"]:

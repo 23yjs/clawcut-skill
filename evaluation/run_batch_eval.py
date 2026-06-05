@@ -58,6 +58,13 @@ CSV_FIELDS = [
     "dover_raw_technical_score",
     "dover_raw_visual_aesthetic_score",
     "editing_experience_score_v1",
+    "skill_llm_model",
+    "skill_llm_prompt_tokens",
+    "skill_llm_completion_tokens",
+    "skill_llm_total_tokens",
+    "skill_llm_latency_seconds",
+    "resolver_latency_seconds",
+    "resolver_total_tokens",
     "judge_video_upload_status",
     "decode_success",
     "audio_stream_consistent",
@@ -78,9 +85,54 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _read_judge_url_map(path: Path | None) -> dict[str, str]:
+    if path is None:
+        return {}
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        rows = csv.DictReader(handle)
+        mapping: dict[str, str] = {}
+        for row in rows:
+            case_id = str(row.get("case_id") or "").strip()
+            url = str(row.get("judge_video_url") or "").strip()
+            if case_id and url:
+                mapping[case_id] = url
+        return mapping
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _parse_path_maps(values: list[str] | None) -> dict[str, str]:
+    path_map: dict[str, str] = {}
+    for value in values or []:
+        if "=" not in value:
+            raise ValueError(f"--path-map must use FROM=TO format: {value}")
+        source, target = value.split("=", 1)
+        source = source.strip().rstrip("/")
+        target = target.strip().rstrip("/")
+        if not source or not target:
+            raise ValueError(f"--path-map cannot be empty: {value}")
+        path_map[source] = target
+    return path_map
+
+
+def _map_case_path(value: Any, path_map: dict[str, str] | None = None) -> Path:
+    text = str(value)
+    for source_prefix, target_prefix in (path_map or {}).items():
+        source = str(source_prefix).rstrip("/")
+        target = str(target_prefix).rstrip("/")
+        if text == source:
+            return Path(target)
+        if text.startswith(source + "/"):
+            return Path(target + text[len(source) :])
+    return Path(text)
+
+
+def _skill_run_id_from_dir(skill_output_dir: Path) -> str:
+    name = skill_output_dir.name
+    return name if name.startswith("run_") else "run_01"
 
 
 def _row(case: dict[str, Any], result: dict[str, Any], elapsed: float) -> dict[str, Any]:
@@ -92,6 +144,9 @@ def _row(case: dict[str, Any], result: dict[str, Any], elapsed: float) -> dict[s
     perceptual = result.get("perceptual_video_quality") or {}
     editing = result.get("editing_experience") or {}
     upload = result.get("judge_video_upload") or {}
+    result_summary = artifact.get("result_summary") if isinstance(artifact.get("result_summary"), dict) else {}
+    resolver = result.get("resolver_metadata") if isinstance(result.get("resolver_metadata"), dict) else {}
+    resolver_usage = resolver.get("resolver_usage") if isinstance(resolver.get("resolver_usage"), dict) else {}
     return {
         "case_id": case.get("case_id", ""),
         "video_id": result.get("video_id", ""),
@@ -127,6 +182,13 @@ def _row(case: dict[str, Any], result: dict[str, Any], elapsed: float) -> dict[s
         "dover_raw_technical_score": perceptual.get("dover_raw_technical_score"),
         "dover_raw_visual_aesthetic_score": perceptual.get("dover_raw_visual_aesthetic_score"),
         "editing_experience_score_v1": result.get("editing_experience_score_v1") or editing.get("editing_experience_score_v1"),
+        "skill_llm_model": result_summary.get("skill_llm_model") or result_summary.get("skill_model"),
+        "skill_llm_prompt_tokens": result_summary.get("skill_llm_prompt_tokens"),
+        "skill_llm_completion_tokens": result_summary.get("skill_llm_completion_tokens"),
+        "skill_llm_total_tokens": result_summary.get("skill_llm_total_tokens"),
+        "skill_llm_latency_seconds": result_summary.get("skill_llm_latency_seconds"),
+        "resolver_latency_seconds": resolver.get("resolver_latency_seconds"),
+        "resolver_total_tokens": resolver_usage.get("total_tokens"),
         "judge_video_upload_status": upload.get("upload_status") or upload.get("status"),
         "decode_success": technical.get("decode_success"),
         "audio_stream_consistent": technical.get("audio_stream_consistent"),
@@ -146,7 +208,7 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
             writer.writerow({field: row.get(field) for field in CSV_FIELDS})
 
 
-def main() -> int:
+def main_from_args(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="批量运行 ClawCut 自动评测。")
     parser.add_argument("--cases", type=Path, required=True)
     parser.add_argument("--gt_dir", type=Path, required=True)
@@ -172,10 +234,19 @@ def main() -> int:
     parser.add_argument("--dover_device", default=None)
     parser.add_argument("--dover_timeout_seconds", type=int)
     parser.add_argument("--technical_quality_config", type=Path, default=Path("evaluation/config/default.yaml"))
+    parser.add_argument("--judge-url-map", type=Path)
+    parser.add_argument(
+        "--path-map",
+        action="append",
+        default=[],
+        help="Map paths recorded inside containers to host paths, in FROM=TO format. Can be repeated.",
+    )
     parser.add_argument("--skip_human_report", action="store_true")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     cases = _read_jsonl(args.cases)
+    path_map = _parse_path_maps(args.path_map)
+    judge_url_map = _read_judge_url_map(args.judge_url_map)
     runs_dir = args.output_dir / "runs"
     rows: list[dict[str, Any]] = []
     failures: list[dict[str, Any]] = []
@@ -184,12 +255,14 @@ def main() -> int:
         run_dir = runs_dir / case_id
         started = time.time()
         try:
+            input_video = _map_case_path(case["input_video"], path_map)
+            skill_output_dir = _map_case_path(case["skill_output_dir"], path_map)
             result = run_auto_eval(
                 AutoEvalConfig(
-                    input_video=Path(case["input_video"]),
+                    input_video=input_video,
                     instruction=str(case["instruction"]),
                     target_duration=case.get("target_duration"),
-                    skill_output_dir=Path(case["skill_output_dir"]),
+                    skill_output_dir=skill_output_dir,
                     gt_dir=args.gt_dir,
                     output_dir=run_dir,
                     resolver_config=ArkResolverConfig(
@@ -198,7 +271,7 @@ def main() -> int:
                         api_key_env=args.resolver_api_key_env,
                     ),
                     generated_case_json=Path(case["generated_case_json"]) if case.get("generated_case_json") else None,
-                    judge_video_url=case.get("judge_video_url"),
+                    judge_video_url=case.get("judge_video_url") or judge_url_map.get(case_id),
                     aesthetic_judge_config=ArkAestheticJudgeConfig(
                         model=args.judge_model,
                         base_url=args.judge_base_url,
@@ -224,6 +297,10 @@ def main() -> int:
                         key_prefix=case.get("tos_key_prefix") or args.tos_key_prefix,
                         presign_expires_seconds=case.get("tos_presign_expires_seconds") or args.tos_presign_expires_seconds,
                     ),
+                    path_map=path_map,
+                    eval_run_id=args.output_dir.name,
+                    case_id=case_id,
+                    skill_run_id=str(case.get("skill_run_id") or _skill_run_id_from_dir(skill_output_dir)),
                 )
             )
         except Exception as exc:
@@ -265,6 +342,10 @@ def main() -> int:
         write_reports(rows=rows, output_dir=args.output_dir, source_summary=summary)
     print(f"批量评测完成：{args.output_dir}")
     return 0
+
+
+def main() -> int:
+    return main_from_args()
 
 
 if __name__ == "__main__":

@@ -74,11 +74,21 @@ def build_tos_object_key(
     instruction: str,
     target_duration: float | None,
     run_id: str,
+    eval_run_id: str | None = None,
+    case_id: str | None = None,
+    skill_run_id: str | None = None,
 ) -> str:
     prefix = key_prefix.strip("/") or "output"
+    if eval_run_id and case_id and skill_run_id:
+        eval_part = _safe_key_part(eval_run_id, fallback="eval")
+        case_part = _safe_key_part(case_id, fallback="case")
+        skill_run_part = _safe_key_part(skill_run_id, fallback="run")
+        return f"{prefix}/{eval_part}/{case_part}/{skill_run_part}/highlight.mp4"
     video_part = _safe_key_part(video_id, fallback="video")
     run_part = _safe_key_part(run_id, fallback="run")
-    instruction_part = f"instruction-{instruction_fingerprint(video_id=video_id, instruction=instruction, target_duration=target_duration)}"
+    instruction_part = (
+        f"instruction-{instruction_fingerprint(video_id=video_id, instruction=instruction, target_duration=target_duration)}"
+    )
     return f"{prefix}/{video_part}/{instruction_part}/{run_part}/highlight.mp4"
 
 
@@ -90,6 +100,9 @@ def upload_judge_video_to_tos(
     target_duration: float | None,
     run_id: str,
     config: TosUploadConfig,
+    eval_run_id: str | None = None,
+    case_id: str | None = None,
+    skill_run_id: str | None = None,
 ) -> tuple[dict[str, Any], str | None]:
     object_key = build_tos_object_key(
         key_prefix=config.key_prefix,
@@ -97,6 +110,9 @@ def upload_judge_video_to_tos(
         instruction=instruction,
         target_duration=target_duration,
         run_id=run_id,
+        eval_run_id=eval_run_id,
+        case_id=case_id,
+        skill_run_id=skill_run_id,
     )
     base_record: dict[str, Any] = {
         "provider": "tos",
@@ -107,6 +123,9 @@ def upload_judge_video_to_tos(
         "endpoint": config.endpoint,
         "key_prefix": config.key_prefix,
         "object_key": object_key,
+        "eval_run_id": eval_run_id,
+        "case_id": case_id,
+        "skill_run_id": skill_run_id,
         "local_video_path": str(video_path),
         "local_video_sha256": sha256_file(video_path),
         "presign_expires_seconds": config.presign_expires_seconds,

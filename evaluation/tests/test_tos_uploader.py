@@ -32,6 +32,20 @@ def test_tos_object_key_uses_instruction_fingerprint():
     assert key_a.endswith("/run1/highlight.mp4")
 
 
+def test_tos_object_key_can_use_eval_case_and_skill_run_layout():
+    key = build_tos_object_key(
+        key_prefix="judge-videos",
+        video_id="demo",
+        instruction="剪出高光",
+        target_duration=None,
+        run_id="legacy",
+        eval_run_id="official_v1",
+        case_id="generic__demo",
+        skill_run_id="run_01",
+    )
+    assert key == "judge-videos/official_v1/generic__demo/run_01/highlight.mp4"
+
+
 def test_tos_upload_missing_credentials_returns_structured_failure(tmp_path, monkeypatch):
     video = tmp_path / "highlight.mp4"
     video.write_bytes(b"video")

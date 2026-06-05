@@ -15,6 +15,7 @@ CONCLUSION_LABELS = {
     "needs_work": "需要优化",
     "failed": "执行失败",
     "diagnostic": "仅诊断",
+    "pending": "待完成成片体验评审",
 }
 
 
@@ -52,7 +53,7 @@ def _case_key(row: dict[str, Any]) -> str:
 
 
 def _score_value(row: dict[str, Any]) -> float | None:
-    return _to_float(row.get("final_score_v2")) or _to_float(row.get("selection_score_v1"))
+    return _to_float(row.get("final_score_v2"))
 
 
 def classify_case(row: dict[str, Any]) -> str:
@@ -67,6 +68,8 @@ def classify_case(row: dict[str, Any]) -> str:
         return "failed"
     if "diagnostic" in status or scope == "diagnostic_only" or fallback or backend == "mock":
         return "diagnostic"
+    if status == "selection_scored_aesthetic_pending":
+        return "pending"
     if str(technical_passed).lower() == "false":
         return "failed"
     if score is None:
@@ -112,7 +115,9 @@ def explain_case(row: dict[str, Any]) -> dict[str, str]:
         f"耗时 {latency or '未知'} 秒，Skill LLM token {token_total or '未知'}。"
     )
 
-    if conclusion == "failed":
+    if conclusion == "pending":
+        suggestion = "已完成内容选择和技术质量检查；需补充 Judge 视频 URL 或启用自动上传后再生成 final_score_v2。"
+    elif conclusion == "failed":
         suggestion = "优先修复执行或技术质量问题，再进入剪辑效果评价。"
     elif conclusion == "diagnostic":
         suggestion = "保留为链路诊断样本；正式统计中应单独计数。"
@@ -196,6 +201,7 @@ def build_case_studies(rows: list[dict[str, Any]], limit: int = 3) -> dict[str, 
     success_candidates = [row for row in rows if classify_case(row) in {"excellent", "usable"}]
     failure_candidates = [row for row in rows if classify_case(row) in {"failed", "needs_work"}]
     diagnostic_candidates = [row for row in rows if classify_case(row) == "diagnostic"]
+    pending_candidates = [row for row in rows if classify_case(row) == "pending"]
 
     success_candidates.sort(key=lambda row: (_score_value(row) is not None, _score_value(row) or -1), reverse=True)
     failure_candidates.sort(
@@ -207,6 +213,7 @@ def build_case_studies(rows: list[dict[str, Any]], limit: int = 3) -> dict[str, 
         reverse=True,
     )
     diagnostic_candidates.sort(key=_case_key)
+    pending_candidates.sort(key=_case_key)
 
     return {
         "representative_successes": [
@@ -217,6 +224,9 @@ def build_case_studies(rows: list[dict[str, Any]], limit: int = 3) -> dict[str, 
         ],
         "diagnostic_samples": [
             _case_study(row, explain_case(row)["chain"]) for row in diagnostic_candidates[:limit]
+        ],
+        "pending_samples": [
+            _case_study(row, explain_case(row)["suggestion"]) for row in pending_candidates[:limit]
         ],
     }
 
@@ -266,6 +276,7 @@ def _case_studies_html(studies: dict[str, list[dict[str, Any]]]) -> str:
         "representative_successes": "典型成功案例",
         "representative_failures": "典型失败或待优化案例",
         "diagnostic_samples": "诊断样本",
+        "pending_samples": "待完成成片体验评审样本",
     }
     sections = []
     for key, title in titles.items():
@@ -380,6 +391,16 @@ def write_reports(*, rows: list[dict[str, Any]], output_dir: Path, source_summar
     for item in summary["case_studies"]["diagnostic_samples"]:
         md_lines.append(f"- {item['case_id']}：{item['why']}")
     if not summary["case_studies"]["diagnostic_samples"]:
+        md_lines.append("- 暂无。")
+    md_lines.extend(
+        [
+            "",
+            "## 待完成成片体验评审样本",
+        ]
+    )
+    for item in summary["case_studies"]["pending_samples"]:
+        md_lines.append(f"- {item['case_id']}：{item['why']}")
+    if not summary["case_studies"]["pending_samples"]:
         md_lines.append("- 暂无。")
     md_lines.extend(
         [

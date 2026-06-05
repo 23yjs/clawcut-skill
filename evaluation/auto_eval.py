@@ -55,6 +55,10 @@ class AutoEvalConfig:
     technical_quality_config: Path | None = None
     auto_upload_judge_video: bool = False
     tos_upload_config: TosUploadConfig | None = None
+    path_map: dict[str, str] | None = None
+    eval_run_id: str | None = None
+    case_id: str | None = None
+    skill_run_id: str | None = None
 
 
 def _write_json(path: Path, data: dict[str, Any]) -> None:
@@ -611,6 +615,7 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
             instruction=config.instruction,
             target_duration=config.target_duration,
             skill_output_dir=config.skill_output_dir,
+            path_map=config.path_map,
         )
         _write_json(config.output_dir / "artifact_validation.json", artifact_validation)
 
@@ -794,6 +799,9 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
                 target_duration=config.target_duration,
                 run_id=config.output_dir.name,
                 config=upload_config,
+                eval_run_id=config.eval_run_id,
+                case_id=config.case_id or config.output_dir.name,
+                skill_run_id=config.skill_run_id,
             )
             if uploaded_judge_video_url:
                 effective_judge_video_url = uploaded_judge_video_url

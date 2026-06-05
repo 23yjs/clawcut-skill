@@ -60,6 +60,38 @@ def test_artifact_validation_passes_and_reports_backend(tmp_path):
     assert result["input_video_match_method"] == "path"
 
 
+def test_artifact_validation_accepts_container_path_mapping(tmp_path):
+    host_workspace = tmp_path / "host_workspace"
+    input_video = host_workspace / "data" / "input" / "demo.MP4"
+    input_video.parent.mkdir(parents=True)
+    input_video.write_bytes(b"video")
+    root = _artifact_tree(
+        tmp_path,
+        input_video="/home/node/.openclaw/workspace/data/input/demo.MP4",
+    )
+    result_summary = json.loads((root / "reports" / "result_summary.json").read_text(encoding="utf-8"))
+    result_summary["segments_json"] = "/home/node/.openclaw/workspace/outputs/demo/reports/segments.json"
+    host_output = host_workspace / "outputs" / "demo"
+    (root / "reports" / "result_summary.json").write_text(
+        json.dumps(result_summary, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    host_output.parent.mkdir(parents=True)
+    root.rename(host_output)
+
+    result = validate_skill_artifacts(
+        input_video=input_video,
+        instruction="剪出高光",
+        target_duration=None,
+        skill_output_dir=host_output,
+        path_map={"/home/node/.openclaw/workspace": str(host_workspace)},
+    )
+
+    assert result["artifact_validation_passed"] is True
+    assert result["input_video_match"] is True
+    assert result["segments_json_match"] is True
+
+
 def test_artifact_validation_sha256_match_passes_with_warning(tmp_path):
     source = tmp_path / "copy_a" / "demo.MP4"
     source.parent.mkdir(parents=True)
