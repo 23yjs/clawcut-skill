@@ -1,0 +1,177 @@
+{
+    "video_id": "pet_training_demo",
+    "video_path": "pet_training_demo.MP4",
+    "video_type": "tutorial",
+    "duration_seconds": 145,
+    "video_summary": "视频为一段幼猫训练教程，围绕握手、换手和击掌三个递进动作展开。讲解者使用猫条、响片和零食奖励，从诱导幼猫抬爪开始，逐步示范口令、动作提示、奖励时机、降低辅助强度和重复练习的方法，并展示幼猫完成动作后的结果。视频结尾出现平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 4,
+            "description": "视频开场以快速蒙太奇展示幼猫完成握手、换手和击掌动作，并叠加“小猫握手、换手、击掌 保姆级教程”标题，用于预告本期训练目标。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 4,
+            "end": 10,
+            "description": "讲解者表示将通过本期视频教授如何训练幼猫完成握手、换手和击掌，并强调教程面向希望快速教会小猫这些动作的观众。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 10,
+            "end": 17,
+            "description": "讲解者回应幼猫多大可以开始训练的问题，并介绍画面中的幼猫是新到家的小猫，当时年龄刚满两个月。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 17,
+            "end": 21,
+            "description": "讲解者展示幼猫进行握手的画面，并表示自己使用此前的保姆级教程，仅训练一个晚上，幼猫就学会了握手。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 21,
+            "end": 28,
+            "description": "讲解者介绍本期训练需要准备的工具：一根猫条、一只响片以及一只参与训练的幼猫。画面近距离展示猫条和蓝色响片。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 28,
+            "end": 38,
+            "description": "握手训练第一步：讲解者将猫条向上举起，引导幼猫为了接近猫条而抬起前爪。当幼猫抬爪扒拉猫条时，讲解者顺势抓住幼猫的爪子，说出“握手”口令，按响响片并给予零食奖励。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 38,
+            "end": 47,
+            "description": "握手训练第二步：讲解者将空手伸到幼猫面前，等待幼猫主动抬爪。幼猫抬爪后，讲解者抓住爪子，再次说出“握手”口令，并通过响片和零食进行奖励。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 47,
+            "end": 53,
+            "description": "讲解者解释握手训练的学习逻辑：幼猫会逐渐理解，只有将前爪放到人的手上时，才可以获得零食奖励。画面中另一只灰色猫短暂经过。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 53,
+            "end": 61,
+            "description": "讲解者在已有训练基础上逐渐降低伸手位置的高度，让幼猫在较自然的手部位置抬爪并完成握手。幼猫成功将前爪放到讲解者手掌上。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 61,
+            "end": 69,
+            "description": "讲解者将猫条藏到身后，在减少食物直接诱导的情况下继续用手势和口令引导幼猫握手，并多次重复后给予奖励。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 69,
+            "end": 72,
+            "description": "幼猫在没有明显食物诱导的情况下主动将前爪放到讲解者手中，完成握手动作。画面叠加庆祝贴纸和成功反馈。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 72,
+            "end": 81,
+            "description": "讲解者说明，如果家中有多只猫，可以让已经学会动作的猫带着尚未学会的幼猫一起训练。画面中灰色猫和幼猫同时靠近猫条，灰色猫率先抬爪，幼猫在旁观察并参与练习。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 81,
+            "end": 86,
+            "description": "视频进入换手训练章节。讲解者表示，如果幼猫已经学会握手，通常可以较快学会换手，并展示幼猫先完成一次握手。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 86,
+            "end": 95,
+            "description": "换手训练开始：讲解者先让幼猫完成握手，再将另一只手伸向幼猫并提出“换一只手”的要求。讲解者提醒，如果幼猫仍然抬起原来的爪子，不要急于奖励。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 95,
+            "end": 100,
+            "description": "讲解者通过指向或轻触幼猫另一只前爪的方式进行提示。当幼猫按照要求更换前爪后，讲解者立即给予零食奖励。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 100,
+            "end": 111,
+            "description": "讲解者补充说明，如果幼猫暂时不能理解换手要求，可以继续给予明确提示，并在幼猫做出正确动作时再奖励。画面反复展示讲解者伸出另一只手、触碰目标前爪并等待幼猫换爪。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 111,
+            "end": 122,
+            "description": "讲解者强调训练核心仍然是多次重复。画面展示幼猫逐渐能够根据手势和口令在两只前爪之间切换，并完成握手和换手动作，随后出现成功反馈效果。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 122,
+            "end": 129,
+            "description": "视频进入击掌训练章节。讲解者说明，如果幼猫已经学会握手和换手，只需要再增加最后一步，就可以训练击掌。画面先让幼猫完成基础握手。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 129,
+            "end": 135,
+            "description": "击掌训练方法：讲解者先让幼猫握手，再逐渐抬高手掌位置，并将原本的握手口令改为“击掌”。幼猫开始向较高位置抬爪。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 135,
+            "end": 142,
+            "description": "幼猫多次抬起前爪并与讲解者竖起的手掌接触，确认已经完成击掌动作。画面叠加彩纸庆祝效果，并使用文字邀请观众尝试训练自己的小猫。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 142,
+            "end": 145,
+            "description": "正文结束，画面切换为平台账号搜索引导页，出现抖音搜索框、账号信息和二维码，没有新增宠物训练内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

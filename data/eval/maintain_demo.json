@@ -1,0 +1,161 @@
+{
+    "video_id": "maintain_demo",
+    "video_path": "maintain_demo.MP4",
+    "video_type": "device_repair",
+    "duration_seconds": 161,
+    "video_summary": "视频为一段电脑维修门店的多案例混剪，共包含三个笔记本维修案例。第一段展示一台笔记本内部严重积灰、散热风扇堵塞以及局部接口发霉或损坏后的拆机清理、检查和复装过程；第二段展示一台苹果笔记本因电池鼓包导致触控板翘起，并拆机取出鼓包电池后重新开机；第三段展示一台 ThinkPad 在用户自行拆机并拔掉排线后无法正常启动，维修人员重新检查和处理内部连接，最终恢复开机并完成简单测试。结尾出现平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 4,
+            "description": "视频从已经拆开的第一台笔记本开始。维修人员近距离检查散热风扇和进风区域，指出内部灰尘已经严重堵塞，并表示设备在这种情况下尚未损坏已经较为幸运。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 4,
+            "end": 11,
+            "description": "客户将笔记本举起并询问故障情况。维修人员指出设备有两个接口状态不好，其中一个接口出现发霉或腐蚀迹象，并说明另一项处理包括清灰和更换导热硅脂。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 11,
+            "end": 16,
+            "description": "维修人员使用电动螺丝刀拆卸第一台笔记本底盖螺丝，取下后盖并展示设备内部结构。双风扇、散热组件和主板区域进入画面。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 16,
+            "end": 28,
+            "description": "维修人员再次近距离检查散热风扇和进风口。画面清晰展示风扇周边积灰较多，维修人员指出灰尘已经影响通风，并判断设备运行温度会明显偏高。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 28,
+            "end": 35,
+            "description": "维修人员使用刷子、电动螺丝刀和镊子逐步拆卸风扇与散热区域零件，松开固定螺丝并断开连接，为进一步清理和检查做准备。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 35,
+            "end": 46,
+            "description": "维修人员抬起主板或散热组件，展示其背面和周边区域，并指向靠近进风口的硬盘或接口位置。维修人员表示这种积灰和潮湿状态可能导致硬盘或接口损坏，并指出局部位置存在明显发霉或腐蚀迹象。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 46,
+            "end": 60,
+            "description": "维修人员继续拆卸第一台笔记本的散热组件，并使用热风设备和刷子对内部区域、散热组件和风扇进行清理。该段以除尘和处理积灰为主。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 60,
+            "end": 68,
+            "description": "维修人员对拆下的风扇进行进一步清洁，擦拭风扇叶片和散热区域，并在芯片表面重新涂抹导热硅脂，为散热组件复装做准备。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 68,
+            "end": 80,
+            "description": "维修人员将散热组件和风扇重新放回设备内部，连接排线并使用电动螺丝刀逐步固定螺丝。画面持续展示复装过程。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 80,
+            "end": 91,
+            "description": "维修人员装回第一台笔记本底盖并完成固定，随后擦拭屏幕和外壳。设备重新合拢并交还客户，第一项清理维护基本结束。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 91,
+            "end": 97,
+            "description": "第二台苹果笔记本进入画面。维修人员和客户展示明显翘起的触控板区域，并指出触控板已经被内部部件顶起，存在异常鼓包现象。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 97,
+            "end": 105,
+            "description": "维修人员使用电动螺丝刀拆卸第二台笔记本底盖，打开机身后展示内部电池。画面中多块电池模块明显鼓起，维修人员将鼓包电池组件取出。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 105,
+            "end": 111,
+            "description": "维修人员完成第二台笔记本的基本复装和外壳固定，随后打开电脑。屏幕出现苹果标识，确认设备能够重新进入开机流程。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 111,
+            "end": 124,
+            "description": "第三台 ThinkPad 笔记本进入画面。客户说明设备无法正常启动，并提到自己曾拔掉一条内部连接线。维修人员反复确认设备是否由客户自行拆开过。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 124,
+            "end": 130,
+            "description": "维修人员使用电动螺丝刀拆卸 ThinkPad 底盖，打开机身并检查内部结构。画面聚焦在主板、风扇和排线连接区域。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 130,
+            "end": 138,
+            "description": "维修人员在放大设备或显微镜下检查 ThinkPad 主板和接口区域，并使用工具调整内部连接。客户提到此前有人判断主板接口损坏，维修报价约为 400 元。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 138,
+            "end": 145,
+            "description": "维修人员确认内部排线或接口区域后装回底盖，使用电动螺丝刀固定螺丝。ThinkPad 随后重新开机，屏幕出现 ThinkPad 标识并进入系统启动画面。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 145,
+            "end": 154,
+            "description": "设备进入 Windows 系统后，维修人员使用工具按压和测试键盘按键，并确认电脑已经恢复正常。客户询问维修费用，维修人员给出约 20 元的报价。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 154,
+            "end": 161,
+            "description": "正文结束，画面切换为平台账号搜索引导页，出现维修账号信息、搜索框和抖音标识，没有新增维修内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

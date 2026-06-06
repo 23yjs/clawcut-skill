@@ -1,0 +1,321 @@
+{
+    "video_id": "skateboard_demo",
+    "video_path": "skateboard_demo.MP4",
+    "video_type": "sports",
+    "duration_seconds": 104,
+    "video_summary": "视频为一段城市滑板技巧混剪，包含广场、公园、台阶、扶手、矮墙和坡道等不同场景。多名滑手连续完成翻板、越障、磨台和滑杆动作，并通过落地后的继续滑行确认动作成功。视频中也包含少量动作准备、普通滑行、一次明显失衡未稳定落地的尝试，以及结尾人物近景和黑色遮幅收尾。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 1,
+            "description": "视频以滑板主题文字和城市广场画面开场，短暂展示公共空间中的人物和环境，用于建立滑板混剪主题。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 1,
+            "end": 3,
+            "description": "镜头近距离展示滑板在砖石台阶边缘的准备动作，滑手使用脚部控制板面并调整位置。该段以动作铺垫为主。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 3,
+            "end": 5,
+            "description": "身穿蓝色服装的滑手在城市广场中起跳，滑板在空中完成翻转。滑手重新踩住板面并稳定落地，随后继续向前滑行。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 5,
+            "end": 7,
+            "description": "滑手在砖石台阶附近再次完成起跳和翻板动作，板面在空中旋转后回到脚下。滑手完成落地并向前滑出。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 7,
+            "end": 9,
+            "description": "镜头切换至临水公共空间。身穿浅色上衣的滑手靠近低矮障碍物起跳，完成越障动作后稳定落地并滑离。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 9,
+            "end": 12,
+            "description": "滑手沿弧形扶手或栏杆完成滑行动作，从台阶上方进入扶手区域，沿弯曲轨迹下降，随后落地并继续滑行。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 12,
+            "end": 14,
+            "description": "镜头固定在台阶和矮墙附近，短暂等待滑手进入画面。该段主要为下一次动作的准备和接近过程。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 14,
+            "end": 19,
+            "description": "身穿深色服装的滑手沿台阶旁的高处边缘进入动作，在矮墙和台阶区域完成翻板下落。滑手在较低位置稳定踩板落地，并继续向远处滑出。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 19,
+            "end": 21,
+            "description": "身穿蓝色服装的滑手接近石笼结构矮墙，跃上顶部边缘进行短距离磨滑，随后从末端离开并稳定滑出。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 21,
+            "end": 23,
+            "description": "另一名滑手在台阶旁的高台边缘完成起跳和滑行动作，从边缘离开后在坡道区域落地，继续向前滑行。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_011",
+            "start": 23,
+            "end": 25,
+            "description": "俯拍镜头展示一次落地后的失衡。滑手身体明显下沉并用手接近地面，未形成稳定连续的滑出动作，随后重新起身。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_012",
+            "start": 25,
+            "end": 27,
+            "description": "身穿白色上衣的滑手在公园区域向长条形黑色磨台接近，调整速度和站姿后起跳至磨台边缘。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_013",
+            "start": 27,
+            "end": 31,
+            "description": "滑手沿长条形磨台持续滑行，在末端起跳离开障碍物并重新落回地面。落地后板面保持稳定，滑手继续前进。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_014",
+            "start": 31,
+            "end": 32,
+            "description": "完成长距离磨台动作后，滑手继续向前滑行并逐渐离开镜头范围，用于确认上一动作稳定完成。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_015",
+            "start": 32,
+            "end": 36,
+            "description": "戴蓝色帽子的滑手靠近建筑旁的倾斜混凝土边缘，跃上边缘后沿坡度向下磨滑。滑手在底部离开障碍物并稳定落地。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_016",
+            "start": 36,
+            "end": 39,
+            "description": "身穿深色上衣和浅色裤子的滑手跃上低矮长条磨台，沿边缘完成磨滑后从末端离开，并保持平衡向前滑出。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_017",
+            "start": 39,
+            "end": 43,
+            "description": "滑手在白色墙体和台阶附近起跳，板面在高处边缘上方完成翻转和越障。滑手从障碍物另一侧落地并继续滑行。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_018",
+            "start": 43,
+            "end": 47,
+            "description": "滑手从种植池或矮墙边缘向下起跳，落地后身体明显失去平衡并停下。滑手蹲下并触碰地面，没有完成稳定滑出。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_019",
+            "start": 47,
+            "end": 50,
+            "description": "公园道路中，身穿白色上衣的滑手在平地完成一次翻板动作。板面旋转后重新回到脚下，滑手稳定落地并继续前进。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_020",
+            "start": 50,
+            "end": 52,
+            "description": "同一滑手在连续滑行中再次起跳完成翻板动作，重新踩住板面并保持向前滑行，形成连续技巧组合。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_021",
+            "start": 52,
+            "end": 58,
+            "description": "滑手沿树荫下的公园道路持续滑行，多次蹬地加速并调整路线，逐步接近前方蓝色圆柱形障碍物。该段以动作准备为主。",
+            "default_highlight_score": 2,
+            "avoid_by_default": true
+        },
+        {
+            "segment_id": "seg_022",
+            "start": 58,
+            "end": 61,
+            "description": "滑手在接近蓝色圆柱形障碍物后起跳，滑板与身体同时越过障碍物。滑手在另一侧稳定落地并继续向前滑行。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_023",
+            "start": 61,
+            "end": 63,
+            "description": "身穿蓝色服装的滑手沿台阶旁的长扶手完成滑杆动作，从上方进入扶手区域，沿斜坡下降并在底部稳定离开。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_024",
+            "start": 63,
+            "end": 65,
+            "description": "镜头切换至砖墙和蓝色垃圾桶附近。身穿浅色上衣的滑手完成一次快速起跳和翻板动作，并在道路上稳定落地。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_025",
+            "start": 65,
+            "end": 67,
+            "description": "身穿深色上衣的滑手在较长台阶旁跃上倾斜边缘，沿边缘向下磨滑，并在底部重新落地。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_026",
+            "start": 67,
+            "end": 69,
+            "description": "滑手在另一组台阶前起跳，滑板在空中完成翻转并越过台阶区域。滑手落地后稳定向前滑出。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_027",
+            "start": 69,
+            "end": 71,
+            "description": "戴蓝色帽子的滑手跃上低矮弧形边缘，沿边缘完成短距离磨滑，并在末端落回地面继续前进。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_028",
+            "start": 71,
+            "end": 73,
+            "description": "玻璃建筑旁的台阶区域中，滑手从高处起跳越过台阶边缘，在低处重新踩板落地并快速滑离。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_029",
+            "start": 73,
+            "end": 77,
+            "description": "身穿深色上衣的滑手在台阶顶部进入金属扶手，沿较长扶手完成连续滑杆动作，并在底部离开扶手后继续滑行。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_030",
+            "start": 77,
+            "end": 79,
+            "description": "身穿浅色裤子的滑手跃上建筑旁的低矮混凝土边缘，完成短距离磨滑后落回地面，并保持平衡滑出。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_031",
+            "start": 79,
+            "end": 82,
+            "description": "道路旁的高台边缘上，身穿深色服装的滑手跃起并沿顶部进行磨滑，从末端下落后重新踩板，稳定滑离。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_032",
+            "start": 82,
+            "end": 84,
+            "description": "以棕榈树为背景的道路中，滑手在平地起跳完成翻板动作。板面旋转后回到脚下，滑手成功落地。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_033",
+            "start": 84,
+            "end": 86,
+            "description": "身穿浅色上衣的滑手在公园坡道区域完成一次平地翻板动作，重新踩住板面后继续滑行。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_034",
+            "start": 86,
+            "end": 90,
+            "description": "同一滑手沿公园中的低矮混凝土边缘滑行，逐步进入障碍物上方并沿边缘保持平衡。滑手在末端离开并继续向前滑动。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_035",
+            "start": 90,
+            "end": 92,
+            "description": "滑手继续沿坡道推进，并在白色斜坡边缘完成一次快速起跳和越障，落地后进入下一个场景。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_036",
+            "start": 92,
+            "end": 94,
+            "description": "砖石台阶旁，滑手靠近低矮边缘后起跳，完成翻板或越障动作，并在较低位置稳定落地滑出。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_037",
+            "start": 94,
+            "end": 97,
+            "description": "镜头切换至同一区域的另一处砖石边缘。滑手从高处起跳，滑板在空中翻转后重新回到脚下，完成落地并离开画面。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_038",
+            "start": 97,
+            "end": 101,
+            "description": "视频最后一次完整滑板动作中，滑手沿砖石高台接近边缘，在起跳后完成翻板下落。滑手在地面重新踩住滑板，并稳定向远处滑出。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_039",
+            "start": 101,
+            "end": 104,
+            "description": "正文结束后，画面切换为人物上半身近景，并通过逐步收窄的黑色遮幅和暗场完成收尾。该段没有新增滑板动作。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

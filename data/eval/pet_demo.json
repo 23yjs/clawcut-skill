@@ -1,0 +1,89 @@
+{
+    "video_id": "pet_demo",
+    "video_path": "pet_demo.MP4",
+    "video_type": "pet_daily",
+    "duration_seconds": 57,
+    "video_summary": "视频为一段室内床边拍摄的猫咪与人互动日常。猫咪多数时间趴在人的手臂旁，用前爪搭住手臂，并多次抬头、眯眼、贴近和接受抚摸。视频后段猫咪靠近人的上身并继续互动，结尾出现平台账号搜索引导页。",
+    "semantic_segments": [
+        {
+            "segment_id": "seg_001",
+            "start": 0,
+            "end": 4,
+            "description": "一只虎斑猫趴在床上，身体贴近人的手臂，前爪搭在人的手臂或衣袖上。猫咪整体较安静，主要是建立宠物与人的亲密场景。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_002",
+            "start": 4,
+            "end": 10,
+            "description": "猫咪抬起头向上方看，前爪仍搭在人的手臂上，眼神和头部动作较明显，呈现期待注意或观察周围的状态。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_003",
+            "start": 10,
+            "end": 19,
+            "description": "猫咪继续贴在人手臂旁，头部多次仰起并眯眼，身体保持放松，表现出依赖和撒娇式的安静互动。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_004",
+            "start": 19,
+            "end": 22,
+            "description": "猫咪低下头并重新靠近人的手臂，动作幅度较小，像是在调整姿势或等待进一步抚摸。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_005",
+            "start": 22,
+            "end": 32,
+            "description": "人伸手抚摸猫咪头顶和额头，猫咪闭眼或半闭眼接受抚摸，前爪继续搭在人手臂上，画面呈现明确的亲密互动和放松反应。",
+            "default_highlight_score": 5,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_006",
+            "start": 32,
+            "end": 38,
+            "description": "抚摸结束后，猫咪重新睁眼并抬头看向上方和镜头方向，仍保持贴近人的姿势，但互动强度低于被抚摸阶段。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_007",
+            "start": 38,
+            "end": 43,
+            "description": "猫咪坐得更直并靠近人的上半身，人的脸部边缘进入画面。猫咪向人身边靠拢，表现出主动接近和寻求互动的动作。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_008",
+            "start": 43,
+            "end": 48,
+            "description": "猫咪坐在人的身旁，面向镜头和周围环境来回观察，姿态较稳定，主要为靠近后的安静停留。",
+            "default_highlight_score": 3,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_009",
+            "start": 48,
+            "end": 53,
+            "description": "猫咪再次转向人并贴近人的胸口或肩部，前爪靠在人身上，呈现进一步靠近和撒娇式互动。",
+            "default_highlight_score": 4,
+            "avoid_by_default": false
+        },
+        {
+            "segment_id": "seg_010",
+            "start": 53,
+            "end": 57,
+            "description": "正文结束，画面切换为平台账号搜索引导页，出现抖音搜索框、账号信息和二维码，没有新增宠物互动内容。",
+            "default_highlight_score": 1,
+            "avoid_by_default": true
+        }
+    ]
+}

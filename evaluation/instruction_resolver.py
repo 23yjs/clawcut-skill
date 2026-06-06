@@ -207,6 +207,8 @@ def validate_resolver_result(
     elif instruction_mode == "specific":
         if required_highlight_segment_ids:
             raise ResolverValidationError("specific 模式 required_highlight_segment_ids 必须为空")
+        if forbidden_segment_ids:
+            raise ResolverValidationError("specific 模式 forbidden_segment_ids 必须为空")
         if selection_scope not in {"preferential", "exclusive"}:
             raise ResolverValidationError("specific 的 selection_scope 必须是 preferential 或 exclusive")
         if use_default_highlights:
@@ -220,8 +222,8 @@ def validate_resolver_result(
             raise ResolverValidationError("conflict 的 selection_scope 必须是 preferential 或 exclusive")
         if use_default_highlights:
             raise ResolverValidationError("conflict 必须 use_default_highlights=false")
-        if resolution_status == "resolved" and not relevant_segment_ids and not forbidden_segment_ids:
-            raise ResolverValidationError("conflict resolved 时 relevant 或 forbidden 至少一个非空")
+        if resolution_status == "resolved" and not forbidden_segment_ids:
+            raise ResolverValidationError("conflict resolved 时 forbidden_segment_ids 必须非空")
     elif instruction_mode == "unresolved":
         if required_highlight_segment_ids or allowed_context_segment_ids:
             raise ResolverValidationError("unresolved 模式 required_highlight_segment_ids 和 allowed_context_segment_ids 必须为空")

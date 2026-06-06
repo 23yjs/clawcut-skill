@@ -62,6 +62,18 @@ class InstructionResolverValidationTests(unittest.TestCase):
     def test_valid_specific_exclusive(self) -> None:
         result = validate_resolver_result(_result(selection_scope="exclusive"), GT)
         self.assertEqual(result["selection_scope"], "exclusive")
+        self.assertEqual(result["forbidden_segment_ids"], [])
+
+    def test_specific_with_forbidden_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(
+                    instruction_mode="specific",
+                    selection_scope="exclusive",
+                    forbidden_segment_ids=["seg_003"],
+                ),
+                GT,
+            )
 
     def test_valid_conflict(self) -> None:
         result = validate_resolver_result(
@@ -72,6 +84,54 @@ class InstructionResolverValidationTests(unittest.TestCase):
             ),
             GT,
         )
+        self.assertEqual(result["forbidden_segment_ids"], ["seg_003"])
+
+    def test_valid_conflict_preferential_with_forbidden(self) -> None:
+        result = validate_resolver_result(
+            _result(
+                instruction_mode="conflict",
+                selection_scope="preferential",
+                forbidden_segment_ids=["seg_003"],
+            ),
+            GT,
+        )
+        self.assertEqual(result["selection_scope"], "preferential")
+        self.assertEqual(result["forbidden_segment_ids"], ["seg_003"])
+
+    def test_valid_conflict_exclusive_with_forbidden(self) -> None:
+        result = validate_resolver_result(
+            _result(
+                instruction_mode="conflict",
+                selection_scope="exclusive",
+                forbidden_segment_ids=["seg_003"],
+            ),
+            GT,
+        )
+        self.assertEqual(result["selection_scope"], "exclusive")
+        self.assertEqual(result["forbidden_segment_ids"], ["seg_003"])
+
+    def test_conflict_without_forbidden_errors(self) -> None:
+        with self.assertRaises(ResolverValidationError):
+            validate_resolver_result(
+                _result(
+                    instruction_mode="conflict",
+                    selection_scope="preferential",
+                    forbidden_segment_ids=[],
+                ),
+                GT,
+            )
+
+    def test_conflict_only_forbidden_without_relevant_is_valid(self) -> None:
+        result = validate_resolver_result(
+            _result(
+                instruction_mode="conflict",
+                selection_scope="preferential",
+                relevant_segment_ids=[],
+                forbidden_segment_ids=["seg_003"],
+            ),
+            GT,
+        )
+        self.assertEqual(result["relevant_segment_ids"], [])
         self.assertEqual(result["forbidden_segment_ids"], ["seg_003"])
 
     def test_valid_conflict_with_allowed_context(self) -> None:
