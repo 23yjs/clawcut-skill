@@ -690,6 +690,9 @@ def test_auto_eval_with_judge_video_url_outputs_final_score_v2(tmp_path, monkeyp
     assert result["evaluation_status"] == "scored_complete"
     assert result["aesthetic_score_v1"] == 80.0
     assert result["final_score_v2"] is not None
+    assert result["evaluation_started_at"]
+    assert result["evaluation_finished_at"]
+    assert isinstance(result["evaluation_elapsed_seconds"], float)
     request = json.loads((config.output_dir / "aesthetic_judge_request.json").read_text(encoding="utf-8"))
     assert "debug=1" not in str(request)
 

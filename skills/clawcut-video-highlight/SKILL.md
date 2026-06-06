@@ -263,6 +263,86 @@ target_duration:
 [/CLAWCUT_BASELINE_COLLECTION_V1]
 ```
 
+## 内部正式采集协议：CLAWCUT_OFFICIAL_COLLECTION_V1
+
+当 Agent 收到以 `/skill clawcut-video-highlight` 开头，并包含以下协议块的消息时：
+
+```text
+[CLAWCUT_OFFICIAL_COLLECTION_V1]
+...
+[/CLAWCUT_OFFICIAL_COLLECTION_V1]
+```
+
+这表示当前任务是一次可复现的正式 case 剪辑产物采集。Agent 仍然必须通过本 Skill 调用 `scripts/run_skill.py`，不得绕过 Skill 自行剪辑。
+
+Agent 必须读取协议块中的字段：
+
+- `case_id`
+- `run_id`
+- `user_instruction_original`
+- `instruction`
+- `input_video`
+- `llm_video_url`
+- `output_dir`
+- `llm_backend`
+- `target_duration`
+
+执行规则：
+
+- 将协议块中的 `instruction` 原样传给 `--instruction`。
+- 将协议块中的 `user_instruction_original` 原样传给 `--user_instruction_original`。
+- `input_video` 必须作为本地原始剪辑源路径传给 `--input_video`。
+- `llm_video_url` 必须传给 `--llm_video_url`，供 Ark 模型理解视频内容。
+- `llm_backend` 必须传给 `--llm_backend`；正式采集默认使用 `ark`。
+- `target_duration` 为 `null`、空值或 `未指定` 时，不得传入 `--target_duration`。
+- `target_duration` 为数值时，必须将该数值传给 `--target_duration`。
+- 不得润色、扩写或补充 `instruction`，不得根据视频类型擅自增加剪辑重点。
+- 不得把整段 `[CLAWCUT_OFFICIAL_COLLECTION_V1]` 协议块传给 `--instruction`。
+- 不得修改 Skill 代码、Prompt、配置或 fallback 行为。
+- 不得绕过 `run_skill.py` 直接调用 `ffmpeg`。
+
+执行完成后，Agent 应返回：
+
+- 实际执行命令。
+- 退出码。
+- 实际 `result_summary.json` 路径。
+- 实际 `highlight.mp4` 路径。
+- 是否触发 fallback。
+
+示例 message：
+
+```text
+/skill clawcut-video-highlight
+
+[CLAWCUT_OFFICIAL_COLLECTION_V1]
+
+case_id: specific_excl__pet_demo__active_interactions_only
+run_id: run_01
+
+user_instruction_original:
+只保留猫咪主动靠近、接受抚摸和撒娇互动的片段，不要其他内容。 /home/node/.openclaw/workspace/data/input/pet_demo.MP4
+
+instruction:
+只保留猫咪主动靠近、接受抚摸和撒娇互动的片段，不要其他内容。
+
+input_video:
+/home/node/.openclaw/workspace/data/input/pet_demo.MP4
+
+llm_video_url:
+https://clawcut.tos-cn-beijing.volces.com/input/pet_demo.MP4
+
+output_dir:
+/home/node/.openclaw/workspace/outputs/openclaw_collection_v2/pet_demo/specific_excl__pet_demo__active_interactions_only/run_01
+
+llm_backend:
+ark
+
+target_duration:
+未指定
+
+[/CLAWCUT_OFFICIAL_COLLECTION_V1]
+```
+
 ## 输出文件
 
 执行成功后应查看：

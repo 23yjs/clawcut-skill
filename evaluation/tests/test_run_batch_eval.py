@@ -50,8 +50,20 @@ def test_batch_continues_after_case_failure(tmp_path, monkeypatch):
             "technical_quality": {"technical_quality_passed": True},
             "duration_context": {},
             "time_metrics": {},
-            "aesthetic_judge": {},
+            "aesthetic_judge": {
+                "judge_metadata": [
+                    {
+                        "aesthetic_judge_latency_seconds": 2.5,
+                        "aesthetic_judge_usage": {
+                            "prompt_tokens": 1000,
+                            "completion_tokens": 200,
+                            "total_tokens": 1200,
+                        },
+                    }
+                ]
+            },
             "resolver_metadata": {"resolver_latency_seconds": 1.2, "resolver_usage": {"total_tokens": 456}},
+            "evaluation_elapsed_seconds": 7.5,
         }
 
     monkeypatch.setattr(run_batch_eval, "run_auto_eval", fake_run_auto_eval)
@@ -75,8 +87,14 @@ def test_batch_continues_after_case_failure(tmp_path, monkeypatch):
     assert "editing_experience_score_v1" in csv_text
     assert "skill_llm_total_tokens" in csv_text
     assert "resolver_total_tokens" in csv_text
+    assert "aesthetic_judge_total_tokens" in csv_text
+    assert "evaluation_total_tokens" in csv_text
+    assert "pipeline_total_tokens" in csv_text
     summary = json.loads((tmp_path / "batch" / "summary.json").read_text(encoding="utf-8"))
     assert summary["failure_count"] == 1
+    assert summary["total_aesthetic_judge_tokens"] == 1200.0
+    assert summary["total_evaluation_tokens"] == 1656.0
+    assert summary["total_pipeline_tokens"] == 1779.0
     assert (tmp_path / "batch" / "report.html").exists()
     assert (tmp_path / "batch" / "technical_appendix.html").exists()
     assert (tmp_path / "batch" / "cases" / "ok.html").exists()

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -64,6 +65,18 @@ class AutoEvalConfig:
 def _write_json(path: Path, data: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _attach_evaluation_runtime(
+    result: dict[str, Any],
+    *,
+    evaluation_started_at: str,
+    started_monotonic: float,
+) -> dict[str, Any]:
+    result["evaluation_started_at"] = evaluation_started_at
+    result["evaluation_finished_at"] = datetime.now(timezone.utc).isoformat()
+    result["evaluation_elapsed_seconds"] = round(time.monotonic() - started_monotonic, 3)
+    return result
 
 
 def find_skill_segments_json(
@@ -596,6 +609,8 @@ def _write_manifest(
 
 
 def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
+    evaluation_started_at = datetime.now(timezone.utc).isoformat()
+    started_monotonic = time.monotonic()
     config.output_dir.mkdir(parents=True, exist_ok=True)
     effective_judge_video_url = config.judge_video_url
     gt_annotation: dict[str, Any] | None = None
@@ -639,6 +654,11 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
                 "error_type": "ArtifactValidationError",
                 "error_message": "; ".join(artifact_validation.get("artifact_validation_errors", [])),
             }
+            _attach_evaluation_runtime(
+                result,
+                evaluation_started_at=evaluation_started_at,
+                started_monotonic=started_monotonic,
+            )
             _write_json(config.output_dir / "resolver_request.json", {"status": "skipped", "reason": "invalid_artifact"})
             _write_json(config.output_dir / "resolver_response.json", {"status": "skipped", "reason": "invalid_artifact"})
             _write_json(config.output_dir / "resolver_metadata.json", {"status": "skipped", "reason": "invalid_artifact"})
@@ -695,6 +715,11 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
                 "error_type": "MockFallbackNotOfficial",
                 "error_message": "正式评分要求 skill_backend_used=ark 且 fallback_used=false。",
             }
+            _attach_evaluation_runtime(
+                result,
+                evaluation_started_at=evaluation_started_at,
+                started_monotonic=started_monotonic,
+            )
             _write_json(config.output_dir / "resolver_request.json", {"status": "skipped", "reason": "diagnostic_only"})
             _write_json(config.output_dir / "resolver_response.json", {"status": "skipped", "reason": "diagnostic_only"})
             _write_json(config.output_dir / "resolver_metadata.json", {"status": "skipped", "reason": "diagnostic_only"})
@@ -920,10 +945,20 @@ def run_auto_eval(config: AutoEvalConfig) -> dict[str, Any]:
             "result_summary_json": str(result_summary_json),
             "final_score": final_score_v2,
         }
+        _attach_evaluation_runtime(
+            result,
+            evaluation_started_at=evaluation_started_at,
+            started_monotonic=started_monotonic,
+        )
     except (ArkResolverError, ResolverValidationError, json.JSONDecodeError) as exc:
         if config.generated_case_json is not None:
             raise
         result = _failure_result(config=config, gt_annotation=gt_annotation, error=exc)
+        _attach_evaluation_runtime(
+            result,
+            evaluation_started_at=evaluation_started_at,
+            started_monotonic=started_monotonic,
+        )
         result["artifact_validation"] = artifact_validation
         result["technical_quality"] = technical_quality
         if resolver_request is None and gt_annotation is not None:

@@ -63,8 +63,17 @@ CSV_FIELDS = [
     "skill_llm_completion_tokens",
     "skill_llm_total_tokens",
     "skill_llm_latency_seconds",
+    "evaluation_elapsed_seconds",
     "resolver_latency_seconds",
+    "resolver_prompt_tokens",
+    "resolver_completion_tokens",
     "resolver_total_tokens",
+    "aesthetic_judge_latency_seconds",
+    "aesthetic_judge_prompt_tokens",
+    "aesthetic_judge_completion_tokens",
+    "aesthetic_judge_total_tokens",
+    "evaluation_total_tokens",
+    "pipeline_total_tokens",
     "judge_video_upload_status",
     "decode_success",
     "audio_stream_consistent",
@@ -135,6 +144,41 @@ def _skill_run_id_from_dir(skill_output_dir: Path) -> str:
     return name if name.startswith("run_") else "run_01"
 
 
+def _sum_number(values: list[Any]) -> int | float | None:
+    numbers: list[int | float] = []
+    for value in values:
+        if isinstance(value, (int, float)):
+            numbers.append(value)
+    return sum(numbers) if numbers else None
+
+
+def _judge_usage_summary(aesthetic: dict[str, Any]) -> dict[str, Any]:
+    metadata = aesthetic.get("judge_metadata")
+    if not isinstance(metadata, list):
+        metadata = []
+    usage_items = [
+        item.get("aesthetic_judge_usage")
+        for item in metadata
+        if isinstance(item, dict) and isinstance(item.get("aesthetic_judge_usage"), dict)
+    ]
+    latency = _sum_number([
+        item.get("aesthetic_judge_latency_seconds")
+        for item in metadata
+        if isinstance(item, dict)
+    ])
+    return {
+        "aesthetic_judge_latency_seconds": round(float(latency), 3) if latency is not None else None,
+        "aesthetic_judge_prompt_tokens": _sum_number([usage.get("prompt_tokens") for usage in usage_items]),
+        "aesthetic_judge_completion_tokens": _sum_number([usage.get("completion_tokens") for usage in usage_items]),
+        "aesthetic_judge_total_tokens": _sum_number([usage.get("total_tokens") for usage in usage_items]),
+    }
+
+
+def _add_numbers(*values: Any) -> int | float | None:
+    numbers = [value for value in values if isinstance(value, (int, float))]
+    return sum(numbers) if numbers else None
+
+
 def _row(case: dict[str, Any], result: dict[str, Any], elapsed: float) -> dict[str, Any]:
     artifact = result.get("artifact_validation") or {}
     technical = result.get("technical_quality") or {}
@@ -147,6 +191,12 @@ def _row(case: dict[str, Any], result: dict[str, Any], elapsed: float) -> dict[s
     result_summary = artifact.get("result_summary") if isinstance(artifact.get("result_summary"), dict) else {}
     resolver = result.get("resolver_metadata") if isinstance(result.get("resolver_metadata"), dict) else {}
     resolver_usage = resolver.get("resolver_usage") if isinstance(resolver.get("resolver_usage"), dict) else {}
+    judge_usage = _judge_usage_summary(aesthetic)
+    skill_total_tokens = result_summary.get("skill_llm_total_tokens")
+    resolver_total_tokens = resolver_usage.get("total_tokens")
+    aesthetic_total_tokens = judge_usage.get("aesthetic_judge_total_tokens")
+    evaluation_total_tokens = _add_numbers(resolver_total_tokens, aesthetic_total_tokens)
+    pipeline_total_tokens = _add_numbers(skill_total_tokens, resolver_total_tokens, aesthetic_total_tokens)
     return {
         "case_id": case.get("case_id", ""),
         "video_id": result.get("video_id", ""),
@@ -187,8 +237,17 @@ def _row(case: dict[str, Any], result: dict[str, Any], elapsed: float) -> dict[s
         "skill_llm_completion_tokens": result_summary.get("skill_llm_completion_tokens"),
         "skill_llm_total_tokens": result_summary.get("skill_llm_total_tokens"),
         "skill_llm_latency_seconds": result_summary.get("skill_llm_latency_seconds"),
+        "evaluation_elapsed_seconds": result.get("evaluation_elapsed_seconds"),
         "resolver_latency_seconds": resolver.get("resolver_latency_seconds"),
+        "resolver_prompt_tokens": resolver_usage.get("prompt_tokens"),
+        "resolver_completion_tokens": resolver_usage.get("completion_tokens"),
         "resolver_total_tokens": resolver_usage.get("total_tokens"),
+        "aesthetic_judge_latency_seconds": judge_usage.get("aesthetic_judge_latency_seconds"),
+        "aesthetic_judge_prompt_tokens": judge_usage.get("aesthetic_judge_prompt_tokens"),
+        "aesthetic_judge_completion_tokens": judge_usage.get("aesthetic_judge_completion_tokens"),
+        "aesthetic_judge_total_tokens": aesthetic_total_tokens,
+        "evaluation_total_tokens": evaluation_total_tokens,
+        "pipeline_total_tokens": pipeline_total_tokens,
         "judge_video_upload_status": upload.get("upload_status") or upload.get("status"),
         "decode_success": technical.get("decode_success"),
         "audio_stream_consistent": technical.get("audio_stream_consistent"),
@@ -206,6 +265,15 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         writer.writeheader()
         for row in rows:
             writer.writerow({field: row.get(field) for field in CSV_FIELDS})
+
+
+def _sum_row_field(rows: list[dict[str, Any]], field: str) -> float | None:
+    values: list[float] = []
+    for row in rows:
+        value = row.get(field)
+        if isinstance(value, (int, float)):
+            values.append(float(value))
+    return round(sum(values), 3) if values else None
 
 
 def main_from_args(argv: list[str] | None = None) -> int:
@@ -320,6 +388,13 @@ def main_from_args(argv: list[str] | None = None) -> int:
         "case_count": len(cases),
         "failure_count": len(failures),
         "scored_complete_count": sum(1 for row in rows if row.get("evaluation_status") == "scored_complete"),
+        "total_batch_elapsed_seconds": _sum_row_field(rows, "elapsed_seconds"),
+        "total_evaluation_elapsed_seconds": _sum_row_field(rows, "evaluation_elapsed_seconds"),
+        "total_skill_llm_tokens": _sum_row_field(rows, "skill_llm_total_tokens"),
+        "total_resolver_tokens": _sum_row_field(rows, "resolver_total_tokens"),
+        "total_aesthetic_judge_tokens": _sum_row_field(rows, "aesthetic_judge_total_tokens"),
+        "total_evaluation_tokens": _sum_row_field(rows, "evaluation_total_tokens"),
+        "total_pipeline_tokens": _sum_row_field(rows, "pipeline_total_tokens"),
         "failures": failures,
     }
     _write_json(args.output_dir / "summary.json", summary)
@@ -329,6 +404,9 @@ def main_from_args(argv: list[str] | None = None) -> int:
         f"- case_count: {summary['case_count']}",
         f"- scored_complete_count: {summary['scored_complete_count']}",
         f"- failure_count: {summary['failure_count']}",
+        f"- total_evaluation_elapsed_seconds: {summary['total_evaluation_elapsed_seconds']}",
+        f"- total_evaluation_tokens: {summary['total_evaluation_tokens']}",
+        f"- total_pipeline_tokens: {summary['total_pipeline_tokens']}",
         "",
         "| case_id | evaluation_status | selection_score_v1 | aesthetic_score_v1 | final_score_v2 |",
         "| --- | --- | ---: | ---: | ---: |",
