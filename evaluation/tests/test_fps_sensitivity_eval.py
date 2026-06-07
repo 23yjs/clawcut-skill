@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from evaluation.run_fps_sensitivity_eval import summarize_fps_sensitivity
 
 
@@ -54,3 +56,83 @@ def test_fps_sensitivity_recommends_no_global_change_when_fps_one_hits() -> None
         ],
     )
     assert "暂不建议全局提高 fps" in summary["recommendations"][0]["recommendation"]
+
+
+def test_fps_sensitivity_allows_missing_critical_action_window() -> None:
+    summary = summarize_fps_sensitivity(
+        [
+            {
+                "case_id": "fps_case",
+                "video_id": "game",
+                "fps_values": [1],
+            }
+        ],
+        [
+            {
+                "case_id": "fps_case",
+                "video_fps": 1,
+                "final_segments": [{"start": 2.5, "end": 3.5}],
+            }
+        ],
+    )
+    row = summary["rows"][0]
+    assert row["critical_action_window_available"] is False
+    assert row["critical_action_hit"] is None
+    assert row["short_highlight_missed"] is None
+    assert summary["missing_critical_action_window_count"] == 1
+    assert "缺少 critical_action_window" in summary["recommendations"][0]["recommendation"]
+
+
+def test_fps_sensitivity_accepts_multiple_critical_action_windows() -> None:
+    summary = summarize_fps_sensitivity(
+        [
+            {
+                "case_id": "fps_case",
+                "video_id": "game",
+                "critical_action_window": [
+                    {"start": 10, "end": 11},
+                    {"start": 20, "end": 21},
+                ],
+                "fps_values": [1],
+            }
+        ],
+        [
+            {
+                "case_id": "fps_case",
+                "video_fps": 1,
+                "final_segments": [{"start": 20.2, "end": 20.8}],
+            }
+        ],
+    )
+    row = summary["rows"][0]
+    assert row["critical_action_window_count"] == 2
+    assert row["critical_action_hit"] is True
+
+
+def test_fps_sensitivity_reads_segments_from_result_summary(tmp_path) -> None:
+    result_summary = tmp_path / "result_summary.json"
+    result_summary.write_text(
+        json.dumps({"final_segments": [{"start": 20.2, "end": 20.8}]}),
+        encoding="utf-8",
+    )
+    summary = summarize_fps_sensitivity(
+        [
+            {
+                "case_id": "fps_case",
+                "video_id": "game",
+                "critical_action_windows": [
+                    {"start": 10, "end": 11},
+                    {"start": 20, "end": 21},
+                ],
+                "fps_values": [1],
+            }
+        ],
+        [
+            {
+                "source_case_id": "fps_case",
+                "video_fps": 1,
+                "result_summary": str(result_summary),
+            }
+        ],
+    )
+    assert summary["rows"][0]["critical_action_hit"] is True

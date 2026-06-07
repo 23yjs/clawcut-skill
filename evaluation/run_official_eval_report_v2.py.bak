@@ -431,7 +431,7 @@ def build_summary(cases: list[dict[str, Any]], results: list[dict[str, Any]], ro
             "by_test_type": _breakdown_by(rows, "test_type"),
         },
         "case_index": rows,
-        "special_reports_overview": _load_special_reports_overview(output_dir),
+        "special_reports_overview": {},
         "artifact_paths": {
             "case_results_csv": str(output_dir / "case_results.csv"),
             "case_results_xlsx": str(output_dir / "case_results.xlsx"),
@@ -439,91 +439,6 @@ def build_summary(cases: list[dict[str, Any]], results: list[dict[str, Any]], ro
             "cases_dir": str(output_dir / "cases"),
         },
     }
-
-
-def _special_summary_payload(path: Path) -> dict[str, Any] | None:
-    if not path.is_file():
-        return None
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {"status": "failed", "summary": "专项报告读取失败"}
-    return payload if isinstance(payload, dict) else {"status": "failed", "summary": "专项报告格式错误"}
-
-
-def _special_status(payload: dict[str, Any] | None) -> str:
-    if payload is None:
-        return "未执行"
-    status = str(payload.get("status") or "").lower()
-    if status in {"ready", "passed", "success", "completed"}:
-        return "已完成"
-    return "执行失败"
-
-
-def _special_summary_text(key: str, payload: dict[str, Any] | None) -> str:
-    if payload is None:
-        return "尚未生成专项结果"
-    if payload.get("summary"):
-        return str(payload["summary"])
-    if key == "abnormal":
-        result_count = int(payload.get("result_count") or payload.get("case_count") or 0)
-        passed_count = int(payload.get("passed_result_count") or 0)
-        failed_count = int(payload.get("failed_result_count") or 0)
-        not_run_count = int(payload.get("not_run_count") or 0)
-        return f"通过 {passed_count} / {result_count}；失败 {failed_count}；未执行 {not_run_count}"
-    if key == "resolver":
-        return (
-            f"通过 {int(payload.get('passed_count') or 0)} / {int(payload.get('case_count') or 0)}；"
-            f"失败 {int(payload.get('failed_count') or 0)}；未执行 {int(payload.get('not_run_count') or 0)}"
-        )
-    if key == "fps":
-        return f"源 Case {int(payload.get('source_case_count') or payload.get('case_count') or 0)}；结果 {int(payload.get('result_count') or 0)}"
-    if key == "stability":
-        return f"源 Case {int(payload.get('case_count') or 0)}；重复运行 {int(payload.get('attempt_count') or 0)}"
-    return "专项报告已生成"
-
-
-def _load_special_reports_overview(output_dir: Path) -> list[dict[str, Any]]:
-    specs = [
-        (
-            "abnormal",
-            "异常输入处理专项",
-            output_dir / "special_reports" / "abnormal" / "abnormal_summary.json",
-            "special_reports/abnormal/detail.html",
-        ),
-        (
-            "resolver",
-            "Resolver 语义解析专项",
-            output_dir / "special_reports" / "resolver" / "resolver_semantics_summary.json",
-            "special_reports/resolver/detail.html",
-        ),
-        (
-            "fps",
-            "FPS 敏感性专项",
-            output_dir / "special_reports" / "fps" / "fps_sensitivity_summary.json",
-            "special_reports/fps/detail.html",
-        ),
-        (
-            "stability",
-            "运行稳定性专项",
-            output_dir / "special_reports" / "stability" / "stability_summary.json",
-            "special_reports/stability/detail.html",
-        ),
-    ]
-    rows: list[dict[str, Any]] = []
-    for key, label, summary_path, detail_path in specs:
-        payload = _special_summary_payload(summary_path)
-        detail_file = output_dir / detail_path
-        rows.append(
-            {
-                "key": key,
-                "label": label,
-                "status": _special_status(payload),
-                "summary": _special_summary_text(key, payload),
-                "detail_path": detail_path if payload is not None and detail_file.is_file() else None,
-            }
-        )
-    return rows
 
 
 def _result_category(result: dict[str, Any]) -> str:
@@ -1550,7 +1465,14 @@ def _dashboard_payload(summary: dict[str, Any], rows: list[dict[str, Any]]) -> d
         "user_requirements": summary.get("breakdowns", {}).get("by_user_requirement", []),
         "video_scenarios": summary.get("breakdowns", {}).get("by_video_scenario", []),
         "issues": summary.get("breakdowns", {}).get("by_issue", []),
-        "special": special if isinstance(special, list) else [],
+        "special": (
+            [
+                {"label": str(key), "value": value}
+                for key, value in special.items()
+            ]
+            if isinstance(special, dict) and special
+            else []
+        ),
         "cases": rows,
     }
 
@@ -1597,7 +1519,7 @@ card('成片技术质量通过率',s.technical_pass_rate,'',data.groups.generate
 ].join('');}}
 function table(headers,rows,kind){{if(!rows.length)return '<div class="empty">暂无数据。</div>';return `<table><thead><tr>${{headers.map(h=>`<th>${{h}}</th>`).join('')}}</tr></thead><tbody>${{rows.map(r=>`<tr class="click-row" onclick='openDrawer(${{JSON.stringify(r.label)}}, ${{JSON.stringify(r.case_ids||[])}})'>${{kind==='issue'?`<td>${{r.label}}</td><td>${{r.count}}</td>`:`<td>${{r.label}}</td><td>${{r.case_count}}</td><td>${{r.official_scored_count}}</td><td>${{score(r.average_content_selection_score)}}</td><td>${{score(r.average_editing_experience_score)}}</td><td>${{score(r.average_final_score)}}</td>`}}</tr>`).join('')}}</tbody></table>`}}
 function renderTables(){{document.getElementById('user-table').innerHTML=table(['用户要求类型','Case 数','正式计分数','平均内容选择得分','平均成片观看体验得分','平均综合得分'],data.user_requirements,'normal');document.getElementById('scenario-table').innerHTML=table(['视频场景','Case 数','正式计分数','平均内容选择得分','平均成片观看体验得分','平均综合得分'],data.video_scenarios,'normal');document.getElementById('issue-table').innerHTML=table(['问题类型','涉及 Case 数'],data.issues,'issue');}}
-function renderSpecial(){{const el=document.getElementById('special-overview');const rows=data.special||[];if(!rows.length){{el.innerHTML='<div class="empty">专项测试状态尚未生成。</div>';return}}el.innerHTML=`<table><thead><tr><th>专项测试</th><th>状态</th><th>结果摘要</th><th>操作</th></tr></thead><tbody>${{rows.map(x=>`<tr><td>${{x.label}}</td><td>${{x.status}}</td><td>${{x.summary}}</td><td>${{x.detail_path?`<a href="${{x.detail_path}}" target="_blank" rel="noopener">查看详情</a>`:'—'}}</td></tr>`).join('')}}</tbody></table>`;}}
+function renderSpecial(){{const el=document.getElementById('special-overview');if(!data.special||!data.special.length){{el.innerHTML='<div class="empty"><strong>专项测试尚未执行。</strong><br>后续将补充评测规则解析、FPS 敏感性、运行稳定性和异常输入处理结果。</div>';return}}el.innerHTML='<table><tbody>'+data.special.map(x=>`<tr><td>${{x.label}}</td><td>${{x.value}}</td></tr>`).join('')+'</tbody></table>';}}
 function openDrawer(title,ids){{const drawer=document.getElementById('drawer');drawer.style.display='block';drawer.dataset.ids=JSON.stringify(ids);drawer.innerHTML=`<div class="drawer-head"><h2>${{title}}</h2><button class="close" onclick="closeDrawer()">关闭</button></div><input class="search" id="case-search" placeholder="搜索 Case ID" oninput="renderDrawerCases()"><div id="drawer-list"></div>`;renderDrawerCases();}}
 function closeDrawer(){{document.getElementById('drawer').style.display='none';}}
 function renderDrawerCases(){{const drawer=document.getElementById('drawer');const ids=JSON.parse(drawer.dataset.ids||'[]');const q=(document.getElementById('case-search')?.value||'').trim().toLowerCase();const list=resolveCases(ids).filter(c=>!q||String(c.case_id).toLowerCase().includes(q));document.getElementById('drawer-list').innerHTML=list.length?list.map(c=>`<div class="case-card"><div class="case-title"><a href="cases/${{c.case_id}}.html">${{c.case_id}}</a></div><div class="case-meta"><span>视频 ID</span><span>${{empty(c.video_id)}}</span><span>用户指令</span><span>${{empty(c.instruction)}}</span><span>执行状态</span><span><span class="pill">${{statusLabels[c.evaluation_status]||empty(c.evaluation_status)}}</span></span><span>内容选择得分</span><span>${{score(c.selection_score_v1)}}</span><span>成片观看体验得分</span><span>${{score(c.editing_experience_score_v1)}}</span><span>综合得分</span><span>${{score(c.final_score_v2)}}</span><span>主要问题</span><span>${{empty(c.issues)}}</span></div></div>`).join(''):'<div class="empty">没有匹配的 Case。</div>';}}

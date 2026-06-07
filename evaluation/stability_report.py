@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import html
 import json
 import math
 from collections import defaultdict
@@ -97,7 +98,7 @@ def _estimate_cost(row: dict[str, Any], cost_model: dict[str, float]) -> float |
 def summarize_stability(rows: list[dict[str, Any]], cost_model: dict[str, float]) -> dict[str, Any]:
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
-        grouped[str(row.get("case_id") or row.get("video_id") or "unknown")].append(row)
+        grouped[str(row.get("source_case_id") or row.get("case_id") or row.get("video_id") or "unknown")].append(row)
 
     cases = []
     for case_id, attempts in sorted(grouped.items()):
@@ -139,7 +140,9 @@ def summarize_stability(rows: list[dict[str, Any]], cost_model: dict[str, float]
                 "attempt_count": len(attempts),
                 "success_rate": round(success / len(attempts), 3),
                 "official_success_rate": round(official_success / len(attempts), 3),
+                "skill_fallback_count": skill_fallback,
                 "skill_fallback_rate": round(skill_fallback / len(attempts), 3),
+                "openclaw_fallback_count": openclaw_fallback,
                 "openclaw_fallback_rate": round(openclaw_fallback / len(attempts), 3),
                 "avg_latency_seconds": _mean(latencies),
                 "max_latency_seconds": round(max(latencies), 3) if latencies else None,
@@ -151,6 +154,7 @@ def summarize_stability(rows: list[dict[str, Any]], cost_model: dict[str, float]
             }
         )
     return {
+        "status": "ready",
         "case_count": len(cases),
         "attempt_count": len(rows),
         "cases": cases,
@@ -161,6 +165,31 @@ def summarize_stability(rows: list[dict[str, Any]], cost_model: dict[str, float]
             "estimated_cost": round(sum(case["estimated_cost"] or 0 for case in cases), 6),
         },
     }
+
+
+def _write_stability_detail_html(summary: dict[str, Any], output_dir: Path) -> None:
+    rows = []
+    for case in summary.get("cases", []):
+        rows.append(
+            "<tr>"
+            f"<td>{html.escape(str(case.get('case_id') or '—'))}</td>"
+            f"<td>{html.escape(str(case.get('attempt_count') or '—'))}</td>"
+            f"<td>{html.escape(str(case.get('success_rate') or '—'))}</td>"
+            f"<td>{html.escape(str(case.get('openclaw_fallback_count') if case.get('openclaw_fallback_count') is not None else '—'))}</td>"
+            f"<td>{html.escape(str(case.get('skill_fallback_count') if case.get('skill_fallback_count') is not None else '—'))}</td>"
+            f"<td>{html.escape(str(case.get('avg_latency_seconds') or '—'))}</td>"
+            f"<td>{html.escape(str(case.get('avg_skill_llm_total_tokens') or '—'))}</td>"
+            f"<td>{html.escape(str(case.get('selection_score_std') or '—'))}</td>"
+            "</tr>"
+        )
+    html_doc = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>运行稳定性专项</title><style>
+body{{margin:0;background:#f5f7fb;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}}main{{max-width:1200px;margin:0 auto;padding:32px 28px}}h1{{color:#12365f}}.card{{background:#fff;border:1px solid #d9e1ec;border-radius:14px;padding:20px;margin-top:18px}}table{{width:100%;border-collapse:collapse}}th,td{{border:1px solid #d9e1ec;padding:10px;text-align:left}}th{{background:#f0f4f9}}a{{color:#175cd3;text-decoration:none}}</style></head><body><main>
+<h1>运行稳定性专项</h1>
+<section class="card"><p>源 Case：{summary.get('case_count', 0)}；重复运行：{summary.get('attempt_count', 0)}</p></section>
+<section class="card"><table><thead><tr><th>源 Case</th><th>重复运行次数</th><th>成功率</th><th>Gateway fallback 次数</th><th>Skill fallback 次数</th><th>平均耗时</th><th>Tokens 波动</th><th>内容选择得分波动</th></tr></thead><tbody>{''.join(rows)}</tbody></table></section>
+<p><a href="../../report.html">返回总览报告</a></p>
+</main></body></html>"""
+    (output_dir / "detail.html").write_text(html_doc, encoding="utf-8")
 
 
 def write_stability_report(summary: dict[str, Any], output_dir: Path) -> None:
@@ -189,6 +218,7 @@ def write_stability_report(summary: dict[str, Any], output_dir: Path) -> None:
             f"{case['avg_skill_llm_total_tokens']} | {case['selection_score_std']} |"
         )
     (output_dir / "stability_summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    _write_stability_detail_html(summary, output_dir)
 
 
 def main(argv: list[str] | None = None) -> int:

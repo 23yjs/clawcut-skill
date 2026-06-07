@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import html
 import json
 from collections import Counter
 from pathlib import Path
@@ -82,6 +83,7 @@ def _evaluate_abnormal_result(case: dict[str, Any], result: dict[str, Any] | Non
         return {
             "case_id": case_id,
             "abnormal_type": case.get("abnormal_type"),
+            "verification_mode": str(case.get("verification_mode") or ""),
             "expected_error_type": expected_error_type,
             "actual_error_type": "",
             "actual_status": "not_run",
@@ -125,6 +127,7 @@ def _evaluate_abnormal_result(case: dict[str, Any], result: dict[str, Any] | Non
     return {
         "case_id": case_id,
         "abnormal_type": case.get("abnormal_type"),
+        "verification_mode": str(result.get("verification_mode") or case.get("verification_mode") or ""),
         "expected_error_type": expected_error_type,
         "actual_error_type": actual_error_type,
         "actual_status": actual_status,
@@ -136,6 +139,45 @@ def _evaluate_abnormal_result(case: dict[str, Any], result: dict[str, Any] | Non
         "passed": not reasons,
         "reasons": "; ".join(reasons),
     }
+
+
+def _verification_label(value: Any) -> str:
+    text = str(value or "")
+    if text in {"real_input", "real_input_mock_backend"}:
+        return "真实异常输入" if text == "real_input" else "真实媒体链路"
+    if text == "fault_injection":
+        return "定向故障注入"
+    return text or "—"
+
+
+def _write_detail_html(summary: dict[str, Any], cases: list[dict[str, Any]], output_dir: Path) -> None:
+    cases_by_id = {str(case.get("case_id")): case for case in cases}
+    rows = []
+    for result in summary.get("result_rows", []):
+        case = cases_by_id.get(str(result.get("case_id")), {})
+        expected = case.get("expected_behavior") or case.get("expected_error_type") or "—"
+        actual = (
+            f"状态：{result.get('actual_status') or '—'}；"
+            f"错误类型：{result.get('actual_error_type') or '—'}；"
+            f"成片：{'存在' if result.get('highlight_video_exists') else '不存在'}"
+        )
+        rows.append(
+            "<tr>"
+            f"<td>{html.escape(str(result.get('abnormal_type') or '—'))}</td>"
+            f"<td>{html.escape(_verification_label(result.get('verification_mode') or case.get('verification_mode')))}</td>"
+            f"<td>{html.escape(str(expected))}</td>"
+            f"<td>{html.escape(actual)}</td>"
+            f"<td>{'通过' if result.get('passed') else '未通过'}</td>"
+            "</tr>"
+        )
+    html_doc = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>异常输入处理专项</title><style>
+body{{margin:0;background:#f5f7fb;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}}main{{max-width:1200px;margin:0 auto;padding:32px 28px}}h1{{color:#12365f}}.card{{background:#fff;border:1px solid #d9e1ec;border-radius:14px;padding:20px;margin-top:18px}}table{{width:100%;border-collapse:collapse;background:#fff}}th,td{{border:1px solid #d9e1ec;padding:10px;vertical-align:top;text-align:left}}th{{background:#f0f4f9}}.ok{{color:#18864b;font-weight:700}}a{{color:#175cd3;text-decoration:none}}</style></head><body><main>
+<h1>异常输入处理专项</h1>
+<section class="card"><p>通过 <strong class="ok">{summary.get('passed_result_count', 0)} / {summary.get('result_count', 0)}</strong>；失败 {summary.get('failed_result_count', 0)}；未执行 {summary.get('not_run_count', 0)}</p><p>{html.escape(str(summary.get('evaluation_policy') or ''))}</p></section>
+<section class="card"><table><thead><tr><th>异常类型</th><th>验证方式</th><th>预期结果</th><th>实际结果</th><th>是否通过</th></tr></thead><tbody>{''.join(rows)}</tbody></table></section>
+<p><a href="../../report.html">返回总览报告</a></p>
+</main></body></html>"""
+    (output_dir / "detail.html").write_text(html_doc, encoding="utf-8")
 
 
 def build_abnormal_summary(cases: list[dict[str, Any]], results: list[dict[str, Any]] | None = None) -> dict[str, Any]:
@@ -202,6 +244,7 @@ def write_abnormal_report(summary: dict[str, Any], cases: list[dict[str, Any]], 
                 f"{row['actual_status']} | {row['passed']} | {row['reasons']} |"
             )
     (output_dir / "abnormal_summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    _write_detail_html(summary, cases, output_dir)
 
 
 def main(argv: list[str] | None = None) -> int:

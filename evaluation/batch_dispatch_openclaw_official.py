@@ -46,6 +46,9 @@ RESULT_FIELDS = [
     "video_id",
     "test_type",
     "priority",
+    "source_case_id",
+    "repeat_index",
+    "video_fps",
     "run_id",
     "collection_status",
     "openclaw_exit_code",
@@ -92,6 +95,9 @@ class OfficialCase:
     llm_video_url: str
     test_type: str
     priority: str
+    source_case_id: str | None = None
+    repeat_index: int | None = None
+    video_fps: int | None = None
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "OfficialCase":
@@ -121,6 +127,9 @@ class OfficialCase:
             llm_video_url=str(payload["llm_video_url"]),
             test_type=str(payload["test_type"]),
             priority=str(payload["priority"]),
+            source_case_id=str(payload["source_case_id"]) if payload.get("source_case_id") is not None else None,
+            repeat_index=int(payload["repeat_index"]) if payload.get("repeat_index") is not None else None,
+            video_fps=int(payload["video_fps"]) if payload.get("video_fps") is not None else None,
         )
 
 
@@ -211,6 +220,8 @@ def validate_cases(cases: list[OfficialCase]) -> None:
             raise BatchDispatchError(f"{case.case_id}: target_duration must be number or null")
         if case.target_duration is not None and float(case.target_duration) <= 0:
             raise BatchDispatchError(f"{case.case_id}: target_duration must be positive")
+        if case.video_fps is not None and int(case.video_fps) <= 0:
+            raise BatchDispatchError(f"{case.case_id}: video_fps must be positive")
         if not case.llm_video_url.startswith(("http://", "https://")):
             raise BatchDispatchError(f"{case.case_id}: llm_video_url must be http(s)")
         if Path(case.input_video).name != case.video_filename:
@@ -271,6 +282,20 @@ def _target_duration_requirement(case: OfficialCase) -> str:
 def render_message(case: OfficialCase, run_id: str) -> str:
     user_instruction_original = f"{case.instruction} {case.input_video}"
     output_dir = run_dir_for(case, run_id)
+    video_fps_block = (
+        f"""
+video_fps:
+{case.video_fps}
+
+"""
+        if case.video_fps is not None
+        else ""
+    )
+    video_fps_requirement = (
+        f"7. 必须使用 video_fps={case.video_fps} 进行视频理解采样。"
+        if case.video_fps is not None
+        else "7. 未指定 video_fps 时使用 Skill 默认采样配置。"
+    )
     return f"""/skill {SKILL_NAME}
 
 [{PROTOCOL_NAME}]
@@ -299,6 +324,7 @@ ark
 target_duration:
 {_target_duration_text(case)}
 
+{video_fps_block}\
 执行要求:
 1. 必须通过 {SKILL_NAME} Skill 执行。
 2. 禁止绕过 Skill 直接处理视频。
@@ -306,6 +332,7 @@ target_duration:
 4. instruction 必须原样传递。
 5. {_target_duration_requirement(case)}
 6. 执行结束后返回真实产物路径，不得自行猜测路径。
+{video_fps_requirement}
 
 [/{PROTOCOL_NAME}]
 """
@@ -409,6 +436,9 @@ def manifest_from_attempt(
         "video_id": case.video_id,
         "test_type": case.test_type,
         "priority": case.priority,
+        "source_case_id": case.source_case_id,
+        "repeat_index": case.repeat_index,
+        "video_fps": case.video_fps,
         "run_id": run_id,
         "session_key": session_key,
         "collection_status": collection_status,
