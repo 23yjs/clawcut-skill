@@ -66,6 +66,7 @@ RESULT_FIELDS = [
     "skill_llm_request_started_at",
     "skill_llm_request_finished_at",
     "skill_llm_attempt_count",
+    "video_editing_elapsed_seconds",
     "skill_run_elapsed_seconds",
     "preview_generation_seconds",
     "ffmpeg_render_seconds",
@@ -382,6 +383,27 @@ def manifest_from_attempt(
     error_message: str | None,
 ) -> dict[str, Any]:
     meta = openclaw_meta(stdout_payload)
+    skill_consumption = (
+        result_summary.get("skill_consumption")
+        if isinstance(result_summary.get("skill_consumption"), dict)
+        else {}
+    )
+    skill_run_elapsed_seconds = skill_consumption.get(
+        "skill_run_elapsed_seconds",
+        result_summary.get("skill_run_elapsed_seconds"),
+    )
+    preview_generation_seconds = skill_consumption.get(
+        "preview_generation_seconds",
+        result_summary.get("preview_generation_seconds"),
+    )
+    skill_llm_latency_seconds = skill_consumption.get(
+        "skill_llm_latency_seconds",
+        result_summary.get("skill_llm_latency_seconds"),
+    )
+    ffmpeg_render_seconds = skill_consumption.get(
+        "ffmpeg_render_seconds",
+        result_summary.get("ffmpeg_render_seconds"),
+    )
     return {
         "case_id": case.case_id,
         "video_id": case.video_id,
@@ -407,14 +429,15 @@ def manifest_from_attempt(
         "skill_llm_prompt_tokens": result_summary.get("skill_llm_prompt_tokens"),
         "skill_llm_completion_tokens": result_summary.get("skill_llm_completion_tokens"),
         "skill_llm_total_tokens": result_summary.get("skill_llm_total_tokens"),
-        "skill_llm_latency_seconds": result_summary.get("skill_llm_latency_seconds"),
+        "skill_llm_latency_seconds": skill_llm_latency_seconds,
         "skill_llm_video_source": result_summary.get("skill_llm_video_source"),
         "skill_llm_request_started_at": result_summary.get("skill_llm_request_started_at"),
         "skill_llm_request_finished_at": result_summary.get("skill_llm_request_finished_at"),
         "skill_llm_attempt_count": result_summary.get("skill_llm_attempt_count"),
-        "skill_run_elapsed_seconds": result_summary.get("skill_run_elapsed_seconds"),
-        "preview_generation_seconds": result_summary.get("preview_generation_seconds"),
-        "ffmpeg_render_seconds": result_summary.get("ffmpeg_render_seconds"),
+        "video_editing_elapsed_seconds": skill_run_elapsed_seconds,
+        "skill_run_elapsed_seconds": skill_run_elapsed_seconds,
+        "preview_generation_seconds": preview_generation_seconds,
+        "ffmpeg_render_seconds": ffmpeg_render_seconds,
         "fallback_to_mock_effective": result_summary.get("fallback_to_mock_effective"),
         "effective_llm_config_snapshot": result_summary.get("effective_llm_config_snapshot"),
         "error_message": error_message,

@@ -327,6 +327,7 @@ def _write_success_summary(
             "skill_consumption": {
                 "skill_run_elapsed_seconds": runtime_context.get("skill_run_elapsed_seconds"),
                 "preview_generation_seconds": runtime_context.get("preview_generation_seconds"),
+                "preview_generation_skipped": runtime_context.get("preview_generation_skipped", False),
                 "skill_llm_latency_seconds": llm_metadata.get("latency_seconds"),
                 "ffmpeg_render_seconds": runtime_context.get("ffmpeg_render_seconds"),
                 "skill_llm_prompt_tokens": llm_usage.get("prompt_tokens"),
