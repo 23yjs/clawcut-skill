@@ -17,6 +17,15 @@ from utils import SKILL_DIR, SkillError, load_config, read_json
 SCHEMA_PATH = SKILL_DIR / "schemas" / "edit_plan.schema.json"
 
 
+def is_compact_edit_plan(plan: dict[str, Any]) -> bool:
+    return (
+        isinstance(plan, dict)
+        and isinstance(plan.get("final_segments"), list)
+        and "chunks" not in plan
+        and "chunk_reviews" not in plan
+    )
+
+
 def _segment_duration(segment: dict[str, Any]) -> float:
     return float(segment["end"]) - float(segment["start"])
 
@@ -96,6 +105,50 @@ def _compat_schema_plan(
     return schema_plan
 
 
+def _compact_limits(config: dict) -> tuple[int, int]:
+    planning = config.get("planning") if isinstance(config.get("planning"), dict) else {}
+    return int(planning.get("max_final_segments", 24)), int(planning.get("max_title_chars", 30))
+
+
+def _normalize_compact_plan(plan: dict[str, Any], config: dict, warnings: list[str]) -> None:
+    max_segments, max_title_chars = _compact_limits(config)
+    plan["edit_plan_schema_version"] = "compact_edit_plan_v2"
+    highlight_definition = plan.setdefault("highlight_definition", {})
+    if isinstance(highlight_definition, dict):
+        if "must_include" in highlight_definition and "must_keep" not in highlight_definition:
+            highlight_definition["must_keep"] = highlight_definition.get("must_include")
+        highlight_definition.setdefault("must_keep", [])
+        highlight_definition.setdefault("avoid", [])
+    plan.setdefault("excluded_highlights", [])
+    plan.setdefault("self_check", {"pass": True, "issues": []})
+    plan.setdefault("chunking_strategy_effective", "compact_edit_plan_v2")
+    plan.setdefault("overall_rationale", "compact_edit_plan_v2: 模型仅输出最终片段，Python 负责运行时元数据。")
+    if not isinstance(plan.get("duration_policy"), dict):
+        configured_policy = config.get("duration_policy") if isinstance(config.get("duration_policy"), dict) else {}
+        if str(configured_policy.get("duration_policy_mode") or configured_policy.get("mode")) == "llm_free":
+            total_duration = sum(
+                max(0.0, float(segment.get("end", 0)) - float(segment.get("start", 0)))
+                for segment in plan.get("final_segments", [])
+                if isinstance(segment, dict)
+            )
+            plan["duration_policy"] = {
+                "duration_policy_mode": "llm_free",
+                "user_specified_duration": False,
+                "user_target_duration": None,
+                "recommended_duration": None,
+                "selected_target_duration": round(total_duration, 3) if total_duration > 0 else None,
+                "allowed_min_duration": 0.001,
+                "allowed_max_duration": None,
+                "final_total_duration": round(total_duration, 3),
+                "duration_policy_reason": "compact_edit_plan_v2：按 final_segments 实际总时长补齐。",
+            }
+    for segment in plan.get("final_segments", [])[:max_segments]:
+        title = str(segment.get("title", "") or "").strip()
+        if len(title) > max_title_chars:
+            segment["title"] = title[:max_title_chars]
+            warnings.append(f"片段标题超过 {max_title_chars} 字符，已截断")
+
+
 def _target_tolerance(selected_target_duration: float) -> float:
     if selected_target_duration <= 30:
         return 3.0
@@ -110,12 +163,16 @@ def validate_plan(
     schema_path: Path = SCHEMA_PATH,
 ) -> dict[str, Any]:
     errors: list[str] = []
-    if Draft202012Validator is not None:
+    warnings: list[str] = []
+    compact_plan = is_compact_edit_plan(plan)
+    if compact_plan:
+        _normalize_compact_plan(plan, config, warnings)
+    if Draft202012Validator is not None and not compact_plan:
         schema = read_json(schema_path)
         schema_plan = _compat_schema_plan(plan, target_duration, video_duration, config)
         schema_errors = sorted(Draft202012Validator(schema).iter_errors(schema_plan), key=lambda error: error.path)
         errors.extend(f"schema: {error.message}" for error in schema_errors)
-    else:
+    elif Draft202012Validator is None and not compact_plan:
         for required_field in (
             "video_type",
             "duration_policy",
@@ -130,7 +187,10 @@ def validate_plan(
         ):
             if required_field not in plan:
                 errors.append(f"schema: 缺少必填字段 '{required_field}'")
-    warnings: list[str] = []
+    else:
+        for required_field in ("video_type", "video_type_reason", "highlight_definition", "final_segments"):
+            if required_field not in plan:
+                errors.append(f"schema: 缺少必填字段 '{required_field}'")
 
     validation_config = config.get("validation", {})
     min_segment_duration = float(validation_config.get("min_segment_duration", 1.0))
@@ -146,6 +206,29 @@ def validate_plan(
     )
     effective_target_duration = selected_target_duration
     target_tolerance = _target_tolerance(effective_target_duration)
+
+    max_final_segments, max_title_chars = _compact_limits(config)
+    if compact_plan:
+        if len(plan.get("final_segments", [])) > max_final_segments:
+            errors.append(f"final_segments 数量不能超过 {max_final_segments}")
+        if len(str(plan.get("video_type_reason", "") or "")) > 80:
+            errors.append("video_type_reason 不能超过 80 字符")
+        highlight_definition = plan.get("highlight_definition")
+        if not isinstance(highlight_definition, dict):
+            errors.append("highlight_definition 必须是 object")
+            highlight_definition = {}
+        for field in ("must_keep", "avoid"):
+            values = highlight_definition.get(field)
+            if not isinstance(values, list):
+                errors.append(f"highlight_definition.{field} 必须是数组")
+                continue
+            if len(values) > 5:
+                errors.append(f"highlight_definition.{field} 不能超过 5 条")
+            for index, value in enumerate(values):
+                if not str(value or "").strip():
+                    errors.append(f"highlight_definition.{field}[{index}] 不能为空")
+                if len(str(value)) > 30:
+                    errors.append(f"highlight_definition.{field}[{index}] 不能超过 30 字符")
 
     chunks = plan.get("chunks", [])
     chunk_ids = {str(chunk.get("id")) for chunk in chunks if chunk.get("id") is not None}
@@ -164,9 +247,12 @@ def validate_plan(
 
     normalized_segments = []
     for index, segment in enumerate(segments):
-        for required_field in ("title", "role", "source_chunk_id", "reason"):
+        required_segment_fields = ("title",) if compact_plan else ("title", "role", "source_chunk_id", "reason")
+        for required_field in required_segment_fields:
             if not str(segment.get(required_field, "")).strip():
                 errors.append(f"片段 {index} 缺少必填字段 {required_field}")
+        if compact_plan and len(str(segment.get("title", "") or "")) > max_title_chars:
+            errors.append(f"片段 {index} title 不能超过 {max_title_chars} 字符")
         try:
             start = float(segment["start"])
             end = float(segment["end"])
@@ -183,10 +269,10 @@ def validate_plan(
                 f"片段 {index} 过短：{end - start:.3f} 秒 < {min_segment_duration:.3f} 秒"
             )
         source_chunk_id = str(segment.get("source_chunk_id", ""))
-        if source_chunk_id and source_chunk_id not in chunk_ids:
+        if (not compact_plan) and source_chunk_id and source_chunk_id not in chunk_ids:
             errors.append(f"片段 {index} 的 source_chunk_id 不存在于 chunks：{source_chunk_id}")
         review = reviews_by_chunk_id.get(source_chunk_id)
-        if review:
+        if (not compact_plan) and review:
             try:
                 refined_start = float(review["refined_start"])
                 refined_end = float(review["refined_end"])
@@ -197,7 +283,7 @@ def validate_plan(
                     )
             except (KeyError, TypeError, ValueError):
                 warnings.append(f"片段 {index} 对应的 chunk_review refined_start/refined_end 无法解析")
-        elif source_chunk_id:
+        elif (not compact_plan) and source_chunk_id:
             warnings.append(f"片段 {index} 找不到对应 chunk_review：{source_chunk_id}")
         normalized_segments.append({"index": index, "start": start, "end": end})
 

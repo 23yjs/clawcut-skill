@@ -16,12 +16,21 @@ llm:
   base_url: https://ark.cn-beijing.volces.com/api/v3
   fallback_to_mock: false
   temperature: 0.2
+  max_tokens: 8192
+  invalid_json_retry_count: 1
+  structured_output_enabled: true
+  structured_output_mode: json_schema
   video_input_mode: auto
   video_fps: 1
   timeout_seconds: 120
 
 duration_policy:
   mode: llm_free
+
+planning:
+  schema_version: compact_edit_plan_v2
+  max_final_segments: 24
+  max_title_chars: 30
 
 video_input_policy:
   prefer_original_url: true

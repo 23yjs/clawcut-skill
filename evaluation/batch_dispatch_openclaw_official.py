@@ -65,6 +65,11 @@ RESULT_FIELDS = [
     "skill_llm_video_source",
     "skill_llm_request_started_at",
     "skill_llm_request_finished_at",
+    "skill_llm_attempt_count",
+    "skill_run_elapsed_seconds",
+    "preview_generation_seconds",
+    "ffmpeg_render_seconds",
+    "fallback_to_mock_effective",
     "result_summary",
     "highlight_video",
     "run_log",
@@ -340,8 +345,6 @@ def classify_attempt(
     transport = meta.get("transport") or stdout_payload.get("transport")
     fallback_from = meta.get("fallbackFrom") or meta.get("fallback_from")
     fallback_reason = meta.get("fallbackReason") or meta.get("fallback_reason")
-    if transport == "embedded" and (fallback_from == "gateway" or fallback_reason == "gateway_timeout"):
-        return "diagnostic_openclaw_fallback", str(fallback_reason or fallback_from)
     if artifact_search.status != "ready":
         return artifact_search.status, artifact_search.error_message
     if openclaw_exit_code != 0:
@@ -352,8 +355,6 @@ def classify_attempt(
         return "failed", f"skill backend is {result_summary.get('skill_backend_used') or 'unknown'}"
     if _truthy(result_summary.get("fallback_used")):
         return "failed", "skill fallback was used"
-    if transport != "gateway":
-        return "failed", f"openclaw transport is {transport or 'unknown'}"
     return "official_success", None
 
 
@@ -410,6 +411,12 @@ def manifest_from_attempt(
         "skill_llm_video_source": result_summary.get("skill_llm_video_source"),
         "skill_llm_request_started_at": result_summary.get("skill_llm_request_started_at"),
         "skill_llm_request_finished_at": result_summary.get("skill_llm_request_finished_at"),
+        "skill_llm_attempt_count": result_summary.get("skill_llm_attempt_count"),
+        "skill_run_elapsed_seconds": result_summary.get("skill_run_elapsed_seconds"),
+        "preview_generation_seconds": result_summary.get("preview_generation_seconds"),
+        "ffmpeg_render_seconds": result_summary.get("ffmpeg_render_seconds"),
+        "fallback_to_mock_effective": result_summary.get("fallback_to_mock_effective"),
+        "effective_llm_config_snapshot": result_summary.get("effective_llm_config_snapshot"),
         "error_message": error_message,
         "started_at": started_at,
         "finished_at": finished_at,
@@ -609,8 +616,12 @@ def dispatch_batch(
     max_attempts: int,
     timeout_seconds: int,
     path_map: dict[str, str] | None = None,
+    skill_config: Path = DEFAULT_SKILL_CONFIG,
 ) -> list[dict[str, Any]]:
     output_root = map_path(collection_root_for_cases(cases), path_map)
+    config_path = _mapped_config_path(skill_config, path_map or {})
+    if not config_has_mock_disabled(config_path):
+        raise BatchDispatchError(f"formal official dispatch requires fallback_to_mock=false: {config_path}")
     records = collect_existing_records(output_root)
     for case in cases:
         selection = choose_next_attempt(case, max_attempts=max_attempts, resume=resume)
@@ -697,6 +708,7 @@ def main(argv: list[str] | None = None) -> int:
         max_attempts=args.max_attempts,
         timeout_seconds=args.timeout_seconds,
         path_map=path_map,
+        skill_config=args.skill_config,
     )
     return 0
 

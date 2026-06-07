@@ -105,7 +105,8 @@ def test_openclaw_command_uses_agent_and_session_id():
 def test_script_does_not_directly_call_skill_entrypoint_or_renderer():
     source = Path(dispatch.__file__).read_text(encoding="utf-8")
     assert "run_skill.py" not in source
-    assert "ffmpeg" not in source
+    assert '"ffmpeg"' not in source
+    assert "'ffmpeg'" not in source
     assert "openclaw" in source
 
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import re
+import time
 import traceback
 from datetime import datetime
 from pathlib import Path
@@ -15,7 +16,7 @@ from plan_validator import assert_valid_plan
 from utils import SkillError, ensure_dir, load_config, setup_logger, write_json, write_text
 from video_probe import probe_video
 
-SKILL_PROMPT_VERSION = "highlight_prompt_v1"
+SKILL_PROMPT_VERSION = "compact_edit_plan_v2"
 
 
 def _mask_url(url: str) -> str:
@@ -225,6 +226,11 @@ def _summary_segments(plan: dict[str, Any] | None) -> list[dict[str, Any]]:
             {
                 "start": segment.get("start"),
                 "end": segment.get("end"),
+                "duration": (
+                    round(float(segment.get("end", 0)) - float(segment.get("start", 0)), 3)
+                    if segment.get("start") is not None and segment.get("end") is not None
+                    else None
+                ),
                 "title": segment.get("title", ""),
                 "role": segment.get("role", ""),
                 "reason": segment.get("reason", ""),
@@ -265,7 +271,9 @@ def _write_success_summary(
     skill_backend_requested: str = "unknown",
     run_started_at: str = "",
     run_finished_at: str = "",
+    runtime_context: dict[str, Any] | None = None,
 ) -> None:
+    runtime_context = runtime_context or {}
     video_info = video_info or {}
     llm_metadata = plan.get("llm_metadata", {}) if isinstance(plan.get("llm_metadata"), dict) else {}
     llm_usage = llm_metadata.get("usage", {}) if isinstance(llm_metadata.get("usage"), dict) else {}
@@ -305,6 +313,27 @@ def _write_success_summary(
             "skill_llm_video_source": llm_metadata.get("video_source", ""),
             "skill_llm_request_started_at": llm_metadata.get("request_started_at", ""),
             "skill_llm_request_finished_at": llm_metadata.get("request_finished_at", ""),
+            "skill_llm_finish_reason": llm_metadata.get("finish_reason"),
+            "skill_llm_response_char_count": llm_metadata.get("response_char_count"),
+            "skill_llm_attempt_count": llm_metadata.get("attempt_count"),
+            "skill_llm_attempts": llm_metadata.get("ark_attempts", []),
+            "fallback_to_mock_effective": runtime_context.get("fallback_to_mock_effective"),
+            "effective_llm_config_snapshot": runtime_context.get("effective_llm_config_snapshot", {}),
+            "preview_generation_skipped": runtime_context.get("preview_generation_skipped"),
+            "preview_generation_seconds": runtime_context.get("preview_generation_seconds"),
+            "preview_generation_skip_reason": runtime_context.get("preview_generation_skip_reason"),
+            "ffmpeg_render_seconds": runtime_context.get("ffmpeg_render_seconds"),
+            "skill_run_elapsed_seconds": runtime_context.get("skill_run_elapsed_seconds"),
+            "skill_consumption": {
+                "skill_run_elapsed_seconds": runtime_context.get("skill_run_elapsed_seconds"),
+                "preview_generation_seconds": runtime_context.get("preview_generation_seconds"),
+                "skill_llm_latency_seconds": llm_metadata.get("latency_seconds"),
+                "ffmpeg_render_seconds": runtime_context.get("ffmpeg_render_seconds"),
+                "skill_llm_prompt_tokens": llm_usage.get("prompt_tokens"),
+                "skill_llm_completion_tokens": llm_usage.get("completion_tokens"),
+                "skill_llm_total_tokens": llm_usage.get("total_tokens"),
+                "skill_llm_attempt_count": llm_metadata.get("attempt_count"),
+            },
             "duration_policy": plan.get("duration_policy", {}),
             "selected_target_duration": validation.get("selected_target_duration"),
             "final_total_duration": validation.get("total_duration"),
@@ -570,6 +599,7 @@ def run_skill(
     runtime_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     run_started_at = datetime.now().isoformat(timespec="seconds")
+    run_started_monotonic = time.monotonic()
     user_instruction_original = user_instruction_original or instruction
     runtime_context = runtime_context if runtime_context is not None else {}
     runtime_context["run_started_at"] = run_started_at
@@ -618,6 +648,13 @@ def run_skill(
         config["llm"]["video_url"] = llm_video_url
         config["llm"]["video_input_mode"] = "url"
         logger.info("LLM 将使用外部视频 URL 输入：%s", _mask_url(llm_video_url))
+    llm_config_snapshot = config.get("llm", {}) if isinstance(config.get("llm"), dict) else {}
+    runtime_context["fallback_to_mock_effective"] = bool(llm_config_snapshot.get("fallback_to_mock", True))
+    runtime_context["effective_llm_config_snapshot"] = {
+        key: value
+        for key, value in llm_config_snapshot.items()
+        if key not in {"api_key", "api_key_env", "video_url"}
+    }
     video_info = probe_video(input_video, config.get("ffmpeg", {}).get("probe_command", "ffprobe"), logger)
     logger.info("视频探测完成：%s", video_info)
     duration_policy = _build_duration_policy(float(video_info["duration"]), target_duration, configured_duration_mode)
@@ -631,10 +668,25 @@ def run_skill(
     logger.info("目标时长策略：%s", duration_policy)
 
     preview_path: Path | None = None
-    if bool(config.get("preview", {}).get("enabled", True)):
+    preview_started = time.monotonic()
+    llm_uses_user_url = bool(str(config.get("llm", {}).get("video_url", "") or "").strip()) and str(
+        config.get("llm", {}).get("video_input_mode", "auto") or "auto"
+    ).strip().lower() in {"auto", "url"}
+    if llm_uses_user_url:
+        runtime_context["preview_generation_skipped"] = True
+        runtime_context["preview_generation_skip_reason"] = "llm_video_url_provided"
+        runtime_context["preview_generation_seconds"] = 0.0
+        logger.info("已提供 llm_video_url，跳过本地 preview 生成")
+    elif bool(config.get("preview", {}).get("enabled", True)):
         preview_path = make_preview(input_video, paths["preview"], config, logger)
+        runtime_context["preview_generation_skipped"] = False
+        runtime_context["preview_generation_skip_reason"] = ""
+        runtime_context["preview_generation_seconds"] = round(time.monotonic() - preview_started, 3)
         logger.info("预览视频已写入：%s", preview_path)
     else:
+        runtime_context["preview_generation_skipped"] = True
+        runtime_context["preview_generation_skip_reason"] = "preview_disabled"
+        runtime_context["preview_generation_seconds"] = 0.0
         logger.info("preview.enabled=false，跳过本地 preview 生成")
 
     if llm_video_url:
@@ -654,6 +706,8 @@ def run_skill(
     logger.info("使用的 LLM backend：%s", config.get("llm", {}).get("backend", "mock"))
     skill_backend_requested = str(config.get("llm", {}).get("backend", "mock") or "mock").strip().lower()
     runtime_context["skill_backend_requested"] = skill_backend_requested
+    config.setdefault("runtime", {})
+    config["runtime"]["reports_dir"] = str(paths["reports"])
 
     client = create_llm_client(config, logger=logger)
     plan = client.generate_edit_plan(str(preview_path or ""), instruction, planning_target_duration, video_info, config)
@@ -698,6 +752,7 @@ def run_skill(
     write_json(paths["segments"], plan)
     logger.info("结构化片段方案已写入：%s", paths["segments"])
 
+    render_started = time.monotonic()
     render_highlight(
         input_video=input_video,
         final_segments=plan["final_segments"],
@@ -706,6 +761,7 @@ def run_skill(
         config=config,
         logger=logger,
     )
+    runtime_context["ffmpeg_render_seconds"] = round(time.monotonic() - render_started, 3)
     logger.info("高光视频已写入：%s", paths["highlight"])
 
     _write_report(
@@ -723,6 +779,7 @@ def run_skill(
     )
     logger.info("中文报告已写入：%s", paths["report"])
     run_finished_at = datetime.now().isoformat(timespec="seconds")
+    runtime_context["skill_run_elapsed_seconds"] = round(time.monotonic() - run_started_monotonic, 3)
     _write_success_summary(
         paths["result_summary"],
         paths,
@@ -736,6 +793,7 @@ def run_skill(
         skill_backend_requested,
         run_started_at,
         run_finished_at,
+        runtime_context,
     )
     logger.info("结果摘要已写入：%s", paths["result_summary"])
     logger.info("Skill 运行完成")
