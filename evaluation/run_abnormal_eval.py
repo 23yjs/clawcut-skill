@@ -16,6 +16,42 @@ REQUIRED_FIELDS = {
     "expected_behavior",
     "should_enter_official_scoring",
 }
+ABNORMAL_TYPE_LABELS = {
+    "missing_video_path": "视频路径不存在",
+    "corrupted_video_file": "视频文件损坏",
+    "expired_or_forbidden_video_url": "视频 URL 过期或无权限",
+    "missing_ark_api_key": "Ark API Key 缺失",
+    "ark_timeout": "Ark 请求超时",
+    "ark_invalid_json": "Ark 返回非法 JSON",
+    "ark_out_of_range_segments": "Ark 返回越界时间段",
+    "ffmpeg_failure": "ffmpeg 执行失败",
+    "no_audio_video": "无音频视频",
+    "no_subtitle_or_no_speech_video": "无字幕或无口播视频",
+}
+ERROR_TYPE_LABELS = {
+    "missing_input_video": "输入视频不存在",
+    "decode_failed": "视频解码失败",
+    "llm_video_url_unreachable": "模型视频 URL 不可访问",
+    "missing_ark_api_key": "缺少 Ark API Key",
+    "ark_timeout": "Ark 请求超时",
+    "invalid_llm_json": "模型返回非法 JSON",
+    "invalid_plan": "剪辑方案非法",
+    "ffmpeg_failed": "ffmpeg 执行失败",
+    "none": "无错误",
+    "": "无错误",
+}
+STATUS_LABELS = {
+    "failed": "按预期失败",
+    "success": "成功处理",
+    "not_run": "未执行",
+    "timeout": "执行超时",
+    "hung": "执行卡住",
+}
+VERIFICATION_LABELS = {
+    "real_input": "真实输入验证",
+    "real_input_mock_backend": "真实媒体链路（mock 后端）",
+    "fault_injection": "定向故障注入",
+}
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -83,10 +119,15 @@ def _evaluate_abnormal_result(case: dict[str, Any], result: dict[str, Any] | Non
         return {
             "case_id": case_id,
             "abnormal_type": case.get("abnormal_type"),
+            "abnormal_type_label": _label(ABNORMAL_TYPE_LABELS, case.get("abnormal_type")),
             "verification_mode": str(case.get("verification_mode") or ""),
+            "verification_mode_label": _label(VERIFICATION_LABELS, case.get("verification_mode")),
             "expected_error_type": expected_error_type,
+            "expected_error_type_label": _label(ERROR_TYPE_LABELS, expected_error_type),
             "actual_error_type": "",
+            "actual_error_type_label": _label(ERROR_TYPE_LABELS, ""),
             "actual_status": "not_run",
+            "actual_status_label": _label(STATUS_LABELS, "not_run"),
             "result_summary_exists": False,
             "run_log_exists": False,
             "highlight_video_exists": False,
@@ -127,10 +168,18 @@ def _evaluate_abnormal_result(case: dict[str, Any], result: dict[str, Any] | Non
     return {
         "case_id": case_id,
         "abnormal_type": case.get("abnormal_type"),
+        "abnormal_type_label": _label(ABNORMAL_TYPE_LABELS, case.get("abnormal_type")),
         "verification_mode": str(result.get("verification_mode") or case.get("verification_mode") or ""),
+        "verification_mode_label": _label(
+            VERIFICATION_LABELS,
+            result.get("verification_mode") or case.get("verification_mode"),
+        ),
         "expected_error_type": expected_error_type,
+        "expected_error_type_label": _label(ERROR_TYPE_LABELS, expected_error_type),
         "actual_error_type": actual_error_type,
+        "actual_error_type_label": _label(ERROR_TYPE_LABELS, actual_error_type),
         "actual_status": actual_status,
+        "actual_status_label": _label(STATUS_LABELS, actual_status),
         "result_summary_exists": result_summary_exists,
         "run_log_exists": run_log_exists,
         "highlight_video_exists": highlight_video_exists,
@@ -142,12 +191,12 @@ def _evaluate_abnormal_result(case: dict[str, Any], result: dict[str, Any] | Non
 
 
 def _verification_label(value: Any) -> str:
+    return _label(VERIFICATION_LABELS, value)
+
+
+def _label(mapping: dict[str, str], value: Any) -> str:
     text = str(value or "")
-    if text in {"real_input", "real_input_mock_backend"}:
-        return "真实异常输入" if text == "real_input" else "真实媒体链路"
-    if text == "fault_injection":
-        return "定向故障注入"
-    return text or "—"
+    return mapping.get(text, text or "—")
 
 
 def _write_detail_html(summary: dict[str, Any], cases: list[dict[str, Any]], output_dir: Path) -> None:
@@ -157,15 +206,15 @@ def _write_detail_html(summary: dict[str, Any], cases: list[dict[str, Any]], out
         case = cases_by_id.get(str(result.get("case_id")), {})
         expected = case.get("expected_behavior") or case.get("expected_error_type") or "—"
         actual = (
-            f"状态：{result.get('actual_status') or '—'}；"
-            f"错误类型：{result.get('actual_error_type') or '—'}；"
+            f"状态：{result.get('actual_status_label') or _label(STATUS_LABELS, result.get('actual_status'))}；"
+            f"错误类型：{result.get('actual_error_type_label') or _label(ERROR_TYPE_LABELS, result.get('actual_error_type'))}；"
             f"成片：{'存在' if result.get('highlight_video_exists') else '不存在'}"
         )
         rows.append(
             "<tr>"
-            f"<td>{html.escape(str(result.get('abnormal_type') or '—'))}</td>"
-            f"<td>{html.escape(_verification_label(result.get('verification_mode') or case.get('verification_mode')))}</td>"
-            f"<td>{html.escape(str(expected))}</td>"
+            f"<td>{html.escape(str(result.get('abnormal_type_label') or _label(ABNORMAL_TYPE_LABELS, result.get('abnormal_type'))))}</td>"
+            f"<td>{html.escape(str(result.get('verification_mode_label') or _verification_label(result.get('verification_mode') or case.get('verification_mode'))))}</td>"
+            f"<td>{html.escape(str(expected))}<br>预期错误：{html.escape(str(result.get('expected_error_type_label') or _label(ERROR_TYPE_LABELS, result.get('expected_error_type'))))}</td>"
             f"<td>{html.escape(actual)}</td>"
             f"<td>{'通过' if result.get('passed') else '未通过'}</td>"
             "</tr>"

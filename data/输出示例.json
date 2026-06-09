@@ -1,0 +1,33 @@
+{
+    "video_type": "ecommerce_product",
+    "video_type_reason": "视频集中展示商品外观、核心功能和实际使用效果。",
+    "highlight_definition": {
+        "must_keep": [
+            "商品外观与细节",
+            "核心卖点演示",
+            "实际使用效果"
+        ],
+        "avoid": [
+            "重复展示",
+            "低信息量转场",
+            "片尾平台引导"
+        ]
+    },
+    "final_segments": [
+        {
+            "start": 3.2,
+            "end": 8.6,
+            "title": "商品外观与细节"
+        },
+        {
+            "start": 12.4,
+            "end": 18.9,
+            "title": "核心卖点演示"
+        },
+        {
+            "start": 24.1,
+            "end": 29.7,
+            "title": "实际使用效果"
+        }
+    ]
+}

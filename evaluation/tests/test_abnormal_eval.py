@@ -97,6 +97,9 @@ def test_abnormal_result_summary_passes_expected_failure_and_legal_input() -> No
     assert summary["status"] == "ready"
     assert summary["passed_result_count"] == 2
     assert summary["failed_result_count"] == 0
+    assert summary["result_rows"][0]["abnormal_type_label"] == "视频路径不存在"
+    assert summary["result_rows"][0]["actual_error_type_label"] == "输入视频不存在"
+    assert summary["result_rows"][1]["actual_error_type_label"] == "无错误"
 
 
 def test_abnormal_result_summary_detects_misleading_highlight_and_missing_logs() -> None:

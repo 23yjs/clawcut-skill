@@ -107,6 +107,11 @@ def test_fps_sensitivity_accepts_multiple_critical_action_windows() -> None:
     row = summary["rows"][0]
     assert row["critical_action_window_count"] == 2
     assert row["critical_action_hit"] is True
+    assert "source_cases" in summary
+    assert summary["source_cases"][0]["critical_action_windows"] == [
+        {"start": 10.0, "end": 11.0},
+        {"start": 20.0, "end": 21.0},
+    ]
 
 
 def test_fps_sensitivity_reads_segments_from_result_summary(tmp_path) -> None:
@@ -136,3 +141,5 @@ def test_fps_sensitivity_reads_segments_from_result_summary(tmp_path) -> None:
         ],
     )
     assert summary["rows"][0]["critical_action_hit"] is True
+    assert summary["rows"][0]["final_segments"][0]["duration"] == 0.6
+    assert summary["rows"][0]["result_summary"] == str(result_summary)

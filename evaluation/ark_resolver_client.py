@@ -19,7 +19,7 @@ except ImportError:  # pragma: no cover - script mode
 class ArkResolverConfig:
     api_key_env: str = "ARK_API_KEY"
     base_url: str = "https://ark.cn-beijing.volces.com/api/v3"
-    model: str = "ep-20260526173832-2vrr2"
+    model: str = "doubao-seed-2-0-lite-260428"
     temperature: float = 0.0
     timeout_seconds: int = 120
     max_retries: int = 1

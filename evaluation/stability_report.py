@@ -50,6 +50,61 @@ def _truthy(value: Any) -> bool:
     return bool(value)
 
 
+def _map_container_path(path: str) -> Path:
+    container_prefix = "/home/node/.openclaw/workspace"
+    host_prefix = "/Users/df/DockerData/openclaw/workspace"
+    if path.startswith(container_prefix + "/"):
+        return Path(host_prefix + path[len(container_prefix) :])
+    return Path(path)
+
+
+def _segments_from_row(row: dict[str, Any]) -> list[dict[str, Any]]:
+    payload: dict[str, Any] = {}
+    result_summary = row.get("result_summary")
+    if result_summary:
+        path = _map_container_path(str(result_summary))
+        if path.exists():
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                payload = {}
+    segments = row.get("final_segments")
+    if not isinstance(segments, list):
+        segments = payload.get("final_segments")
+    if not isinstance(segments, list):
+        return []
+    normalized = []
+    for item in segments:
+        if not isinstance(item, dict) or "start" not in item or "end" not in item:
+            continue
+        start = _to_float(item.get("start"))
+        end = _to_float(item.get("end"))
+        if start is None or end is None:
+            continue
+        normalized.append(
+            {
+                "start": start,
+                "end": end,
+                "duration": round(end - start, 3),
+                "title": item.get("title") or item.get("reason") or "",
+            }
+        )
+    return normalized
+
+
+def _format_segments(segments: list[dict[str, Any]]) -> str:
+    if not segments:
+        return "—"
+    lines = []
+    for index, segment in enumerate(segments, start=1):
+        title = f" {segment.get('title')}" if segment.get("title") else ""
+        lines.append(
+            f"{index}. {float(segment['start']):.2f}-{float(segment['end']):.2f}s"
+            f" ({float(segment.get('duration') or 0):.2f}s){title}"
+        )
+    return "\n".join(lines)
+
+
 def load_cost_model(path: Path | None) -> dict[str, float]:
     if path is None or not path.exists():
         return dict(DEFAULT_COST_MODEL)
@@ -134,6 +189,30 @@ def summarize_stability(rows: list[dict[str, Any]], cost_model: dict[str, float]
             if value is not None
         ]
         highlight_paths = {str(row.get("highlight_video") or "") for row in attempts if row.get("highlight_video")}
+        attempt_rows = []
+        for index, row in enumerate(attempts, start=1):
+            attempt_rows.append(
+                {
+                    "attempt_index": row.get("repeat_index") or index,
+                    "run_id": row.get("run_id"),
+                    "status": row.get("collection_status") or row.get("evaluation_status"),
+                    "final_segments": _segments_from_row(row),
+                    "selection_score_v1": _to_float(row.get("selection_score_v1")),
+                    "final_score_v2": _to_float(row.get("final_score_v2")),
+                    "skill_llm_total_tokens": _to_float(row.get("skill_llm_total_tokens")),
+                    "latency_seconds": (
+                        _to_float(row.get("elapsed_seconds"))
+                        or _to_float(row.get("skill_run_elapsed_seconds"))
+                        or _to_float(row.get("skill_llm_latency_seconds"))
+                    ),
+                    "gateway_fallback": row.get("collection_status") == "diagnostic_openclaw_fallback"
+                    or bool(row.get("openclaw_fallback_reason")),
+                    "skill_fallback": _truthy(row.get("fallback_used"))
+                    or row.get("collection_status") == "diagnostic_skill_fallback",
+                    "result_summary": row.get("result_summary"),
+                    "highlight_video": row.get("highlight_video"),
+                }
+            )
         cases.append(
             {
                 "case_id": case_id,
@@ -151,6 +230,7 @@ def summarize_stability(rows: list[dict[str, Any]], cost_model: dict[str, float]
                 "selection_score_mean": _mean(scores),
                 "selection_score_std": _std(scores),
                 "final_segments_changed": len(highlight_paths) > 1,
+                "attempts": attempt_rows,
             }
         )
     return {
@@ -169,6 +249,7 @@ def summarize_stability(rows: list[dict[str, Any]], cost_model: dict[str, float]
 
 def _write_stability_detail_html(summary: dict[str, Any], output_dir: Path) -> None:
     rows = []
+    detail_blocks = []
     for case in summary.get("cases", []):
         rows.append(
             "<tr>"
@@ -182,11 +263,33 @@ def _write_stability_detail_html(summary: dict[str, Any], output_dir: Path) -> N
             f"<td>{html.escape(str(case.get('selection_score_std') or '—'))}</td>"
             "</tr>"
         )
+        attempt_rows = []
+        for attempt in case.get("attempts", []):
+            attempt_rows.append(
+                "<tr>"
+                f"<td>{html.escape(str(attempt.get('attempt_index') or '—'))}</td>"
+                f"<td>{html.escape(str(attempt.get('status') or '—'))}</td>"
+                f"<td><pre>{html.escape(_format_segments(attempt.get('final_segments') or []))}</pre></td>"
+                f"<td>{html.escape(str(attempt.get('selection_score_v1') if attempt.get('selection_score_v1') is not None else '—'))}</td>"
+                f"<td>{html.escape(str(attempt.get('final_score_v2') if attempt.get('final_score_v2') is not None else '—'))}</td>"
+                f"<td>{html.escape(str(attempt.get('skill_llm_total_tokens') if attempt.get('skill_llm_total_tokens') is not None else '—'))}</td>"
+                f"<td>{html.escape(str(attempt.get('latency_seconds') if attempt.get('latency_seconds') is not None else '—'))}</td>"
+                f"<td>{'是' if attempt.get('gateway_fallback') else '否'}</td>"
+                f"<td>{'是' if attempt.get('skill_fallback') else '否'}</td>"
+                f"<td>{html.escape(str(attempt.get('result_summary') or '—'))}<br>{html.escape(str(attempt.get('highlight_video') or '—'))}</td>"
+                "</tr>"
+            )
+        detail_blocks.append(
+            f"<section class=\"card\"><h2>{html.escape(str(case.get('case_id') or '—'))}</h2>"
+            "<table><thead><tr><th>运行序号</th><th>状态</th><th>输出片段</th><th>内容选择得分</th><th>综合得分</th><th>Tokens</th><th>耗时</th><th>Gateway fallback</th><th>Skill fallback</th><th>产物路径</th></tr></thead>"
+            f"<tbody>{''.join(attempt_rows)}</tbody></table></section>"
+        )
     html_doc = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>运行稳定性专项</title><style>
-body{{margin:0;background:#f5f7fb;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}}main{{max-width:1200px;margin:0 auto;padding:32px 28px}}h1{{color:#12365f}}.card{{background:#fff;border:1px solid #d9e1ec;border-radius:14px;padding:20px;margin-top:18px}}table{{width:100%;border-collapse:collapse}}th,td{{border:1px solid #d9e1ec;padding:10px;text-align:left}}th{{background:#f0f4f9}}a{{color:#175cd3;text-decoration:none}}</style></head><body><main>
+body{{margin:0;background:#f5f7fb;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}}main{{max-width:1400px;margin:0 auto;padding:32px 28px}}h1,h2{{color:#12365f}}.card{{background:#fff;border:1px solid #d9e1ec;border-radius:14px;padding:20px;margin-top:18px}}table{{width:100%;border-collapse:collapse}}th,td{{border:1px solid #d9e1ec;padding:10px;text-align:left;vertical-align:top}}th{{background:#f0f4f9}}pre{{white-space:pre-wrap;margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}}a{{color:#175cd3;text-decoration:none}}</style></head><body><main>
 <h1>运行稳定性专项</h1>
 <section class="card"><p>源 Case：{summary.get('case_count', 0)}；重复运行：{summary.get('attempt_count', 0)}</p></section>
 <section class="card"><table><thead><tr><th>源 Case</th><th>重复运行次数</th><th>成功率</th><th>Gateway fallback 次数</th><th>Skill fallback 次数</th><th>平均耗时</th><th>Tokens 波动</th><th>内容选择得分波动</th></tr></thead><tbody>{''.join(rows)}</tbody></table></section>
+{''.join(detail_blocks)}
 <p><a href="../../report.html">返回总览报告</a></p>
 </main></body></html>"""
     (output_dir / "detail.html").write_text(html_doc, encoding="utf-8")

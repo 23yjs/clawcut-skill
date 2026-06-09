@@ -43,6 +43,9 @@ def test_summarize_stability_groups_attempts_and_costs(tmp_path) -> None:
     assert case["estimated_cost"] == 0.4
     assert case["selection_score_std"] == 5
     assert case["final_segments_changed"] is True
+    assert len(case["attempts"]) == 2
+    assert case["attempts"][0]["status"] == "official_success"
+    assert case["attempts"][1]["skill_fallback"] is True
 
 
 def test_load_cost_model_parses_simple_yaml(tmp_path) -> None:

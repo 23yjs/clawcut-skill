@@ -52,25 +52,61 @@ def _map_container_path(path: str) -> Path:
     return Path(path)
 
 
-def _segments(row: dict[str, Any]) -> list[dict[str, float]]:
+def _segments(row: dict[str, Any]) -> list[dict[str, Any]]:
+    def _normalize(items: Any) -> list[dict[str, Any]]:
+        if not isinstance(items, list):
+            return []
+        normalized = []
+        for item in items:
+            if not isinstance(item, dict) or "start" not in item or "end" not in item:
+                continue
+            normalized.append(
+                {
+                    "start": float(item["start"]),
+                    "end": float(item["end"]),
+                    "duration": round(float(item["end"]) - float(item["start"]), 3),
+                    "title": item.get("title") or item.get("reason") or "",
+                }
+            )
+        return normalized
+
     segments = row.get("final_segments")
     if isinstance(segments, list):
-        return [{"start": float(item["start"]), "end": float(item["end"])} for item in segments]
+        return _normalize(segments)
     path = row.get("segments_json")
     if path:
         payload = json.loads(_map_container_path(str(path)).read_text(encoding="utf-8"))
-        return [
-            {"start": float(item["start"]), "end": float(item["end"])}
-            for item in payload.get("final_segments", [])
-        ]
+        return _normalize(payload.get("final_segments", []))
     result_summary_path = row.get("result_summary")
     if result_summary_path:
         payload = json.loads(_map_container_path(str(result_summary_path)).read_text(encoding="utf-8"))
-        return [
-            {"start": float(item["start"]), "end": float(item["end"])}
-            for item in payload.get("final_segments", [])
-        ]
+        return _normalize(payload.get("final_segments", []))
     return []
+
+
+def _path_exists_text(value: Any) -> str | None:
+    if not value:
+        return None
+    return str(value)
+
+
+def _format_windows(windows: list[dict[str, float]]) -> str:
+    if not windows:
+        return "—"
+    return "；".join(f"{window['start']:.2f}-{window['end']:.2f}s" for window in windows)
+
+
+def _format_segments(segments: list[dict[str, Any]]) -> str:
+    if not segments:
+        return "—"
+    lines = []
+    for index, segment in enumerate(segments, start=1):
+        title = f" {segment.get('title')}" if segment.get("title") else ""
+        lines.append(
+            f"{index}. {float(segment['start']):.2f}-{float(segment['end']):.2f}s"
+            f" ({float(segment.get('duration') or 0):.2f}s){title}"
+        )
+    return "\n".join(lines)
 
 
 def summarize_fps_sensitivity(cases: list[dict[str, Any]], results: list[dict[str, Any]]) -> dict[str, Any]:
@@ -82,9 +118,20 @@ def summarize_fps_sensitivity(cases: list[dict[str, Any]], results: list[dict[st
 
     rows = []
     by_case: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    source_cases = []
     for case in cases:
         source_case_id = str(case["case_id"])
         windows = _windows(case)
+        source_cases.append(
+            {
+                "case_id": source_case_id,
+                "video_id": case.get("video_id"),
+                "instruction": case.get("instruction"),
+                "why_this_case": case.get("why_this_case"),
+                "critical_action_windows": windows,
+                "fps_values": case.get("fps_values", [1, 2, 4]),
+            }
+        )
         for fps in case.get("fps_values", [1, 2, 4]):
             row = results_by_key.get((source_case_id, int(fps)), {})
             final_segments = _segments(row) if row else []
@@ -105,6 +152,9 @@ def summarize_fps_sensitivity(cases: list[dict[str, Any]], results: list[dict[st
                 "latency_seconds": row.get("latency_seconds") or row.get("skill_llm_latency_seconds"),
                 "skill_llm_total_tokens": row.get("skill_llm_total_tokens"),
                 "selection_score_v1": row.get("selection_score_v1"),
+                "final_segments": final_segments,
+                "result_summary": _path_exists_text(row.get("result_summary")),
+                "highlight_video": _path_exists_text(row.get("highlight_video")),
                 "result_available": bool(row),
             }
             rows.append(record)
@@ -141,6 +191,7 @@ def summarize_fps_sensitivity(cases: list[dict[str, Any]], results: list[dict[st
         "missing_critical_action_window_count": sum(
             1 for case in cases if not _windows(case)
         ),
+        "source_cases": source_cases,
         "rows": rows,
         "recommendations": recommendations,
     }
@@ -150,12 +201,18 @@ def _write_fps_detail_html(summary: dict[str, Any], output_dir: Path) -> None:
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in summary.get("rows", []):
         grouped[str(row.get("source_case_id") or row.get("case_id"))].append(row)
+    source_by_id = {
+        str(case.get("case_id")): case
+        for case in summary.get("source_cases", [])
+        if isinstance(case, dict)
+    }
     blocks = []
     recommendation_by_case = {
         str(item.get("case_id")): str(item.get("recommendation") or "")
         for item in summary.get("recommendations", [])
     }
     for source_case_id, rows in sorted(grouped.items()):
+        source = source_by_id.get(source_case_id, {})
         trs = []
         for row in sorted(rows, key=lambda item: int(item.get("video_fps") or 0)):
             if row.get("critical_action_hit") is None:
@@ -166,18 +223,26 @@ def _write_fps_detail_html(summary: dict[str, Any], output_dir: Path) -> None:
                 "<tr>"
                 f"<td>{html.escape(str(row.get('video_fps')))}</td>"
                 f"<td>{hit_text}</td>"
+                f"<td>{html.escape(str(row.get('critical_action_overlap_duration') if row.get('critical_action_overlap_duration') is not None else '—'))}</td>"
+                f"<td><pre>{html.escape(_format_segments(row.get('final_segments') or []))}</pre></td>"
                 f"<td>{html.escape(str(row.get('skill_llm_total_tokens') or '—'))}</td>"
                 f"<td>{html.escape(str(row.get('latency_seconds') or '—'))}</td>"
                 f"<td>{html.escape(str(row.get('selection_score_v1') or '—'))}</td>"
+                f"<td>{html.escape(str(row.get('result_summary') or '—'))}</td>"
+                f"<td>{html.escape(str(row.get('highlight_video') or '—'))}</td>"
                 "</tr>"
             )
         blocks.append(
             f"<section class=\"card\"><h2>{html.escape(source_case_id)}</h2>"
-            "<table><thead><tr><th>FPS</th><th>短时动作是否命中</th><th>Skill Ark Tokens</th><th>Skill Ark 耗时</th><th>内容选择得分</th></tr></thead>"
+            f"<p><strong>视频 ID：</strong>{html.escape(str(source.get('video_id') or '—'))}</p>"
+            f"<p><strong>用户指令：</strong>{html.escape(str(source.get('instruction') or '—'))}</p>"
+            f"<p><strong>设计目的：</strong>{html.escape(str(source.get('why_this_case') or '—'))}</p>"
+            f"<p><strong>人工标注关键动作窗口：</strong>{html.escape(_format_windows(source.get('critical_action_windows') or []))}</p>"
+            "<table><thead><tr><th>FPS</th><th>是否命中</th><th>关键动作重叠时长</th><th>最终输出片段</th><th>Tokens</th><th>耗时</th><th>内容选择得分</th><th>result_summary 路径</th><th>成片路径</th></tr></thead>"
             f"<tbody>{''.join(trs)}</tbody></table><p><strong>建议：</strong>{html.escape(recommendation_by_case.get(source_case_id, '—'))}</p></section>"
         )
     html_doc = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>FPS 敏感性专项</title><style>
-body{{margin:0;background:#f5f7fb;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}}main{{max-width:1200px;margin:0 auto;padding:32px 28px}}h1,h2{{color:#12365f}}.card{{background:#fff;border:1px solid #d9e1ec;border-radius:14px;padding:20px;margin-top:18px}}table{{width:100%;border-collapse:collapse}}th,td{{border:1px solid #d9e1ec;padding:10px;text-align:left}}th{{background:#f0f4f9}}a{{color:#175cd3;text-decoration:none}}</style></head><body><main>
+body{{margin:0;background:#f5f7fb;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}}main{{max-width:1400px;margin:0 auto;padding:32px 28px}}h1,h2{{color:#12365f}}.card{{background:#fff;border:1px solid #d9e1ec;border-radius:14px;padding:20px;margin-top:18px}}table{{width:100%;border-collapse:collapse}}th,td{{border:1px solid #d9e1ec;padding:10px;text-align:left;vertical-align:top}}th{{background:#f0f4f9}}pre{{white-space:pre-wrap;margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}}a{{color:#175cd3;text-decoration:none}}</style></head><body><main>
 <h1>FPS 敏感性专项</h1>
 <section class="card"><p>源 Case：{summary.get('source_case_count', 0)}；结果数：{summary.get('result_count', 0)}</p></section>
 {''.join(blocks) if blocks else '<section class="card">尚无可展示结果。</section>'}

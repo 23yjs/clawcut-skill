@@ -65,15 +65,43 @@ TEST_TYPE_TO_USER_REQUIREMENT = {
 }
 
 VIDEO_SCENARIO_LABELS = {
-    "sparse_highlight": "高光片段较少的视频",
-    "dense_highlight": "高光片段较密集的视频",
-    "high_dynamic": "动作变化较快的视频",
-    "long_video": "长视频",
-    "multi_topic": "包含多个主题的视频",
-    "speech_dense": "口播内容较密集的视频",
-    "repetitive_process": "重复步骤较多的视频",
     "out_of_prompt_type": "未预设类型的视频",
+    "high_dynamic": "动作变化较快的视频",
+    "speech_dense": "口播内容较密集的视频",
+    "long_video": "长视频",
     "replay_dedup": "包含重复回放的视频",
+    "sparse_highlight": "高光片段较少的视频",
+    "multi_topic": "包含多个主题的视频",
+    "repetitive_process": "重复步骤较多的视频",
+    "dense_highlight": "高光片段较密集的视频",
+    "duration": "包含明确时长要求",
+    "resolver_boundary": "指令解析边界测试",
+    "ecommerce": "电商视频",
+    "named_exclusion": "明确排除指定内容",
+    "sports": "体育竞技视频",
+    "tutorial": "教程类视频",
+    "game": "游戏视频",
+    "knowledge": "知识分享视频",
+    "multi_case": "包含多个独立案例",
+    "multi_product": "包含多个商品",
+    "multi_event": "包含多个事件",
+    "pet": "宠物视频",
+    "repair": "维修演示视频",
+    "vlog": "生活记录视频",
+    "audio_visual": "依赖音画综合判断",
+    "clear_feedback": "结果反馈清晰的视频",
+    "cooking": "烹饪视频",
+    "feature_selection": "核心卖点筛选",
+    "judge_focus": "重点验证成片体验",
+    "low_information": "低信息密度视频",
+    "multi_chapter": "包含多个章节",
+    "music": "音乐演出视频",
+    "narrative": "叙事类视频",
+    "news": "新闻视频",
+    "short_video": "短视频",
+    "success_failure": "包含成功与失败对比",
+    "visual_only": "主要依赖画面理解",
+    "weak_event": "高光事件不明显",
 }
 
 IGNORED_CHALLENGE_TAGS = {"", "按视频自身类型继承", "none", "null"}
@@ -230,6 +258,83 @@ def official_eligibility(result: dict[str, Any]) -> dict[str, Any]:
     return {"eligible": not reasons, "exclusion_reasons": reasons}
 
 
+def _technical_quality_passed(result: dict[str, Any]) -> bool | None:
+    technical = result.get("technical_quality") if isinstance(result.get("technical_quality"), dict) else {}
+    value = technical.get("technical_quality_passed")
+    return value if isinstance(value, bool) else None
+
+
+def _forbidden_duration_ratio(result: dict[str, Any]) -> float | None:
+    metrics = result.get("time_metrics") if isinstance(result.get("time_metrics"), dict) else {}
+    value = metrics.get("forbidden_duration_ratio")
+    return float(value) if isinstance(value, (int, float)) else None
+
+
+def _ratio_percent_text(value: float) -> str:
+    return f"{(value * 100 if value <= 1 else value):.1f}%"
+
+
+def _judge_manual_review_recommended(result: dict[str, Any]) -> bool:
+    editing = result.get("editing_experience") if isinstance(result.get("editing_experience"), dict) else {}
+    if editing.get("manual_review_recommended") is True:
+        return True
+    aesthetic = result.get("aesthetic_judge") if isinstance(result.get("aesthetic_judge"), dict) else {}
+    return aesthetic.get("manual_review_recommended") is True
+
+
+def _is_execution_action_status(status: str) -> bool:
+    return status in EXECUTION_ACTION_BY_STATUS
+
+
+def _manual_review_flags(result: dict[str, Any]) -> dict[str, Any]:
+    status = str(result.get("evaluation_status") or "")
+    required = status in MANUAL_REVIEW_REQUIRED_STATUSES
+    recommended_reasons: list[str] = []
+    if not required and not _is_execution_action_status(status):
+        selection_score = result.get("selection_score_v1")
+        editing_score = result.get("editing_experience_score_v1")
+        forbidden_ratio = _forbidden_duration_ratio(result)
+        if isinstance(selection_score, (int, float)) and float(selection_score) < 60:
+            recommended_reasons.append("内容选择得分低于 60")
+        if isinstance(editing_score, (int, float)) and float(editing_score) < 70:
+            recommended_reasons.append("成片观看体验得分低于 70")
+        if _technical_quality_passed(result) is False:
+            recommended_reasons.append("技术质量未通过")
+        if isinstance(forbidden_ratio, (int, float)) and forbidden_ratio > 0:
+            recommended_reasons.append(f"存在明确禁止内容混入，混入比例 {_ratio_percent_text(forbidden_ratio)}")
+        if _judge_manual_review_recommended(result):
+            recommended_reasons.append("Judge 建议人工抽查")
+    return {
+        "required": required,
+        "recommended": bool(recommended_reasons),
+        "recommended_reasons": recommended_reasons,
+    }
+
+
+def _recommended_action(result: dict[str, Any], manual_review: dict[str, Any]) -> str:
+    status = str(result.get("evaluation_status") or "")
+    if status in EXECUTION_ACTION_BY_STATUS:
+        return EXECUTION_ACTION_BY_STATUS[status]
+    if _technical_quality_passed(result) is False:
+        return "inspect_technical_quality"
+    if manual_review.get("required"):
+        return "manual_review_required"
+    if manual_review.get("recommended"):
+        return "manual_review_recommended"
+    return "none"
+
+
+def _content_selection_attribution(result: dict[str, Any]) -> str:
+    issues = result.get("issue_summary") if isinstance(result.get("issue_summary"), list) else []
+    texts: list[str] = []
+    for issue in issues:
+        if not isinstance(issue, dict):
+            continue
+        if issue.get("issue_type") in {"content_selection_issue", "forbidden_content_issue"}:
+            texts.append(str(issue.get("display_text") or issue.get("detail") or issue.get("label") or ""))
+    return "\n\n".join(text for text in texts if text)
+
+
 def enrich_result_v2(case: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
     enriched = dict(result)
     enriched["evaluation_result_schema_version"] = EVALUATION_RESULT_SCHEMA_VERSION
@@ -245,11 +350,12 @@ def enrich_result_v2(case: dict[str, Any], result: dict[str, Any]) -> dict[str, 
         "fallback_used": artifact.get("fallback_used"),
         "skill_backend_used": artifact.get("skill_backend_used"),
     }
-    enriched["manual_review"] = {
-        "required": enriched.get("evaluation_status") in {"manual_review_required", "judge_manual_review_required"},
-        "recommended": bool((enriched.get("editing_experience") or {}).get("manual_review_recommended")) if isinstance(enriched.get("editing_experience"), dict) else False,
-    }
     enriched["issue_summary"] = build_issue_summary(enriched)
+    manual_review = _manual_review_flags(enriched)
+    enriched["manual_review"] = manual_review
+    enriched["manual_review_reasons"] = list(manual_review.get("recommended_reasons") or [])
+    enriched["recommended_action"] = _recommended_action(enriched, manual_review)
+    enriched["content_selection_attribution"] = _content_selection_attribution(enriched)
     enriched["consumption"] = build_consumption(enriched)
     return enriched
 
@@ -318,7 +424,7 @@ def load_existing_result(case: dict[str, Any], index: int, output_dir: Path) -> 
             "error_message": f"evaluation_result.json not found: {path}",
         })
     payload = json.loads(path.read_text(encoding="utf-8"))
-    return payload if payload.get("evaluation_result_schema_version") == EVALUATION_RESULT_SCHEMA_VERSION else enrich_result_v2(case, payload)
+    return enrich_result_v2(case, payload)
 
 
 def flat_case_row(case: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
@@ -327,6 +433,7 @@ def flat_case_row(case: dict[str, Any], result: dict[str, Any]) -> dict[str, Any
     evaluation = consumption.get("evaluation", {}) if isinstance(consumption.get("evaluation"), dict) else {}
     e2e = consumption.get("end_to_end", {}) if isinstance(consumption.get("end_to_end"), dict) else {}
     technical = result.get("technical_quality") if isinstance(result.get("technical_quality"), dict) else {}
+    artifact = result.get("artifact_validation") if isinstance(result.get("artifact_validation"), dict) else {}
     issues = result.get("issue_summary") if isinstance(result.get("issue_summary"), list) else []
     return {
         "case_id": result.get("case_id") or case.get("case_id"),
@@ -335,11 +442,18 @@ def flat_case_row(case: dict[str, Any], result: dict[str, Any]) -> dict[str, Any
         "instruction": case.get("instruction"),
         "evaluation_status": result.get("evaluation_status"),
         "official_eligible": (result.get("official_score_eligibility") or {}).get("eligible"),
+        "artifact_validation_passed": artifact.get("artifact_validation_passed"),
         "selection_score_v1": result.get("selection_score_v1"),
         "editing_experience_score_v1": result.get("editing_experience_score_v1"),
         "final_score_v2": result.get("final_score_v2"),
         "technical_quality_passed": technical.get("technical_quality_passed"),
         "issues": "；".join(issue.get("label", "") for issue in issues),
+        "manual_review_required": (result.get("manual_review") or {}).get("required"),
+        "manual_review_recommended": (result.get("manual_review") or {}).get("recommended"),
+        "manual_review_reasons": "；".join(str(item) for item in result.get("manual_review_reasons", []) or []),
+        "recommended_action": result.get("recommended_action"),
+        "recommended_action_label": _recommended_action_label(result.get("recommended_action")),
+        "content_selection_attribution": result.get("content_selection_attribution"),
         "video_editing_elapsed_seconds": editing.get("elapsed_seconds"),
         "preview_generation_seconds": editing.get("preview_generation_seconds"),
         "skill_llm_latency_seconds": editing.get("skill_llm_latency_seconds"),
@@ -386,6 +500,7 @@ def build_summary(cases: list[dict[str, Any]], results: list[dict[str, Any]], ro
     failure_summary = _failure_summary(results, categories)
     fallback_summary = _fallback_summary(results)
     manual_review_summary = _manual_review_summary(results)
+    disposition_summary = _disposition_summary(results)
     return {
         "summary_schema_version": SUMMARY_SCHEMA_VERSION,
         "run_metadata": {
@@ -423,6 +538,7 @@ def build_summary(cases: list[dict[str, Any]], results: list[dict[str, Any]], ro
         "failure_summary": failure_summary,
         "fallback_summary": fallback_summary,
         "manual_review_summary": manual_review_summary,
+        "disposition_summary": disposition_summary,
         "breakdowns": {
             "by_issue": _issue_breakdown(results),
             "by_status": status_counts,
@@ -606,6 +722,32 @@ def _manual_review_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _disposition_summary(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    buckets: dict[str, list[str]] = {key: [] for key in DISPOSITION_ACTION_ORDER}
+    for result in results:
+        case_id = _case_id(result)
+        status = str(result.get("evaluation_status") or "")
+        action = EXECUTION_ACTION_BY_STATUS.get(status)
+        if action:
+            buckets[action].append(case_id)
+        if _technical_quality_passed(result) is False:
+            buckets["inspect_technical_quality"].append(case_id)
+        review = result.get("manual_review") if isinstance(result.get("manual_review"), dict) else {}
+        if review.get("required"):
+            buckets["manual_review_required"].append(case_id)
+        if review.get("recommended"):
+            buckets["manual_review_recommended"].append(case_id)
+    return [
+        {
+            "key": action,
+            "label": RECOMMENDED_ACTION_LABELS.get(action, action),
+            "count": len(case_ids),
+            "case_ids": case_ids,
+        }
+        for action, case_ids in buckets.items()
+    ]
+
+
 def _issue_breakdown(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
     buckets: dict[str, dict[str, Any]] = {}
     for result in results:
@@ -743,13 +885,13 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
             writer.writerow(row)
 
 
-def write_xlsx(path: Path, rows: list[dict[str, Any]]) -> None:
+def write_xlsx(path: Path, rows: list[dict[str, Any]], results: list[dict[str, Any]] | None = None) -> None:
     from openpyxl import Workbook
     from openpyxl.formatting.rule import FormulaRule
     from openpyxl.styles import Alignment, Font, PatternFill
     from openpyxl.utils import get_column_letter
 
-    results = [_load_xlsx_case_result(path.parent, row) for row in rows]
+    results = results if results is not None else [_load_xlsx_case_result(path.parent, row) for row in rows]
     workbook = Workbook()
     workbook.remove(workbook.active)
     sheet_payloads = [
@@ -799,7 +941,7 @@ def write_xlsx(path: Path, rows: list[dict[str, Any]]) -> None:
                         if isinstance(item.value, (int, float)):
                             item.number_format = "0.00"
         if sheet_name == "全部 Case 结果" and worksheet.max_row >= 2:
-            data_range = f"A2:L{worksheet.max_row}"
+            data_range = f"A2:O{worksheet.max_row}"
             worksheet.conditional_formatting.add(
                 data_range,
                 FormulaRule(formula=['OR($E2="产物校验失败",$E2="成片观看体验评测失败",$E2="Judge 视频上传失败",$E2="用户指令解析失败",$E2="缺少评测结果",$E2="单条 Case 执行失败")'], fill=thin_fill_red),
@@ -829,7 +971,58 @@ STATUS_LABELS = {
     "resolver_failed": "用户指令解析失败",
     "missing_evaluation_result": "缺少评测结果",
     "batch_case_failed": "单条 Case 执行失败",
+    "manual_review_required": "必须人工核查",
+    "judge_manual_review_required": "Judge 要求人工核查",
+    "selection_scored_aesthetic_pending": "待完成成片体验评审",
+    "technical_quality_failed": "技术质量检查失败",
 }
+
+INSTRUCTION_MODE_LABELS = {
+    "generic": "通用高光",
+    "specific": "指定内容",
+    "conflict": "指定内容并排除内容",
+    "unresolved": "未解析",
+}
+
+SELECTION_SCOPE_LABELS = {
+    "not_applicable": "不适用",
+    "preferential": "优先保留目标内容",
+    "exclusive": "只保留目标内容",
+}
+
+RECOMMENDED_ACTION_LABELS = {
+    "none": "无需处理",
+    "rerun_skill": "重新运行 Skill",
+    "retry_resolver": "重试 Resolver",
+    "retry_judge_video_upload": "重试 Judge 视频上传",
+    "retry_judge": "重试 Judge",
+    "inspect_technical_quality": "检查技术质量异常",
+    "manual_review_required": "必须人工核查",
+    "manual_review_recommended": "建议人工抽查",
+}
+
+EXECUTION_ACTION_BY_STATUS = {
+    "invalid_artifact": "rerun_skill",
+    "batch_case_failed": "rerun_skill",
+    "resolver_failed": "retry_resolver",
+    "judge_video_upload_failed": "retry_judge_video_upload",
+    "judge_failed": "retry_judge",
+}
+
+MANUAL_REVIEW_REQUIRED_STATUSES = {
+    "manual_review_required",
+    "judge_manual_review_required",
+}
+
+DISPOSITION_ACTION_ORDER = [
+    "rerun_skill",
+    "retry_resolver",
+    "retry_judge_video_upload",
+    "retry_judge",
+    "inspect_technical_quality",
+    "manual_review_required",
+    "manual_review_recommended",
+]
 
 
 def _load_xlsx_case_result(output_dir: Path, row: dict[str, Any]) -> dict[str, Any]:
@@ -884,6 +1077,21 @@ def _status_label(status: Any) -> str:
     return STATUS_LABELS.get(text, text or "不适用")
 
 
+def _instruction_mode_label(value: Any) -> str:
+    text = str(value or "")
+    return INSTRUCTION_MODE_LABELS.get(text, text or "不适用")
+
+
+def _selection_scope_label(value: Any) -> str:
+    text = str(value or "")
+    return SELECTION_SCOPE_LABELS.get(text, text or "不适用")
+
+
+def _recommended_action_label(value: Any) -> str:
+    text = str(value or "none")
+    return RECOMMENDED_ACTION_LABELS.get(text, text or "不适用")
+
+
 def _tested_capability_label(result: dict[str, Any]) -> str:
     metadata = result.get("case_metadata") if isinstance(result.get("case_metadata"), dict) else {}
     tested = str(metadata.get("tested_capability") or "").strip()
@@ -903,6 +1111,11 @@ def _issue_text(result: dict[str, Any]) -> str:
         if text:
             texts.append(str(text))
     return "；".join(texts) if texts else "未发现明显问题"
+
+
+def _content_selection_attribution_text(result: dict[str, Any]) -> str:
+    text = result.get("content_selection_attribution")
+    return str(text) if text else "不适用"
 
 
 def _judge_result(result: dict[str, Any]) -> dict[str, Any]:
@@ -944,7 +1157,10 @@ def _xlsx_all_case_rows(output_dir: Path, rows: list[dict[str, Any]], results: l
         "综合得分",
         "是否触发兜底",
         "是否需要人工核查",
+        "是否建议人工抽查",
+        "建议处置",
         "主要问题",
+        "内容选择问题归因",
         "详细结果路径",
     ]
     records = []
@@ -960,7 +1176,10 @@ def _xlsx_all_case_rows(output_dir: Path, rows: list[dict[str, Any]], results: l
             "综合得分": _score_value(result.get("final_score_v2")),
             "是否触发兜底": _yes_no((result.get("fallback_info") or {}).get("fallback_used")),
             "是否需要人工核查": _yes_no((result.get("manual_review") or {}).get("required")),
+            "是否建议人工抽查": _yes_no((result.get("manual_review") or {}).get("recommended")),
+            "建议处置": _recommended_action_label(result.get("recommended_action")),
             "主要问题": _issue_text(result),
+            "内容选择问题归因": _content_selection_attribution_text(result),
             "详细结果路径": str(output_dir / "runs" / _result_case_id(result) / "evaluation_result.json"),
         })
     return {"headers": headers, "rows": records, "score_columns": ["内容选择得分", "成片观看体验得分", "综合得分"]}
@@ -985,8 +1204,8 @@ def _xlsx_selection_rows(results: list[dict[str, Any]]) -> dict[str, Any]:
         duration = result.get("duration_context") if isinstance(result.get("duration_context"), dict) else {}
         records.append({
             "Case ID": _result_case_id(result),
-            "指令解析模式": _na(result.get("instruction_mode")),
-            "内容筛选范围": _na(result.get("selection_scope")),
+            "指令解析模式": _instruction_mode_label(result.get("instruction_mode")),
+            "内容筛选范围": _selection_scope_label(result.get("selection_scope")),
             "目标内容覆盖率": _as_percent(metrics.get("relevant_duration_coverage")),
             "合理内容占比": _as_percent(metrics.get("acceptable_precision")),
             "默认高光占比": _as_percent(metrics.get("default_highlight_precision")),
@@ -1136,7 +1355,7 @@ def _xlsx_column_width(header: str, worksheet: Any, index: int) -> float:
     for cell in worksheet.iter_cols(min_col=index, max_col=index, min_row=2):
         for item in cell:
             max_length = max(max_length, len(str(item.value or "")))
-    if header in {"用户指令", "测试内容", "主要问题", "详细结果路径", "Judge 识别的问题", "技术问题说明", "说明"}:
+    if header in {"用户指令", "测试内容", "主要问题", "内容选择问题归因", "详细结果路径", "Judge 识别的问题", "技术问题说明", "说明"}:
         return min(max(max_length + 2, 24), 60)
     return min(max(max_length + 2, 12), 28)
 
@@ -1396,15 +1615,18 @@ def _case_detail_html(output_dir: Path, cases_dir: Path, row: dict[str, Any], re
     ]
     status_rows = [
         ("执行状态", status),
+        ("建议处置", _recommended_action_label(result.get("recommended_action"))),
         ("是否进入正式计分", _display_text(bool(official.get("eligible")))),
         ("是否触发兜底", _display_text(bool(fallback.get("fallback_used")))),
-        ("是否需要人工核查", _display_text(bool(review.get("required")))),
+        ("是否必须人工核查", _display_text(bool(review.get("required")))),
+        ("是否建议人工抽查", _display_text(bool(review.get("recommended")))),
         ("技术质量是否通过", _display_text(technical.get("technical_quality_passed"))),
     ]
     issue_rows = [
         ("主要问题", _issue_text(result)),
         ("人工核查状态", manual_status),
         ("人工核查原因", manual_reason),
+        ("内容选择问题归因", _content_selection_attribution_text(result)),
     ]
     file_rows = _file_entry_rows(output_dir, cases_dir, result)
     file_table = "".join(
@@ -1494,27 +1716,40 @@ def _col_name(index: int) -> str:
 
 def _dashboard_payload(summary: dict[str, Any], rows: list[dict[str, Any]]) -> dict[str, Any]:
     case_ids = [str(row.get("case_id") or "") for row in rows]
-    failure_ids = list(summary.get("failure_summary", {}).get("case_ids", []))
     fallback_ids = list(summary.get("fallback_summary", {}).get("case_ids", []))
     manual = summary.get("manual_review_summary", {})
+    dispositions = summary.get("disposition_summary") if isinstance(summary.get("disposition_summary"), list) else []
     generated_ids = [
         str(row.get("case_id") or "")
         for row in rows
-        if row.get("evaluation_status") not in {"invalid_artifact", "missing_evaluation_result"}
+        if row.get("artifact_validation_passed") is True
     ]
     scored_ids = [
         str(row.get("case_id") or "")
         for row in rows
         if row.get("official_eligible") is True
     ]
+    disposition_ids = {
+        str(item.get("key")): list(item.get("case_ids") or [])
+        for item in dispositions
+        if isinstance(item, dict)
+    }
+    judge_failed_ids = [
+        str(row.get("case_id") or "")
+        for row in rows
+        if row.get("evaluation_status") == "judge_failed"
+    ]
+    generated_rows = [row for row in rows if row.get("artifact_validation_passed") is True]
     technical_values = [
         row.get("technical_quality_passed")
-        for row in rows
+        for row in generated_rows
         if row.get("technical_quality_passed") in {True, False}
     ]
+    technical_pass_count = sum(1 for value in technical_values if value is True)
+    technical_valid_count = len(generated_rows)
     technical_pass_rate = None
     if technical_values:
-        technical_pass_rate = f"{sum(1 for value in technical_values if value is True) / len(technical_values) * 100:.2f}%"
+        technical_pass_rate = f"{technical_pass_count / technical_valid_count * 100:.2f}%" if technical_valid_count else None
     overall = summary.get("overall_scores", {})
     execution = summary.get("execution_overview", {})
     special = summary.get("special_reports_overview") or {}
@@ -1528,7 +1763,8 @@ def _dashboard_payload(summary: dict[str, Any], rows: list[dict[str, Any]]) -> d
             "generated": execution.get("generated_result_count"),
             "scored": execution.get("official_scored_count"),
             "fallback": execution.get("fallback_diagnostic_count"),
-            "failed": execution.get("failed_or_incomplete_count"),
+            "rerun_skill": len(disposition_ids.get("rerun_skill", [])),
+            "judge_failed": len(judge_failed_ids),
             "manual_required": execution.get("manual_review_blocked_count"),
             "manual_recommended": manual.get("recommended_count"),
         },
@@ -1536,6 +1772,8 @@ def _dashboard_payload(summary: dict[str, Any], rows: list[dict[str, Any]]) -> d
             "content": overall.get("selection_score_v1_avg"),
             "editing": overall.get("editing_experience_score_v1_avg"),
             "final": overall.get("final_score_v2_avg"),
+            "technical_pass_count": technical_pass_count,
+            "technical_valid_count": technical_valid_count,
             "technical_pass_rate": technical_pass_rate,
         },
         "groups": {
@@ -1543,10 +1781,12 @@ def _dashboard_payload(summary: dict[str, Any], rows: list[dict[str, Any]]) -> d
             "generated": generated_ids,
             "scored": scored_ids,
             "fallback": fallback_ids,
-            "failed": failure_ids,
+            "rerun_skill": disposition_ids.get("rerun_skill", []),
+            "judge_failed": judge_failed_ids,
             "manual_required": list(manual.get("required_case_ids", [])),
             "manual_recommended": list(manual.get("recommended_case_ids", [])),
         },
+        "dispositions": dispositions,
         "user_requirements": summary.get("breakdowns", {}).get("by_user_requirement", []),
         "video_scenarios": summary.get("breakdowns", {}).get("by_video_scenario", []),
         "issues": summary.get("breakdowns", {}).get("by_issue", []),
@@ -1562,46 +1802,49 @@ def write_html_reports(output_dir: Path, summary: dict[str, Any], rows: list[dic
     report_data_json = json.dumps(dashboard, ensure_ascii=False).replace("</", "<\\/")
     html_doc = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>ClawCut V2 正式评测报告</title><style>
 :root{{color-scheme:light;--blue:#12365f;--text:#1f2937;--muted:#667085;--bg:#f5f7fb;--line:#d9e1ec;--green:#18864b;--orange:#b65f00;--red:#b42318;--info:#175cd3}}
-*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;line-height:1.5}}.page{{max-width:1400px;margin:0 auto;padding:32px 28px 56px}}h1{{margin:0 0 8px;color:var(--blue);font-size:32px}}h2{{margin:0 0 16px;color:var(--blue);font-size:22px}}.subtle{{color:var(--muted)}}section{{margin-top:24px}}.panel{{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(18,54,95,.05)}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}}.card{{appearance:none;border:1px solid var(--line);border-radius:14px;background:#fff;padding:16px;text-align:left;cursor:pointer;box-shadow:0 8px 20px rgba(18,54,95,.05)}}.card:hover,.click-row:hover{{border-color:#8fb5e8;background:#f8fbff}}.card-label{{font-size:14px;color:var(--muted)}}.card-value{{display:block;margin-top:8px;font-size:30px;font-weight:750;color:var(--blue)}}.green .card-value{{color:var(--green)}}.orange .card-value{{color:var(--orange)}}.red .card-value{{color:var(--red)}}.info .card-value{{color:var(--info)}}table{{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}}th,td{{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}th{{background:#f0f4f9;color:#344054;font-weight:650}}tr:last-child td{{border-bottom:none}}.click-row{{cursor:pointer}}.note{{margin-top:10px;color:var(--muted);font-size:14px}}.empty{{background:#f1f3f6;border:1px dashed #b8c2d0;border-radius:12px;padding:18px;color:#475467}}#drawer{{position:fixed;right:0;top:0;bottom:0;width:560px;max-width:94vw;background:#fff;border-left:1px solid var(--line);box-shadow:-12px 0 30px rgba(0,0,0,.12);padding:20px;overflow:auto;display:none;z-index:10}}.drawer-head{{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}}.close{{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 10px;cursor:pointer}}.search{{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0 14px}}.case-card{{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:#fbfcff}}.case-title{{font-weight:700;color:var(--blue)}}.case-meta{{display:grid;grid-template-columns:120px 1fr;gap:5px 10px;margin-top:8px;font-size:14px}}.pill{{display:inline-block;border-radius:999px;background:#eef4ff;color:#175cd3;padding:2px 8px;font-size:12px}}a{{color:#175cd3;text-decoration:none}}a:hover{{text-decoration:underline}}
+*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;line-height:1.5}}.page{{max-width:1400px;margin:0 auto;padding:32px 28px 56px}}h1{{margin:0 0 8px;color:var(--blue);font-size:32px}}h2{{margin:0 0 16px;color:var(--blue);font-size:22px}}.subtle{{color:var(--muted)}}section{{margin-top:24px}}.panel{{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(18,54,95,.05)}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}}.card{{appearance:none;border:1px solid var(--line);border-radius:14px;background:#fff;padding:16px;text-align:left;cursor:pointer;box-shadow:0 8px 20px rgba(18,54,95,.05)}}.card:hover,.click-row:hover{{border-color:#8fb5e8;background:#f8fbff}}.card-label{{font-size:14px;color:var(--muted)}}.card-value{{display:block;margin-top:8px;font-size:30px;font-weight:750;color:var(--blue)}}.card-ratio{{display:block;margin-top:2px;color:var(--muted);font-size:13px}}.green .card-value{{color:var(--green)}}.orange .card-value{{color:var(--orange)}}.red .card-value{{color:var(--red)}}.info .card-value{{color:var(--info)}}table{{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}}th,td{{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}th{{background:#f0f4f9;color:#344054;font-weight:650}}tr:last-child td{{border-bottom:none}}.click-row{{cursor:pointer}}.note{{margin-top:10px;color:var(--muted);font-size:14px}}.empty{{background:#f1f3f6;border:1px dashed #b8c2d0;border-radius:12px;padding:18px;color:#475467}}#drawer{{position:fixed;right:0;top:0;bottom:0;width:620px;max-width:94vw;background:#fff;border-left:1px solid var(--line);box-shadow:-12px 0 30px rgba(0,0,0,.12);padding:20px;overflow:auto;display:none;z-index:10}}.drawer-head{{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}}.close{{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 10px;cursor:pointer}}.search{{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0 14px}}.case-card{{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:#fbfcff}}.case-title{{font-weight:700;color:var(--blue)}}.case-meta{{display:grid;grid-template-columns:130px 1fr;gap:5px 10px;margin-top:8px;font-size:14px}}.multiline{{white-space:pre-wrap}}.pill{{display:inline-block;border-radius:999px;background:#eef4ff;color:#175cd3;padding:2px 8px;font-size:12px}}a{{color:#175cd3;text-decoration:none}}a:hover{{text-decoration:underline}}
 </style></head><body><main class="page">
 <section class="panel"><h1>ClawCut V2 正式评测报告</h1><div class="subtle">评测 Case 数：{dashboard['info']['case_count']}　生成时间：{html.escape(str(dashboard['info']['generated_at']))}</div></section>
 <script type="application/json" id="report-data">{report_data_json}</script>
 <section><h2>总体执行情况</h2><div class="grid" id="execution-cards"></div></section>
-<section><h2>整体剪辑效果</h2><div class="grid" id="score-cards"></div><p class="note">综合得分 = 70% 内容选择得分 + 30% 成片观看体验得分</p></section>
+<section><h2>整体剪辑效果</h2><div class="grid" id="score-cards"></div><p class="note">以下效果均值仅基于完成正式计分的 Case，不包含执行失败或尚未完成评测的 Case。</p><p class="note">综合得分 = 70% 内容选择得分 + 30% 成片观看体验得分</p></section>
 <section class="panel"><h2>不同用户要求下的剪辑表现</h2><div id="user-table"></div></section>
 <section class="panel"><h2>不同视频场景下的剪辑表现</h2><div id="scenario-table"></div><p class="note">同一条 Case 可以同时属于多个视频场景，因此各行数量之和可能大于总 Case 数。</p></section>
+<section class="panel"><h2>待处理事项</h2><div id="disposition-cards"></div></section>
 <section class="panel"><h2>本轮主要问题</h2><div id="issue-table"></div></section>
 <section class="panel"><h2>专项测试概况</h2><div id="special-overview"></div></section>
 </main><aside id="drawer"></aside><script>
 const data = JSON.parse(document.getElementById('report-data').textContent);
-const statusLabels = {{scored_complete:'正式计分完成', diagnostic_only:'仅用于诊断', invalid_artifact:'产物校验失败', judge_failed:'成片观看体验评测失败', judge_video_upload_failed:'Judge 视频上传失败', resolver_failed:'用户指令解析失败', missing_evaluation_result:'缺少评测结果', batch_case_failed:'单条 Case 执行失败'}};
+const statusLabels = {{scored_complete:'正式计分完成', diagnostic_only:'仅用于诊断', invalid_artifact:'产物校验失败', judge_failed:'成片观看体验评测失败', judge_video_upload_failed:'Judge 视频上传失败', resolver_failed:'用户指令解析失败', missing_evaluation_result:'缺少评测结果', batch_case_failed:'单条 Case 执行失败', manual_review_required:'必须人工核查', judge_manual_review_required:'Judge 要求人工核查', selection_scored_aesthetic_pending:'待完成成片体验评审', technical_quality_failed:'技术质量检查失败'}};
 const empty = v => v === null || v === undefined || v === '' ? '—' : v;
 const score = v => typeof v === 'number' ? v.toFixed(2) : '—';
+const percent = (value,total) => typeof value === 'number' && typeof total === 'number' && total > 0 ? (value / total * 100).toFixed(1) + '%' : '—';
 const casesById = new Map(data.cases.map(c => [c.case_id, c]));
 function resolveCases(ids){{return ids.map(id=>casesById.get(id)).filter(Boolean);}}
-function card(label,value,kind,ids){{return `<button class="card ${{kind||''}}" onclick='openDrawer(${{JSON.stringify(label)}}, ${{JSON.stringify(ids)}})'><span class="card-label">${{label}}</span><strong class="card-value">${{empty(value)}}</strong></button>`}}
+function card(label,value,kind,ids,ratioText){{return `<button class="card ${{kind||''}}" onclick='openDrawer(${{JSON.stringify(label)}}, ${{JSON.stringify(ids)}})'><span class="card-label">${{label}}</span><strong class="card-value">${{empty(value)}}</strong>${{ratioText?`<span class="card-ratio">${{ratioText}}</span>`:''}}</button>`}}
 function renderExecution(){{const e=data.execution;document.getElementById('execution-cards').innerHTML=[
-card('计划评测 Case 数',e.planned,'',data.groups.all),
-card('成功生成结果',e.generated,'',data.groups.generated),
-card('进入正式计分',e.scored,'green',data.groups.scored),
-card('触发兜底结果',e.fallback,'orange',data.groups.fallback),
-card('执行失败或未完成',e.failed,'red',data.groups.failed),
-card('必须人工核查',e.manual_required,'info',data.groups.manual_required),
-card('建议人工抽查',e.manual_recommended,'info',data.groups.manual_recommended)
+card('计划评测 Case',`${{e.planned}} / ${{e.planned}}`,'',data.groups.all,'100.0%'),
+card('生成有效成片',`${{e.generated}} / ${{e.planned}}`,'green',data.groups.generated,percent(e.generated,e.planned)),
+card('完成正式计分',`${{e.scored}} / ${{e.planned}}`,'green',data.groups.scored,percent(e.scored,e.planned)),
+card('产物无效，需重新运行 Skill',`${{e.rerun_skill}} / ${{e.planned}}`,'red',data.groups.rerun_skill,percent(e.rerun_skill,e.planned)),
+card('成片已生成，但 Judge 失败',`${{e.judge_failed}} / ${{e.planned}}`,'orange',data.groups.judge_failed,percent(e.judge_failed,e.planned)),
+card('必须人工核查',`${{e.manual_required}} / ${{e.planned}}`,'info',data.groups.manual_required,percent(e.manual_required,e.planned)),
+card('建议人工抽查',`${{e.manual_recommended}} / ${{e.planned}}`,'info',data.groups.manual_recommended,percent(e.manual_recommended,e.planned))
 ].join('');}}
 function renderScores(){{const s=data.scores;document.getElementById('score-cards').innerHTML=[
 card('平均内容选择得分',score(s.content),'',data.groups.scored),
 card('平均成片观看体验得分',score(s.editing),'',data.groups.scored),
 card('平均综合得分',score(s.final),'green',data.groups.scored),
-card('成片技术质量通过率',s.technical_pass_rate,'',data.groups.generated)
+card('有效成片技术质量通过率',`${{empty(s.technical_pass_count)}} / ${{empty(s.technical_valid_count)}}`,'',data.groups.generated,s.technical_pass_rate)
 ].join('');}}
-function table(headers,rows,kind){{if(!rows.length)return '<div class="empty">暂无数据。</div>';return `<table><thead><tr>${{headers.map(h=>`<th>${{h}}</th>`).join('')}}</tr></thead><tbody>${{rows.map(r=>`<tr class="click-row" onclick='openDrawer(${{JSON.stringify(r.label)}}, ${{JSON.stringify(r.case_ids||[])}})'>${{kind==='issue'?`<td>${{r.label}}</td><td>${{r.count}}</td>`:`<td>${{r.label}}</td><td>${{r.case_count}}</td><td>${{r.official_scored_count}}</td><td>${{score(r.average_content_selection_score)}}</td><td>${{score(r.average_editing_experience_score)}}</td><td>${{score(r.average_final_score)}}</td>`}}</tr>`).join('')}}</tbody></table>`}}
-function renderTables(){{document.getElementById('user-table').innerHTML=table(['用户要求类型','Case 数','正式计分数','平均内容选择得分','平均成片观看体验得分','平均综合得分'],data.user_requirements,'normal');document.getElementById('scenario-table').innerHTML=table(['视频场景','Case 数','正式计分数','平均内容选择得分','平均成片观看体验得分','平均综合得分'],data.video_scenarios,'normal');document.getElementById('issue-table').innerHTML=table(['问题类型','涉及 Case 数'],data.issues,'issue');}}
+function table(headers,rows,kind){{if(!rows.length)return '<div class="empty">暂无数据。</div>';return `<table><thead><tr>${{headers.map(h=>`<th>${{h}}</th>`).join('')}}</tr></thead><tbody>${{rows.map(r=>`<tr class="click-row" onclick='openDrawer(${{JSON.stringify(r.label)}}, ${{JSON.stringify(r.case_ids||[])}})'>${{kind==='issue'?`<td>${{r.label}}</td><td>${{r.count}}</td>`:`<td>${{r.label}}</td><td>${{r.case_count}}</td><td>${{r.official_scored_count}}</td><td>${{percent(r.official_scored_count,r.case_count)}}</td><td>${{score(r.average_content_selection_score)}}</td><td>${{score(r.average_editing_experience_score)}}</td><td>${{score(r.average_final_score)}}</td>`}}</tr>`).join('')}}</tbody></table>`}}
+function renderTables(){{document.getElementById('user-table').innerHTML=table(['用户要求类型','Case 数','正式计分数','正式计分覆盖率','平均内容选择得分','平均成片观看体验得分','平均综合得分'],data.user_requirements,'normal');document.getElementById('scenario-table').innerHTML=table(['视频场景','Case 数','正式计分数','正式计分覆盖率','平均内容选择得分','平均成片观看体验得分','平均综合得分'],data.video_scenarios,'normal');document.getElementById('issue-table').innerHTML=table(['问题类型','涉及 Case 数'],data.issues,'issue');}}
+function renderDispositions(){{const rows=data.dispositions||[];document.getElementById('disposition-cards').innerHTML=`<div class="grid">${{rows.map(r=>card(r.label,r.count,r.count?'info':'',r.case_ids||[])).join('')}}</div>`;}}
 function renderSpecial(){{const el=document.getElementById('special-overview');const rows=data.special||[];if(!rows.length){{el.innerHTML='<div class="empty">专项测试状态尚未生成。</div>';return}}el.innerHTML=`<table><thead><tr><th>专项测试</th><th>状态</th><th>结果摘要</th><th>操作</th></tr></thead><tbody>${{rows.map(x=>`<tr><td>${{x.label}}</td><td>${{x.status}}</td><td>${{x.summary}}</td><td>${{x.detail_path?`<a href="${{x.detail_path}}" target="_blank" rel="noopener">查看详情</a>`:'—'}}</td></tr>`).join('')}}</tbody></table>`;}}
 function openDrawer(title,ids){{const drawer=document.getElementById('drawer');drawer.style.display='block';drawer.dataset.ids=JSON.stringify(ids);drawer.innerHTML=`<div class="drawer-head"><h2>${{title}}</h2><button class="close" onclick="closeDrawer()">关闭</button></div><input class="search" id="case-search" placeholder="搜索 Case ID" oninput="renderDrawerCases()"><div id="drawer-list"></div>`;renderDrawerCases();}}
 function closeDrawer(){{document.getElementById('drawer').style.display='none';}}
-function renderDrawerCases(){{const drawer=document.getElementById('drawer');const ids=JSON.parse(drawer.dataset.ids||'[]');const q=(document.getElementById('case-search')?.value||'').trim().toLowerCase();const list=resolveCases(ids).filter(c=>!q||String(c.case_id).toLowerCase().includes(q));document.getElementById('drawer-list').innerHTML=list.length?list.map(c=>`<div class="case-card"><div class="case-title"><a href="cases/${{c.case_id}}.html">${{c.case_id}}</a></div><div class="case-meta"><span>视频 ID</span><span>${{empty(c.video_id)}}</span><span>用户指令</span><span>${{empty(c.instruction)}}</span><span>执行状态</span><span><span class="pill">${{statusLabels[c.evaluation_status]||empty(c.evaluation_status)}}</span></span><span>内容选择得分</span><span>${{score(c.selection_score_v1)}}</span><span>成片观看体验得分</span><span>${{score(c.editing_experience_score_v1)}}</span><span>综合得分</span><span>${{score(c.final_score_v2)}}</span><span>主要问题</span><span>${{empty(c.issues)}}</span></div></div>`).join(''):'<div class="empty">没有匹配的 Case。</div>';}}
-renderExecution();renderScores();renderTables();renderSpecial();
+function renderDrawerCases(){{const drawer=document.getElementById('drawer');const ids=JSON.parse(drawer.dataset.ids||'[]');const q=(document.getElementById('case-search')?.value||'').trim().toLowerCase();const list=resolveCases(ids).filter(c=>!q||String(c.case_id).toLowerCase().includes(q));document.getElementById('drawer-list').innerHTML=list.length?list.map(c=>`<div class="case-card"><div class="case-title"><a href="cases/${{c.case_id}}.html">${{c.case_id}}</a></div><div class="case-meta"><span>视频 ID</span><span>${{empty(c.video_id)}}</span><span>用户指令</span><span>${{empty(c.instruction)}}</span><span>执行状态</span><span><span class="pill">${{statusLabels[c.evaluation_status]||empty(c.evaluation_status)}}</span></span><span>建议处置</span><span>${{empty(c.recommended_action_label)}}</span><span>人工抽查原因</span><span class="multiline">${{empty(c.manual_review_reasons)}}</span><span>内容选择得分</span><span>${{score(c.selection_score_v1)}}</span><span>成片观看体验得分</span><span>${{score(c.editing_experience_score_v1)}}</span><span>综合得分</span><span>${{score(c.final_score_v2)}}</span><span>主要问题</span><span>${{empty(c.issues)}}</span><span>内容选择问题归因</span><span class="multiline">${{empty(c.content_selection_attribution)}}</span></div></div>`).join(''):'<div class="empty">没有匹配的 Case。</div>';}}
+renderExecution();renderScores();renderTables();renderDispositions();renderSpecial();
 </script></body></html>"""
     (output_dir / "report.html").write_text(html_doc, encoding="utf-8")
     for row, result in zip(rows, results):
@@ -1626,7 +1869,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     summary["run_metadata"]["elapsed_seconds"] = round(time.monotonic() - started, 3)
     write_json(args.output_dir / "summary.json", summary)
     write_csv(args.output_dir / "case_results.csv", rows)
-    write_xlsx(args.output_dir / "case_results.xlsx", rows)
+    write_xlsx(args.output_dir / "case_results.xlsx", rows, results)
     write_html_reports(args.output_dir, summary, rows, results)
     return summary
 
