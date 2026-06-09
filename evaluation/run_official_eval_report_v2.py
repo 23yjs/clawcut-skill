@@ -1752,7 +1752,6 @@ def _dashboard_payload(summary: dict[str, Any], rows: list[dict[str, Any]]) -> d
         technical_pass_rate = f"{technical_pass_count / technical_valid_count * 100:.2f}%" if technical_valid_count else None
     overall = summary.get("overall_scores", {})
     execution = summary.get("execution_overview", {})
-    special = summary.get("special_reports_overview") or {}
     return {
         "info": {
             "case_count": summary.get("run_metadata", {}).get("case_count"),
@@ -1790,7 +1789,7 @@ def _dashboard_payload(summary: dict[str, Any], rows: list[dict[str, Any]]) -> d
         "user_requirements": summary.get("breakdowns", {}).get("by_user_requirement", []),
         "video_scenarios": summary.get("breakdowns", {}).get("by_video_scenario", []),
         "issues": summary.get("breakdowns", {}).get("by_issue", []),
-        "special": special if isinstance(special, list) else [],
+        "special": [],
         "cases": rows,
     }
 
@@ -1812,7 +1811,15 @@ def write_html_reports(output_dir: Path, summary: dict[str, Any], rows: list[dic
 <section class="panel"><h2>不同视频场景下的剪辑表现</h2><div id="scenario-table"></div><p class="note">同一条 Case 可以同时属于多个视频场景，因此各行数量之和可能大于总 Case 数。</p></section>
 <section class="panel"><h2>待处理事项</h2><div id="disposition-cards"></div></section>
 <section class="panel"><h2>本轮主要问题</h2><div id="issue-table"></div></section>
-<section class="panel"><h2>专项测试概况</h2><div id="special-overview"></div></section>
+<section class="panel"><h2>未来评测工作</h2>
+<p class="note">专项评测方案仍在完善中，当前不纳入正式剪辑效果结论。</p>
+<table><thead><tr><th>专项方向</th><th>后续计划</th></tr></thead><tbody>
+<tr><td>Resolver 语义解析专项</td><td>对照人工预期结果，检查不同类型指令，及相关片段是否被正确解析。</td></tr>
+<tr><td>FPS 敏感性专项</td><td>分别使用 1 / 2 / 4 不同FPS 进行测试，比较关键动作窗口的覆盖情况。</td></tr>
+<tr><td>运行稳定性专项</td><td>对代表性用例重复执行，统计成功率、耗时和评分波动。</td></tr>
+<tr><td>异常输入与容错专项</td><td>覆盖路径错误、失效链接、非法参数和模型调用异常，检查错误提示和处理结果。</td></tr>
+</tbody></table>
+</section>
 </main><aside id="drawer"></aside><script>
 const data = JSON.parse(document.getElementById('report-data').textContent);
 const statusLabels = {{scored_complete:'正式计分完成', diagnostic_only:'仅用于诊断', invalid_artifact:'产物校验失败', judge_failed:'成片观看体验评测失败', judge_video_upload_failed:'Judge 视频上传失败', resolver_failed:'用户指令解析失败', missing_evaluation_result:'缺少评测结果', batch_case_failed:'单条 Case 执行失败', manual_review_required:'必须人工核查', judge_manual_review_required:'Judge 要求人工核查', selection_scored_aesthetic_pending:'待完成成片体验评审', technical_quality_failed:'技术质量检查失败'}};
@@ -1840,11 +1847,10 @@ card('有效成片技术质量通过率',`${{empty(s.technical_pass_count)}} / $
 function table(headers,rows,kind){{if(!rows.length)return '<div class="empty">暂无数据。</div>';return `<table><thead><tr>${{headers.map(h=>`<th>${{h}}</th>`).join('')}}</tr></thead><tbody>${{rows.map(r=>`<tr class="click-row" onclick='openDrawer(${{JSON.stringify(r.label)}}, ${{JSON.stringify(r.case_ids||[])}})'>${{kind==='issue'?`<td>${{r.label}}</td><td>${{r.count}}</td>`:`<td>${{r.label}}</td><td>${{r.case_count}}</td><td>${{r.official_scored_count}}</td><td>${{percent(r.official_scored_count,r.case_count)}}</td><td>${{score(r.average_content_selection_score)}}</td><td>${{score(r.average_editing_experience_score)}}</td><td>${{score(r.average_final_score)}}</td>`}}</tr>`).join('')}}</tbody></table>`}}
 function renderTables(){{document.getElementById('user-table').innerHTML=table(['用户要求类型','Case 数','正式计分数','正式计分覆盖率','平均内容选择得分','平均成片观看体验得分','平均综合得分'],data.user_requirements,'normal');document.getElementById('scenario-table').innerHTML=table(['视频场景','Case 数','正式计分数','正式计分覆盖率','平均内容选择得分','平均成片观看体验得分','平均综合得分'],data.video_scenarios,'normal');document.getElementById('issue-table').innerHTML=table(['问题类型','涉及 Case 数'],data.issues,'issue');}}
 function renderDispositions(){{const rows=data.dispositions||[];document.getElementById('disposition-cards').innerHTML=`<div class="grid">${{rows.map(r=>card(r.label,r.count,r.count?'info':'',r.case_ids||[])).join('')}}</div>`;}}
-function renderSpecial(){{const el=document.getElementById('special-overview');const rows=data.special||[];if(!rows.length){{el.innerHTML='<div class="empty">专项测试状态尚未生成。</div>';return}}el.innerHTML=`<table><thead><tr><th>专项测试</th><th>状态</th><th>结果摘要</th><th>操作</th></tr></thead><tbody>${{rows.map(x=>`<tr><td>${{x.label}}</td><td>${{x.status}}</td><td>${{x.summary}}</td><td>${{x.detail_path?`<a href="${{x.detail_path}}" target="_blank" rel="noopener">查看详情</a>`:'—'}}</td></tr>`).join('')}}</tbody></table>`;}}
 function openDrawer(title,ids){{const drawer=document.getElementById('drawer');drawer.style.display='block';drawer.dataset.ids=JSON.stringify(ids);drawer.innerHTML=`<div class="drawer-head"><h2>${{title}}</h2><button class="close" onclick="closeDrawer()">关闭</button></div><input class="search" id="case-search" placeholder="搜索 Case ID" oninput="renderDrawerCases()"><div id="drawer-list"></div>`;renderDrawerCases();}}
 function closeDrawer(){{document.getElementById('drawer').style.display='none';}}
 function renderDrawerCases(){{const drawer=document.getElementById('drawer');const ids=JSON.parse(drawer.dataset.ids||'[]');const q=(document.getElementById('case-search')?.value||'').trim().toLowerCase();const list=resolveCases(ids).filter(c=>!q||String(c.case_id).toLowerCase().includes(q));document.getElementById('drawer-list').innerHTML=list.length?list.map(c=>`<div class="case-card"><div class="case-title"><a href="cases/${{c.case_id}}.html">${{c.case_id}}</a></div><div class="case-meta"><span>视频 ID</span><span>${{empty(c.video_id)}}</span><span>用户指令</span><span>${{empty(c.instruction)}}</span><span>执行状态</span><span><span class="pill">${{statusLabels[c.evaluation_status]||empty(c.evaluation_status)}}</span></span><span>建议处置</span><span>${{empty(c.recommended_action_label)}}</span><span>人工抽查原因</span><span class="multiline">${{empty(c.manual_review_reasons)}}</span><span>内容选择得分</span><span>${{score(c.selection_score_v1)}}</span><span>成片观看体验得分</span><span>${{score(c.editing_experience_score_v1)}}</span><span>综合得分</span><span>${{score(c.final_score_v2)}}</span><span>主要问题</span><span>${{empty(c.issues)}}</span><span>内容选择问题归因</span><span class="multiline">${{empty(c.content_selection_attribution)}}</span></div></div>`).join(''):'<div class="empty">没有匹配的 Case。</div>';}}
-renderExecution();renderScores();renderTables();renderDispositions();renderSpecial();
+renderExecution();renderScores();renderTables();renderDispositions();
 </script></body></html>"""
     (output_dir / "report.html").write_text(html_doc, encoding="utf-8")
     for row, result in zip(rows, results):

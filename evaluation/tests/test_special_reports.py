@@ -174,7 +174,7 @@ def test_stability_dispatch_expands_repeat_count(tmp_path):
     ]
 
 
-def test_report_html_special_table_not_raw_json(tmp_path):
+def test_report_html_hides_special_results_and_shows_future_work(tmp_path):
     cases_path = tmp_path / "cases.jsonl"
     case = _official_case(tmp_path)
     _write_jsonl(cases_path, [case])
@@ -219,6 +219,11 @@ def test_report_html_special_table_not_raw_json(tmp_path):
     )
     report_v2.run(args)
     html = (tmp_path / "out" / "report.html").read_text(encoding="utf-8")
-    assert "专项测试</th><th>状态</th><th>结果摘要</th><th>操作" in html
-    assert "查看详情" in html
+    assert "专项测试概况" not in html
+    assert "专项测试</th><th>状态</th><th>结果摘要</th><th>操作" not in html
+    assert "查看详情" not in html
+    assert "未来评测工作" in html
+    assert "专项评测方案仍在完善中，当前不纳入正式剪辑效果结论。" in html
+    assert "对照人工预期结果，检查不同类型指令" in html
+    assert "分别使用 1 / 2 / 4 不同FPS" in html
     assert "{&quot;" not in html
